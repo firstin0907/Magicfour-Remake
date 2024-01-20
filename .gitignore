@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# Visual Studio build directories
+.vs
+Debug
+x64

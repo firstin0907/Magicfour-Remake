@@ -1,0 +1,64 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: light.ps
+////////////////////////////////////////////////////////////////////////////////
+
+cbuffer LightBuffer
+{
+    float4 diffuseColor;
+    float3 lightDirection;
+	float padding;
+};
+
+cbuffer CameraBuffer
+{
+    float3 cameraPosition;
+    float padding2;
+}
+
+
+//////////////
+// TYPEDEFS //
+//////////////
+struct PixelInputType
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+	float3 normal : NORMAL;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixel Shader
+////////////////////////////////////////////////////////////////////////////////
+float4 StonePixelShader(PixelInputType input) : SV_TARGET
+{
+    float3 normal;
+	float3 lightDir;
+	float lightIntensity, specularIntensity;
+	float4 color;
+
+    float shininess = 15.0;
+
+    normal = normalize(input.normal);
+	// Invert the light direction for calculations.
+    lightDir = normalize(-lightDirection);
+
+
+    // ambient
+    float4 ambient = 0.1 * diffuseColor;
+    
+    // diffuse
+    float diff = saturate(dot(normal, lightDir));
+    float4 diffuse = diff * diffuseColor;
+
+    // specular
+    float4 white = {1, 1, 1, 1};
+
+
+    float3 viewDir = normalize(cameraPosition - input.position);
+    float3 reflectDir = normalize(lightDir - 2.0f * dot(input.normal, lightDir) * input.normal);
+    float spec = pow(saturate(dot(viewDir, reflectDir)), shininess);
+    float4 specular = spec * white;
+
+	return ambient + diffuse + specular;
+}

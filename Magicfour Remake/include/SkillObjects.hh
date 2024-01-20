@@ -1,0 +1,127 @@
+#pragma once
+
+#include "SkillObjectClass.hh"
+
+class SkillObjectSpear : public SkillObjectClass
+{
+public:
+	SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t created_time);
+
+	// Move instance as time goes by.
+	virtual void FrameMove(time_t curr_time, time_t time_delta);
+
+	// Should be called when this instance is collided with any valid(live) monster.
+	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
+
+	// Should be called after processing any collision with monsters. 
+	virtual bool Frame(time_t curr_time, time_t time_delta);
+
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+	
+	static void initialize(ModelClass* model);
+
+	virtual class ModelClass* GetModel();
+
+private:
+	static unique_ptr<class ModelClass> m_Model;
+	static int t;
+
+	int vx, vy;
+	float m_Angle;
+
+	enum state_t
+	{
+		STATE_NORMAL,
+		STATE_ONGROUND,
+		STATE_DIE
+	} m_State;
+	time_t m_StateStartTime;
+};
+
+class SkillObjectBead : public SkillObjectClass
+{
+public:
+	SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t created_time);
+
+	// Move instance as time goes by.
+	virtual void FrameMove(time_t curr_time, time_t time_delta);
+
+	// Should be called when this instance is collided with any valid(live) monster.
+	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
+
+	// Should be called after processing any collision with monsters. 
+	virtual bool Frame(time_t curr_time, time_t time_delta);
+
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+
+	static void initialize(class ModelClass* model);
+
+	virtual class ModelClass* GetModel();
+private:
+
+	static unique_ptr<class ModelClass> m_Model;
+
+	int vx, vy;
+	enum state_t
+	{
+		STATE_NORMAL,
+		STATE_ONEHIT,
+		STATE_DIE
+	} m_State;
+
+	time_t m_StateStartTime;
+};
+
+class SkillObjectLeg : public SkillObjectClass
+{
+public:
+	SkillObjectLeg(int pos_x, time_t created_time);
+
+	// Move instance as time goes by.
+	virtual void FrameMove(time_t curr_time, time_t time_delta);
+
+	// Should be called when this instance is collided with any valid(live) monster.
+	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
+
+	// Should be called after processing any collision with monsters. 
+	virtual bool Frame(time_t curr_time, time_t time_delta);
+
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+
+	static void initialize(class ModelClass* model);
+
+	virtual class ModelClass* GetModel();
+
+private:
+	static unique_ptr<class ModelClass> m_Model;
+
+	time_t m_StateStartTime;
+};
+
+class SkillObjectBasic : public SkillObjectClass
+{
+public:
+	SkillObjectBasic(int pos_x, int pos_y, int vx, time_t created_time);
+
+	// Move instance as time goes by.
+	virtual void FrameMove(time_t curr_time, time_t time_delta);
+
+	// Should be called when this instance is collided with any valid(live) monster.
+	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
+
+	// Should be called after processing any collision with monsters. 
+	virtual bool Frame(time_t curr_time, time_t time_delta);
+
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+
+	static void initialize(class ModelClass* model);
+
+	virtual class ModelClass* GetModel();
+
+private:
+	static unique_ptr<class ModelClass> m_Model;
+
+	int vx;
+
+	time_t m_StateStartTime;
+};
