@@ -29,9 +29,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->SetPosition(0.0f, 0.0f, -20.0f);
 
 	m_Model = make_unique<ModelClass>(m_Direct3D->GetDevice(),
-		m_Direct3D->GetDeviceContext(), "data/model/abox.obj", "data/texture/stone01.tga",  "data/texture/normal01.tga");
+		"data/model/abox.obj", L"data/texture/stone01.tga",  L"data/texture/normal01.tga");
 	m_DiamondModel = make_unique<ModelClass>(m_Direct3D->GetDevice(),
-		m_Direct3D->GetDeviceContext(), "data/model/diamond.obj", "data/texture/stone01.tga");
+		"data/model/diamond.obj", L"data/texture/stone01.tga");
 
 	// Create and initialize the light shader object.
 	m_LightShader = make_unique<LightShaderClass>(m_Direct3D->GetDevice(), hwnd);
@@ -46,19 +46,19 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Set model of skill object to be rendered.
 	SkillObjectBead::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		m_Direct3D->GetDeviceContext(), "data/model/orb_low.obj", "data/model/orb_low_fragment_BaseColor.tga"
+		"data/model/orb_low.obj", L"data/model/orb_low_fragment_BaseColor.tga"
 	));
 	SkillObjectSpear::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		m_Direct3D->GetDeviceContext(), "data/model/MagicCeramicBlade.obj", "data/model/MagicCeramicBlade_MagicCeramicKnife_Emissive.tga",
-		"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
+		"data/model/MagicCeramicBlade.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_Emissive.tga",
+		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
 	));
 	SkillObjectLeg::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		m_Direct3D->GetDeviceContext(), "data/model/MagicCeramicBlade.obj", "data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
-		"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
+		"data/model/MagicCeramicBlade.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
+		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
 	));
 	SkillObjectBasic::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		m_Direct3D->GetDeviceContext(), "data/model/MagicCeramicBlade.obj", "data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
-		"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
+		"data/model/MagicCeramicBlade.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
+		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
 	));
 
 	// Create character instance.

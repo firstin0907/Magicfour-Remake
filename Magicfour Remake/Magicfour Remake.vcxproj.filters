@@ -144,41 +144,4 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="light.ps">
-      <Filter>리소스 파일</Filter>
-    </None>
-    <None Include="light.vs">
-      <Filter>리소스 파일</Filter>
-    </None>
-    <None Include="stone.vs">
-      <Filter>리소스 파일</Filter>
-    </None>
-    <None Include="stone.ps">
-      <Filter>리소스 파일</Filter>
-    </None>
-    <None Include="data\motion\skill_motion.bvh">
-      <Filter>리소스 파일</Filter>
-    </None>
-    <None Include="normalmap.vs">
-      <Filter>리소스 파일</Filter>
-    </None>
-    <None Include="normalmap.ps">
-      <Filter>리소스 파일</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="data\motion\jump_motion - 복사본.txt">
-      <Filter>리소스 파일</Filter>
-    </Text>
-    <Text Include="data\motion\jump_motion.txt">
-      <Filter>리소스 파일</Filter>
-    </Text>
-    <Text Include="data\motion\run_motion.txt">
-      <Filter>리소스 파일</Filter>
-    </Text>
-    <Text Include="data\motion\walk_motion.txt">
-      <Filter>리소스 파일</Filter>
-    </Text>
-  </ItemGroup>
 </Project>

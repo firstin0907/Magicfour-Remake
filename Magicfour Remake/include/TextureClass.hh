@@ -7,22 +7,20 @@
 template<typename T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
 
+enum IMAGE_FILE_EXTENSION
+{
+    FILE_EXTENSION_JPEG,
+    FILE_EXTENSION_PNG,
+    FILE_EXTENSION_TGA,
+    FILE_EXTENSION_UNKNOWN
+};
+
+
 class TextureClass
 {
-private:
-    struct TargaHeader
-    {
-        unsigned char data1[12];
-        unsigned short width;
-        unsigned short height;
-        unsigned char bpp;
-        unsigned char data2;
-    };
-
 public:
-    TextureClass(ID3D11Device* device,
-        ID3D11DeviceContext* deviceContext, const char* filename);
-    TextureClass(const TextureClass& other);
+    TextureClass(ID3D11Device* device, const wchar_t* filename);
+    TextureClass(const TextureClass& other) = delete;
     ~TextureClass();
 
     ID3D11ShaderResourceView* GetTexture();
@@ -31,11 +29,6 @@ public:
     int GetHeight();
 
 private:
-    bool LoadTarga32Bit(const char* filename);
-    bool LoadTarga24Bit(const char* filename);
-
-    unsigned char* m_targaData; // raw data
-    ComPtr<ID3D11Texture2D> m_texture; // real texture
     ComPtr<ID3D11ShaderResourceView> m_textureView; // texture Á¢±Ù¿ë
     int m_width, m_height;
 };

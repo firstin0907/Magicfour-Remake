@@ -11,8 +11,8 @@
 
 using namespace std;
 
-ModelClass::ModelClass(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-	const char* modelFilename, const char* diffuse_filename, const char* normal_filename)
+ModelClass::ModelClass(ID3D11Device* device, const char* modelFilename,
+	const wchar_t* diffuse_filename, const wchar_t* normal_filename)
 {
 	bool result;
 
@@ -26,7 +26,7 @@ ModelClass::ModelClass(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 	InitializeBuffers(device);
 
 	// Load the texture for this m_model.
-	LoadTextures(device, deviceContext, diffuse_filename, normal_filename);
+	LoadTextures(device, diffuse_filename, normal_filename);
 }
 
 
@@ -164,15 +164,15 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 
 void ModelClass::LoadTextures(ID3D11Device* device,
-	ID3D11DeviceContext* deviceContext, const char* diffuse_filename, const char* normal_filename)
+	const wchar_t* diffuse_filename, const wchar_t* normal_filename)
 {
 	// Create and initialize the diffuse texture object.
-	m_DiffuseTexture = make_unique<TextureClass>(device, deviceContext, diffuse_filename);
+	m_DiffuseTexture = make_unique<TextureClass>(device, diffuse_filename);
 
 	if (normal_filename)
 	{
 		// Create and initialize the diffuse texture object.
-		m_NormalTexture = make_unique<TextureClass>(device, deviceContext, normal_filename);
+		m_NormalTexture = make_unique<TextureClass>(device, normal_filename);
 	}
 	else m_NormalTexture = nullptr;
 }

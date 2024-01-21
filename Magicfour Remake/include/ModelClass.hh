@@ -49,8 +49,8 @@ private:
 	};
 
 public:
-	ModelClass(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-		const char* modelFilename, const char* diffuse_filename, const char* normal_filename = nullptr);
+	ModelClass(ID3D11Device* device, const char* modelFilename,
+		const wchar_t* diffuse_filename, const wchar_t* normal_filename = nullptr);
 	ModelClass(const ModelClass&) = delete;
 	~ModelClass();
 
@@ -66,7 +66,7 @@ private:
 	void InitializeBuffers(ID3D11Device*);
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	void LoadTextures(ID3D11Device*, ID3D11DeviceContext*, const char*, const char*);
+	void LoadTextures(ID3D11Device*, const wchar_t*, const wchar_t*);
 
 	void LoadModel(const char*);
 	void ReleaseModel();

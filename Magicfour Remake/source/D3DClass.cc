@@ -1,6 +1,9 @@
 #include "../include/D3DClass.hh"
 
+#include "../third-party/DirectXTex.h"
 #include "../include/GameException.hh"
+
+#pragma comment(lib, "third-party/DirectXTex.lib")
 
 #define WIDE2(x) L##x
 #define WIDE(x) WIDE2(x)
@@ -274,6 +277,9 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	result = m_device->CreateBlendState(&blendStateDescription,
 		m_alphaDisableBlendingState.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
+
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to initialize DirectXTex library.");
 }
 
 D3DClass::~D3DClass()
