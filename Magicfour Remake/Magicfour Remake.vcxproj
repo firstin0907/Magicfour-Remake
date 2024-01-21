@@ -127,7 +127,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="include\MonsterSpawnerClass.cc" />
     <ClCompile Include="main.cc" />
     <ClCompile Include="source\AnimatedObjectClass.cc" />
     <ClCompile Include="source\ApplicationClass.cc" />
@@ -140,6 +139,7 @@
     <ClCompile Include="source\ModelClass.cc" />
     <ClCompile Include="source\MonsterClass.cc" />
     <ClCompile Include="source\Monsters.cc" />
+    <ClCompile Include="source\MonsterSpawnerClass.cc" />
     <ClCompile Include="source\NormalMapShaderClass.cc" />
     <ClCompile Include="source\RandomClass.cc" />
     <ClCompile Include="source\SkillObjectClass.cc" />

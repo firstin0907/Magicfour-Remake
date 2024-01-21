@@ -69,10 +69,10 @@
     <ClCompile Include="source\NormalMapShaderClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="include\MonsterSpawnerClass.cc">
+    <ClCompile Include="source\RandomClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="source\RandomClass.cc">
+    <ClCompile Include="source\MonsterSpawnerClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

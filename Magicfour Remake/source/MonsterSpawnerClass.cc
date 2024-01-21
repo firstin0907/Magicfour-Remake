@@ -1,9 +1,9 @@
-#include "MonsterSpawnerClass.hh"
+#include "../include/MonsterSpawnerClass.hh"
 
 #include <algorithm>
 
-#include "Monsters.hh"
-#include "RandomClass.hh"
+#include "../include/Monsters.hh"
+#include "../include/RandomClass.hh"
 
 constexpr time_t SPAWN_BEGIN_TIME = 5'000;
 constexpr time_t LEVELUP_TERM = 20'000;
