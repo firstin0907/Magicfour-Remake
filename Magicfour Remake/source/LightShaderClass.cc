@@ -3,16 +3,15 @@
 #include <algorithm>
 #include <fstream>
 
+#include "../include/GameException.hh"
+
 LightShaderClass::LightShaderClass(ID3D11Device* device, HWND hwnd)
 {
 	bool result;
 
 	// Initialize the vertex and pixel shaders.
 	result = InitializeShader(device, hwnd, L"shader/light.vs", L"shader/light.ps");
-	if (!result)
-	{
-		throw L"Could not initialize the light shader object.";
-	}
+	if (!result) throw GAME_EXCEPTION(L"Could not initialize the light shader object.");
 }
 
 LightShaderClass::~LightShaderClass()

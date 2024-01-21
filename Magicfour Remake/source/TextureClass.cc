@@ -1,5 +1,7 @@
 #include "../include/TextureClass.hh"
 
+#include "../include/GameException.hh"
+
 TextureClass::TextureClass(ID3D11Device* device,
 	ID3D11DeviceContext* deviceContext, const char* filename)
 {
@@ -7,21 +9,6 @@ TextureClass::TextureClass(ID3D11Device* device,
 	m_texture = nullptr;
 	m_textureView = nullptr;
 
-	Initialize(device, deviceContext, filename);
-}
-
-TextureClass::TextureClass(const TextureClass& other)
-{
-}
-
-TextureClass::~TextureClass()
-{
-	Shutdown();
-}
-
-bool TextureClass::Initialize(ID3D11Device* device,
-	ID3D11DeviceContext* deviceContext, const char* filename)
-{
 	bool result;
 	HRESULT hResult;
 
@@ -29,7 +16,7 @@ bool TextureClass::Initialize(ID3D11Device* device,
 	if (!result)
 	{
 		result = LoadTarga24Bit(filename);
-		if (!result) return false;
+		if (!result) throw fileformat_error(filename, WFILE, __LINE__);
 	}
 
 	D3D11_TEXTURE2D_DESC textureDesc;
@@ -47,7 +34,7 @@ bool TextureClass::Initialize(ID3D11Device* device,
 
 	// Create the empty texture.
 	hResult = device->CreateTexture2D(&textureDesc, nullptr, m_texture.GetAddressOf());
-	if (FAILED(hResult)) return false;
+	if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to Create 2D texture.");
 
 	unsigned int rowPitch = (m_width * 4) * sizeof(unsigned char);
 
@@ -65,7 +52,7 @@ bool TextureClass::Initialize(ID3D11Device* device,
 
 	// Create the shader resource view for the texture.
 	hResult = device->CreateShaderResourceView(m_texture.Get(), &srvDesc, m_textureView.GetAddressOf());
-	if (FAILED(hResult)) return false;
+	if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to create the shader resource view for the texture.");
 
 	// Generate mipmaps for this texture.
 	deviceContext->GenerateMips(m_textureView.Get());
@@ -73,11 +60,13 @@ bool TextureClass::Initialize(ID3D11Device* device,
 	// Release the targa image data now that the image data has been loaded into the texture.
 	delete[] m_targaData;
 	m_targaData = nullptr;
-
-	return true;
 }
 
-void TextureClass::Shutdown()
+TextureClass::TextureClass(const TextureClass& other)
+{
+}
+
+TextureClass::~TextureClass()
 {
 	// Release the targa data.
 	if (m_targaData)

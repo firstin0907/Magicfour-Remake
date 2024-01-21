@@ -31,7 +31,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_Model = make_unique<ModelClass>(m_Direct3D->GetDevice(),
 		m_Direct3D->GetDeviceContext(), "data/model/abox.obj", "data/texture/stone01.tga",  "data/texture/normal01.tga");
 	m_DiamondModel = make_unique<ModelClass>(m_Direct3D->GetDevice(),
-		m_Direct3D->GetDeviceContext(), "data/model/diamond.obj", "data/stone01.tga");
+		m_Direct3D->GetDeviceContext(), "data/model/diamond.obj", "data/texture/stone01.tga");
 
 	// Create and initialize the light shader object.
 	m_LightShader = make_unique<LightShaderClass>(m_Direct3D->GetDevice(), hwnd);

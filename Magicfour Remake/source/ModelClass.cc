@@ -17,19 +17,16 @@ ModelClass::ModelClass(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 	bool result;
 
 	// Load in the m_model data.
-	result = LoadModel(modelFilename);
-	if (!result) throw GameException(L"Failed to create ModelClass", WFILE, __LINE__);
+	LoadModel(modelFilename);
 
 	// Calculate the tangent and binormal vectors for the model.
 	CalculateModelVectors();
 
 	// Initialize the vertex and index buffers.
-	result = InitializeBuffers(device);
-	if (!result) throw GameException(L"Failed to create ModelClass", WFILE, __LINE__);
+	InitializeBuffers(device);
 
 	// Load the texture for this m_model.
-	result = LoadTextures(device, deviceContext, diffuse_filename, normal_filename);
-	if (!result) throw GameException(L"Failed to create ModelClass", WFILE, __LINE__);
+	LoadTextures(device, deviceContext, diffuse_filename, normal_filename);
 }
 
 
@@ -74,15 +71,13 @@ ID3D11ShaderResourceView* ModelClass::GetNormalTexture()
 
 
 
-bool ModelClass::InitializeBuffers(ID3D11Device* device)
+void ModelClass::InitializeBuffers(ID3D11Device* device)
 {
 	VertexType* vertices;
 	unsigned long* indices;
 	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 	HRESULT result;
-	int i;
-
 
 	// Create the vertex array.
 	vertices = new VertexType[m_vertexCount];
@@ -91,7 +86,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	indices = new unsigned long[m_indexCount];
 
 	// Load the vertex array and index array with data.
-	for (i = 0; i < m_vertexCount; i++)
+	for (int i = 0; i < m_vertexCount; i++)
 	{
 		vertices[i].position = XMFLOAT3(m_model[i].x, m_model[i].y, m_model[i].z);
 		vertices[i].texture = XMFLOAT2(m_model[i].tu, m_model[i].tv);
@@ -117,10 +112,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	// Now create the vertex buffer.
 	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_vertexBuffer.GetAddressOf());
-	if (FAILED(result))
-	{
-		return false;
-	}
+	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create vertex buffer.");
 
 	// Set up the description of the static index buffer.
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -137,10 +129,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	// Create the index buffer.
 	result = device->CreateBuffer(&indexBufferDesc, &indexData, m_indexBuffer.GetAddressOf());
-	if (FAILED(result))
-	{
-		return false;
-	}
+	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create index buffer.");
 
 	// Release the arrays now that the vertex and index buffers have been created and loaded.
 	delete[] vertices;
@@ -149,7 +138,6 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	delete[] indices;
 	indices = 0;
 
-	return true;
 }
 
 void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
@@ -175,7 +163,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 }
 
 
-bool ModelClass::LoadTextures(ID3D11Device* device,
+void ModelClass::LoadTextures(ID3D11Device* device,
 	ID3D11DeviceContext* deviceContext, const char* diffuse_filename, const char* normal_filename)
 {
 	// Create and initialize the diffuse texture object.
@@ -187,14 +175,12 @@ bool ModelClass::LoadTextures(ID3D11Device* device,
 		m_NormalTexture = make_unique<TextureClass>(device, deviceContext, normal_filename);
 	}
 	else m_NormalTexture = nullptr;
-
-	return true;
 }
 
 
 #include <vector>
 
-bool ModelClass::LoadModel(const char* filename)
+void ModelClass::LoadModel(const char* filename)
 {
 	struct Vertex { float x, y, z; };
 	vector<Vertex> v_list, vt_list, vn_list;
@@ -275,8 +261,6 @@ bool ModelClass::LoadModel(const char* filename)
 
 
 	m_indexCount = m_vertexCount = m_model.size();
-
-	return true;
 }
 
 void ModelClass::CalculateModelVectors()

@@ -8,6 +8,8 @@
 #define WIDE(x) WIDE2(x)
 #define WFILE WIDE(__FILE__)
 
+#define GAME_EXCEPTION(ERROR_MESSAGE) GameException(ERROR_MESSAGE, WFILE, __LINE__)
+
 class GameException : public std::exception
 {
 	std::wstring error_message;

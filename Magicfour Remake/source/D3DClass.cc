@@ -14,10 +14,10 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	//DXGI : DirectX Graphic Infrastructure
 
 	HRESULT result;
-	IDXGIFactory* factory;			// DXGI 객체들을 찍어내는 공장
-	IDXGIAdapter* adapter;			// HW/SW 기능을 형상화한 것
+	ComPtr<IDXGIFactory> factory;			// DXGI 객체들을 찍어내는 공장
+	ComPtr<IDXGIAdapter> adapter;			// HW/SW 기능을 형상화한 것
 	// (하나 이상의 GPU, DAC, 비디오 메모리를 포함하는 디스플레이 서브시스템)
-	IDXGIOutput* adapterOutput;		// 어답터 출력(모니터 등)
+	ComPtr<IDXGIOutput> adapterOutput;		// 어답터 출력(모니터 등)
 
 	unsigned int numModes = 0, numerator = 0, denominator = 1;
 	DXGI_ADAPTER_DESC adapterDesc;
@@ -26,15 +26,15 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	m_vsync_enabled = vsync;
 
 	// 그래픽 인터페이스 팩토리를 만든다?
-	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory);
+	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)factory.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create DirectX Graphic Interface Factory.", WFILE, __LINE__);
 
 	// 팩토리 객체를 사용하여 첫번째 그래픽 카드 인터페이스에 대한 아답터를 만듭니다.
-	result = factory->EnumAdapters(0, &adapter);
+	result = factory->EnumAdapters(0, adapter.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create adapter.", WFILE, __LINE__);
 
 	// 모니터 출력에 대한 첫 번째 아답터 나열
-	result = adapter->EnumOutputs(0, &adapterOutput);
+	result = adapter->EnumOutputs(0, adapterOutput.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	// DXGI_FORMAT_R8G8B8A8_UNORM 모니터 출력 디스플레이 포맷에 맞는 모드의 개수를 구합니다.
@@ -75,15 +75,6 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	// 정보를 얻기 위해 사용했던 구조체 정보 해지
 	delete[] displayModeList;
 	displayModeList = nullptr;
-
-	adapterOutput->Release();
-	adapterOutput = nullptr;
-
-	adapter->Release();
-	adapter = nullptr;
-
-	factory->Release();
-	factory = nullptr;
 
 	// 스왑 체인 Description 초기화
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;

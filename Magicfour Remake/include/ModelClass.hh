@@ -63,12 +63,12 @@ public:
 
 
 private:
-	bool InitializeBuffers(ID3D11Device*);
+	void InitializeBuffers(ID3D11Device*);
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTextures(ID3D11Device*, ID3D11DeviceContext*, const char*, const char*);
+	void LoadTextures(ID3D11Device*, ID3D11DeviceContext*, const char*, const char*);
 
-	bool LoadModel(const char*);
+	void LoadModel(const char*);
 	void ReleaseModel();
 
 
