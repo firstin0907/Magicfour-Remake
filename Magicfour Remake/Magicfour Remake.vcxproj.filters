@@ -75,6 +75,9 @@
     <ClCompile Include="source\MonsterSpawnerClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="source\TimerClass.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\InputClass.hh">
@@ -141,6 +144,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\RandomClass.hh">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TimerClass.hh">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

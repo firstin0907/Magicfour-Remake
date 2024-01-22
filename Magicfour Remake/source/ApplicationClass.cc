@@ -18,6 +18,7 @@
 #include "../include/SkillObjects.hh"
 #include "../include/GroundClass.hh"
 #include "../include/MonsterSpawnerClass.hh"
+#include "../include/TimerClass.hh"
 
 
 ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
@@ -76,6 +77,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_Ground.emplace_back(new GroundClass({ -RIGHT_X, GROUND_Y - 100000, RIGHT_X, GROUND_Y }));
 
 	m_MonsterSpawner = make_unique<MonsterSpawnerClass>();
+
+	m_TimerClass = make_unique<TimerClass>();
 }
 
 
@@ -87,16 +90,17 @@ ApplicationClass::~ApplicationClass()
 
 bool ApplicationClass::Frame(InputClass* input)
 {
-	static time_t prev_time = 0;
-
 	bool result;
 	// Check if the user pressed escape and wants to exit the application.
 	if (input->IsKeyPressed(DIK_ESCAPE)) return false;
 
-	time_t curr_time = clock();
-	m_MonsterSpawner->Frame(curr_time, curr_time - prev_time, m_Monsters);
+	m_TimerClass->Frame();
+	time_t curr_time = m_TimerClass->GetTime();
+	time_t delta_time = m_TimerClass->GetElapsedTime();
 
-	m_Character->Frame(curr_time - prev_time, curr_time, input, m_SkillObjectList, m_Ground);
+	m_MonsterSpawner->Frame(curr_time, delta_time, m_Monsters);
+
+	m_Character->Frame(delta_time, curr_time, input, m_SkillObjectList, m_Ground);
 
 	const float camera_x = max(min(m_Character->GetPosX(), 1'500'000), -1'500'000) * SCOPE;
 	m_Camera->SetPosition(camera_x, 0, -20.0f);
@@ -104,11 +108,11 @@ bool ApplicationClass::Frame(InputClass* input)
 
 	// Move skill object instances.
 	for (auto& skill_obj : m_SkillObjectList)
-		skill_obj->FrameMove(curr_time, curr_time - prev_time);
+		skill_obj->FrameMove(curr_time, delta_time);
 
 	// Move monsters.
 	for (auto& monster : m_Monsters)
-		monster->FrameMove(curr_time, curr_time - prev_time, m_Ground);
+		monster->FrameMove(curr_time, delta_time, m_Ground);
 
 	// Coliide check
 	for (auto& skill_obj : m_SkillObjectList)
@@ -129,7 +133,7 @@ bool ApplicationClass::Frame(InputClass* input)
 	for (int i = 0; i < m_SkillObjectList.size(); i++)
 	{
 		// If this skill object should be deleted,
-		if (!m_SkillObjectList[i]->Frame(curr_time, curr_time - prev_time))
+		if (!m_SkillObjectList[i]->Frame(curr_time, delta_time))
 		{
 			// swap with last element and pop it.
 			swap(m_SkillObjectList[i], m_SkillObjectList.back());
@@ -143,16 +147,13 @@ bool ApplicationClass::Frame(InputClass* input)
 	for (int i = 0; i < m_Monsters.size(); i++)
 	{
 		// If this skill object should be deleted,
-		if (!m_Monsters[i]->Frame(curr_time, curr_time - prev_time))
+		if (!m_Monsters[i]->Frame(curr_time, delta_time))
 		{
 			// swap with last element and pop it.
 			swap(m_Monsters[i], m_Monsters.back());
 			m_Monsters.pop_back();
 		}
 	}
-
-
-	prev_time = curr_time;
 
 	// Render the graphics scene.
 	result = Render(curr_time, m_Character.get()->GetLocalWorldMatrix());

@@ -147,6 +147,7 @@
     <ClCompile Include="source\StoneShaderClass.cc" />
     <ClCompile Include="source\SystemClass.cc" />
     <ClCompile Include="source\TextureClass.cc" />
+    <ClCompile Include="source\TimerClass.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AnimatedObjectClass.hh" />
@@ -171,6 +172,7 @@
     <ClInclude Include="include\StoneShaderClass.hh" />
     <ClInclude Include="include\SystemClass.hh" />
     <ClInclude Include="include\TextureClass.hh" />
+    <ClInclude Include="include\TimerClass.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

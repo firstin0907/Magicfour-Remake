@@ -46,6 +46,7 @@ private:
 	vector<unique_ptr<class MonsterClass> > m_Monsters;
 	vector<unique_ptr<class GroundClass> > m_Ground;
 
+	unique_ptr<class TimerClass> m_TimerClass;
 	unique_ptr<class MonsterSpawnerClass> m_MonsterSpawner;
 
 };
