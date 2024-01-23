@@ -3,6 +3,7 @@
 #include "../include/global.hh"
 #include "../include/MonsterClass.hh"
 #include "../include/ModelClass.hh"
+#include "../include/GroundClass.hh"
 
 unique_ptr<class ModelClass> SkillObjectSpear::m_Model = nullptr;
 unique_ptr<class ModelClass> SkillObjectBead::m_Model = nullptr;
@@ -13,25 +14,34 @@ SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t 
 	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 }),
 	vx(vx), vy(vy), m_State(STATE_NORMAL), m_StateStartTime(created_time)
 {
-	m_Angle = atan(vx / (double)vy);
+	m_Angle = (float)atan(vx / (double)vy);
 }
 
-void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta)
+void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
+	const vector<unique_ptr<class GroundClass> >& ground)
 {
 	switch (m_State)
 	{
 	case STATE_NORMAL:
+	{
 		// Movement acoording to the current velocity.
-		pos_x += time_delta * vx;
-		pos_y += time_delta * vy;
+		pos_x += (int)time_delta * vx;
+		int start_y = pos_y, target_y = pos_y + (int)time_delta * vy;
+		pos_y = target_y;
 
-		if (pos_y <= GROUND_Y)
+		for (auto& ground_obj : ground)
 		{
-			pos_y = GROUND_Y;
+			pos_y = max(pos_y,
+				ground_obj->IsColiided(m_Range.x1 + pos_x, m_Range.x2 + pos_x, start_y, target_y));
+		}
 
+		if (pos_y != target_y)
+		{
 			m_State = STATE_ONGROUND;
 			m_StateStartTime = curr_time;
 		}
+
+	}
 		break;
 	}
 }
@@ -88,10 +98,11 @@ SkillObjectBead::SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t cr
 {
 }
 
-void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta)
+void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta,
+	const vector<unique_ptr<class GroundClass> >& ground)
 {
-	pos_x += time_delta * vx;
-	pos_y += time_delta * vy;
+	pos_x += (int)time_delta * vx;
+	pos_y += (int)time_delta * vy;
 }
 
 bool SkillObjectBead::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -161,7 +172,8 @@ SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
 	
 }
 
-void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta)
+void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta,
+	const vector<unique_ptr<class GroundClass> >& ground)
 {
 	m_Range.y2 += time_delta * 1'000;
 }
@@ -215,7 +227,8 @@ SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx, time_t created_
 {
 }
 
-void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta)
+void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
+	const vector<unique_ptr<class GroundClass> >& ground)
 {
 	
 }

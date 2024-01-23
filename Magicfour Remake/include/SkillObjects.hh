@@ -8,7 +8,8 @@ public:
 	SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t created_time);
 
 	// Move instance as time goes by.
-	virtual void FrameMove(time_t curr_time, time_t time_delta);
+	virtual void FrameMove(time_t curr_time, time_t time_delta,
+		const vector<unique_ptr<class GroundClass> >& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -44,7 +45,8 @@ public:
 	SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t created_time);
 
 	// Move instance as time goes by.
-	virtual void FrameMove(time_t curr_time, time_t time_delta);
+	virtual void FrameMove(time_t curr_time, time_t time_delta,
+		const vector<unique_ptr<class GroundClass> >& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -78,7 +80,8 @@ public:
 	SkillObjectLeg(int pos_x, time_t created_time);
 
 	// Move instance as time goes by.
-	virtual void FrameMove(time_t curr_time, time_t time_delta);
+	virtual void FrameMove(time_t curr_time, time_t time_delta,
+		const vector<unique_ptr<class GroundClass> >& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -104,7 +107,8 @@ public:
 	SkillObjectBasic(int pos_x, int pos_y, int vx, time_t created_time);
 
 	// Move instance as time goes by.
-	virtual void FrameMove(time_t curr_time, time_t time_delta);
+	virtual void FrameMove(time_t curr_time, time_t time_delta,
+		const vector<unique_ptr<class GroundClass> >& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);

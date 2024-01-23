@@ -108,7 +108,7 @@ bool ApplicationClass::Frame(InputClass* input)
 
 	// Move skill object instances.
 	for (auto& skill_obj : m_SkillObjectList)
-		skill_obj->FrameMove(curr_time, delta_time);
+		skill_obj->FrameMove(curr_time, delta_time, m_Ground);
 
 	// Move monsters.
 	for (auto& monster : m_Monsters)
