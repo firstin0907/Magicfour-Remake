@@ -51,3 +51,7 @@ constexpr int RIGHT_X = 2'500'000;
 constexpr int LEFT_X = -2'500'000;
 constexpr float SCOPE = 0.00001f;
 constexpr int GRAVITY = 10;
+
+#include <algorithm>
+
+#define SATURATE(MINIMUM, VAL, MAXIMUM) min(max(VAL, MINIMUM), MAXIMUM)

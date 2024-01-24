@@ -1,5 +1,6 @@
 #include "../include/Monsters.hh"
 
+#include "../include/global.hh"
 #include "../include/GroundClass.hh"
 #include "../include/RandomClass.hh"
 
@@ -163,6 +164,11 @@ bool MonsterDuck::Frame(time_t curr_time, time_t time_delta)
 	return true;
 }
 
+int MonsterDuck::GetVx()
+{
+	return DIR_WEIGHT(m_Direction, 1000);
+}
+
 MonsterOctopus::MonsterOctopus(direction_t direction, time_t created_time)
 	: MonsterClass(4220, direction, { -200000, 0, 200000, 300000 })
 {
@@ -239,6 +245,11 @@ bool MonsterOctopus::Frame(time_t curr_time, time_t time_delta)
 	}
 
 	return true;
+}
+
+int MonsterOctopus::GetVx()
+{
+	return DIR_WEIGHT(m_Direction, 500);
 }
 
 MonsterBird::MonsterBird(direction_t direction, time_t created_time)
@@ -358,4 +369,9 @@ bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 	}
 
 	return true;
+}
+
+int MonsterBird::GetVx()
+{
+	return DIR_WEIGHT(m_Direction, 1500);
 }

@@ -10,22 +10,26 @@
 #include "../include/GroundClass.hh"
 
 constexpr int SKILL_COOLTIME = 500;
+constexpr int INVINCIBLE_TIME = 2000;
 constexpr int WALK_SPD = 700, RUN_SPD = 1300;
 
 CharacterClass::CharacterClass(int pos_x, int pos_y)
 	: pos_x(pos_x), pos_y(pos_y), pos_yv(0), jump_cnt(0)
 {
 	m_JumpAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt");
+	m_FallAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh");
 	m_WalkAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\walk_motion.txt");
 	m_RunAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt");
 	m_SkillAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh");
 
-	SetState(CHARACTER_STATE_INVINCIBLE, 0);
+	SetState(CHARACTER_STATE_NORMAL, 0);
 
 	m_Skill[0] = 4;
 	m_Skill[1] = 3;
 	m_Skill[2] = 1;
 	m_Skill[3] = 2;
+
+	m_TimeInvincibleEnd = 0;
 }
 
 bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* input,
@@ -72,7 +76,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	}
 
 	// jump attempt
-	if (jump_cnt <= 1 && input->IsKeyDown(DIK_UP) && m_State != CHARACTER_STATE_SPELL)
+	if (jump_cnt <= 1 && input->IsKeyDown(DIK_UP) && m_State != CHARACTER_STATE_SPELL && m_State != CHARACTER_STATE_HIT)
 	{
 		pos_yv = 2'800, jump_cnt++;
 		if (m_State == CHARACTER_STATE_RUN || m_State == CHARACTER_STATE_RUNJUMP) SetState(CHARACTER_STATE_RUNJUMP, curr_time);
@@ -105,8 +109,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		if(is_walk)
 		{
 			pos_x += DIR_WEIGHT(m_Direction, WALK_SPD) * (int)time_delta;
-			if (LEFT_X > pos_x) pos_x = LEFT_X;
-			if (pos_x > RIGHT_X) pos_x = RIGHT_X;
+			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
 		}
 
 		if (curr_time - m_StateStartTime >= 1000) SetState(CHARACTER_STATE_NORMAL, curr_time);
@@ -117,8 +120,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		if (is_walk)
 		{
 			pos_x += DIR_WEIGHT(m_Direction, RUN_SPD) * (int)time_delta;
-			if (LEFT_X > pos_x) pos_x = LEFT_X;
-			if (pos_x > RIGHT_X) pos_x = RIGHT_X;
+			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
 		}
 
 		if (jump_cnt == 0)
@@ -129,7 +131,12 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		break;
 
 	case CHARACTER_STATE_NORMAL:
-		if (is_walk) SetState(CHARACTER_STATE_WALK, curr_time);
+		if (is_walk)
+		{
+			SetState(CHARACTER_STATE_WALK, curr_time);
+			pos_x += DIR_WEIGHT(m_Direction, WALK_SPD) * (int)time_delta;
+			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+		}
 		break;
 
 	case CHARACTER_STATE_WALK:
@@ -137,8 +144,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		else
 		{
 			pos_x += DIR_WEIGHT(m_Direction, WALK_SPD) * (int)time_delta;
-			if (LEFT_X > pos_x) pos_x = LEFT_X;
-			if (pos_x > RIGHT_X) pos_x = RIGHT_X;
+			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
 		}
 		break;
 
@@ -147,8 +153,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		else
 		{
 			pos_x += DIR_WEIGHT(m_Direction, RUN_SPD) * (int)time_delta;
-			if (LEFT_X > pos_x) pos_x = LEFT_X;
-			if (pos_x > RIGHT_X) pos_x = RIGHT_X;
+			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
 		}
 		break;
 
@@ -164,10 +169,19 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		break;
 
 
-	case CHARACTER_STATE_INVINCIBLE:
-		if (curr_time - m_StateStartTime >= 1'000)
-			SetState(CHARACTER_STATE_NORMAL, m_StateStartTime + 1000);
+	case CHARACTER_STATE_HIT:
+		pos_x += (int)time_delta * pos_xv;
+		if (curr_time - m_StateStartTime >= 500)
+		{
+			SetState(CHARACTER_STATE_SLIP, m_StateStartTime);
+		}
 		break;
+
+	case CHARACTER_STATE_SLIP:
+		if (curr_time - m_StateStartTime >= 1000)
+		{
+			SetState(CHARACTER_STATE_NORMAL, m_StateStartTime + 1000);
+		}
 	}
 
 	return true;
@@ -184,7 +198,6 @@ void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& s
 	{
 	case CHARACTER_STATE_NORMAL:
 	case CHARACTER_STATE_STOP:
-	case CHARACTER_STATE_INVINCIBLE:
 		m_RunAnimationData->UpdateGlobalMatrices(0, root_transform, shape_matrices);
 		break;
 
@@ -214,12 +227,31 @@ void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& s
 			state_elapsed_seconds / 0.00133333, root_transform, shape_matrices);
 		break;
 
+	case CHARACTER_STATE_HIT:
+	case CHARACTER_STATE_SLIP:
+		m_FallAnimationData->UpdateGlobalMatrices(
+			50 + state_elapsed_seconds / 0.00433333, root_transform, shape_matrices);
+		break;
+
 	}
 }
 
 XMMATRIX CharacterClass::GetLocalWorldMatrix()
 {
 	return XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0);
+}
+
+void CharacterClass::OnCollided(time_t curr_time, int vx)
+{
+	if (m_TimeInvincibleEnd < curr_time)
+	{
+		SetState(CHARACTER_STATE_HIT, curr_time);
+		m_Direction = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
+		m_HitVx = pos_xv = vx / 3;
+
+		pos_yv = 1500;
+		m_TimeInvincibleEnd = m_StateStartTime + INVINCIBLE_TIME;
+	}
 }
 
 void CharacterClass::OnSkill(time_t curr_time,

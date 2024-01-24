@@ -22,6 +22,9 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
 
+	// Return character's knock-back speed.
+	virtual int GetVx();
+
 private:
 	static constexpr int STATE_JUMP_READY = 4;
 	static constexpr int STATE_JUMP = 5;
@@ -42,6 +45,9 @@ public:
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
+
+	// Return character's knock-back speed.
+	virtual int GetVx();
 };
 
 
@@ -57,6 +63,9 @@ public:
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
+
+	// Return character's knock-back speed.
+	virtual int GetVx();
 
 public:
 	// is the state 

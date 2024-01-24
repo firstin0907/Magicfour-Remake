@@ -55,6 +55,8 @@ public:
 
 	inline int GetId() { return m_Id; }
 
+	virtual int GetVx() = 0;
+
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
 		const vector<unique_ptr<class GroundClass> >& ground) = 0;

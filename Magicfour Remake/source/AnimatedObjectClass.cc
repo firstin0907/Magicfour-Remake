@@ -169,9 +169,4 @@ AnimatedObjectClass::AnimatedObjectClass(const char* filename)
 	for (int i = 0; i < info_sz; i++) fin >> frame_info[i];
 
 	fin.close();
-
-	ofstream fout("test.txt");
-	for (auto& node : nodes) fout << node->name << std::endl;
-	fout << frames_num << std::endl << frame_time;
-	fout.close();
 }

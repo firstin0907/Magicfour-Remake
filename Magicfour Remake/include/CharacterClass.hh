@@ -16,7 +16,8 @@ using namespace DirectX;
 #define CHARACTER_STATE_RUN				5
 #define CHARACTER_STATE_RUNJUMP			6
 #define CHARACTER_STATE_SPELL			7
-#define CHARACTER_STATE_INVINCIBLE		8
+#define CHARACTER_STATE_HIT				8
+#define CHARACTER_STATE_SLIP			9
 
 
 class CharacterClass
@@ -37,12 +38,16 @@ public:
 	int GetSkill();
 
 	XMMATRIX GetLocalWorldMatrix();
+
+	inline rect_t GetGlobalRange() { return range.add(pos_x, pos_y); }
 	
 	// for debug
 	inline XMMATRIX GetRangeRepresentMatrix()
 	{
 		return range.add(pos_x, pos_y).toMatrix();
 	}
+
+	void OnCollided(time_t curr_time, int vx);
 
 private:
 	inline void SetState(int state, time_t start_time)
@@ -62,7 +67,9 @@ private:
 
 	direction_t m_Direction;
 
-	int pos_x, pos_y, pos_yv;
+	int m_HitVx;
+
+	int pos_x, pos_y, pos_xv, pos_yv;
 	int jump_cnt;
 
 	int m_Skill[4] = { 0 };
@@ -70,14 +77,16 @@ private:
 	int m_State;
 	time_t m_StateStartTime;
 
-	// be used in OnSkill(...) method.
-	int m_SkillState;
-	int m_SkillUsed;
+	
+	int m_SkillState; // be used in OnSkill(...) method.
+	int m_SkillUsed; // ID of skill which is being used.
 
+	time_t m_TimeInvincibleEnd;
 	time_t m_TimeSkillAvailable;
 	time_t m_TimeSkillEnded;
 
 	unique_ptr<class AnimatedObjectClass> m_JumpAnimationData;
+	unique_ptr<class AnimatedObjectClass> m_FallAnimationData;
 	unique_ptr<class AnimatedObjectClass> m_WalkAnimationData;
 	unique_ptr<class AnimatedObjectClass> m_RunAnimationData;
 	unique_ptr<class AnimatedObjectClass> m_SkillAnimationData;

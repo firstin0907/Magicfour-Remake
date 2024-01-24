@@ -128,6 +128,17 @@ bool ApplicationClass::Frame(InputClass* input)
 		}
 	}
 
+
+	for (auto& monster : m_Monsters)
+	{
+		if (monster->GetState() == MONSTER_STATE_DIE) continue;
+
+		if (m_Character->GetGlobalRange().collide(monster->GetGlobalRange()))
+		{
+			m_Character->OnCollided(curr_time, monster->GetVx());
+		}
+	}
+
 	// Process some work which should be conducted per frame,
 	// for skill object instances
 	for (int i = 0; i < m_SkillObjectList.size(); i++)
