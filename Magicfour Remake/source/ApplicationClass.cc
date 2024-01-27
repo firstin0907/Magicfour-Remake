@@ -19,7 +19,10 @@
 #include "../include/GroundClass.hh"
 #include "../include/MonsterSpawnerClass.hh"
 #include "../include/TimerClass.hh"
+#include "../include/TextureShaderClass.hh"
+#include "../include/SkillGaugeClass.hh"
 
+constexpr float CAMERA_Z_POSITION = -10.0f;
 
 ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 {
@@ -27,7 +30,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 
 	m_Camera = make_unique<CameraClass>();
-	m_Camera->SetPosition(0.0f, 0.0f, -20.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, CAMERA_Z_POSITION);
 
 	m_Model = make_unique<ModelClass>(m_Direct3D->GetDevice(),
 		"data/model/abox.obj", L"data/texture/stone01.tga",  L"data/texture/normal01.tga");
@@ -43,6 +46,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
 
 	m_StoneShader = make_unique<StoneShaderClass>(m_Direct3D->GetDevice(), hwnd);
+	m_TextureShader = make_unique<TextureShaderClass>(m_Direct3D->GetDevice(), hwnd);
 	m_NormalMapShader = make_unique<NormalMapShaderClass>(m_Direct3D->GetDevice(), hwnd);
 
 	// Set model of skill object to be rendered.
@@ -79,8 +83,13 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_MonsterSpawner = make_unique<MonsterSpawnerClass>();
 
 	m_TimerClass = make_unique<TimerClass>();
-}
 
+	m_SkillGauge = make_unique<SkillGaugeClass>(m_Direct3D->GetDevice(),
+		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
+		L"data/texture/skill_gauge_white.png",
+		-80 + 40, 180 + 16);
+
+}
 
 ApplicationClass::~ApplicationClass()
 {
@@ -175,12 +184,11 @@ bool ApplicationClass::Frame(InputClass* input)
 
 bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 {
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;
-
 	// Clear the buffers to begin the scene.
-	m_Direct3D->BeginScene(0.0f, 0.5f, 0.5f, 1.0f);
-	
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
+
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
@@ -188,18 +196,19 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the model using the light shader.
-	/*result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
+#if 0
+	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 		m_Character->GetRangeRepresentMatrix(), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
 		m_Light->GetDirection(), m_Light->GetDiffuseColor());
-	if (!result) return false;*/
+	if (!result) return false;
 	
 	// floor
-#if 1
 	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 		XMMatrixTranslation(0.0f, GROUND_Y * 0.00001f, 0.0f)
 		* XMMatrixTranslation(0.0f, -1.0f, 0.0f) * XMMatrixScaling(50.0f, 1.0f, 2.0f), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
@@ -311,10 +320,42 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		if (!result) return false;
 	}
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// get Character coordinate in viewport coordinate system.
+	XMVECTOR t = { 0, 0, 0, 1 };
+	t = XMVector4Transform(t, characterMatrix);
+	t = XMVector4Transform(t, viewMatrix);
+	t = XMVector4Transform(t, projectionMatrix);
+	t /= t.m128_f32[3];
+	t = XMVector4Transform(t, XMMatrixInverse(nullptr, orthoMatrix));
+
+	float skill_ratio = m_Character->GetCooltimeGaugeRatio(curr_time);
+
+	if (skill_ratio > 0.0f)
+	{
+		m_SkillGauge->Render(m_Direct3D->GetDeviceContext(), skill_ratio);
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(),
+			m_SkillGauge->GetIndexCount(), XMMatrixTranslationFromVector(t),
+			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
+		if (!result) return false;
+	}
+	else if (skill_ratio > -0.03f)
+	{
+		m_SkillGauge->Render(m_Direct3D->GetDeviceContext(), 1.0f);
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(),
+			m_SkillGauge->GetIndexCount(), XMMatrixTranslationFromVector(t),
+			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
+		if (!result) return false;
+	}
 	
-	
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
 	// Present the rendered scene to the screen.
 	m_Direct3D->EndScene();
+
 
 	return true;
 }

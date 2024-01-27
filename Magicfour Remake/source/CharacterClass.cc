@@ -9,7 +9,7 @@
 #include "../include/SkillObjects.hh"
 #include "../include/GroundClass.hh"
 
-constexpr int SKILL_COOLTIME = 500;
+constexpr int SKILL_COOLTIME = 2'500;
 constexpr int INVINCIBLE_TIME = 2000;
 constexpr int WALK_SPD = 700, RUN_SPD = 1300;
 
@@ -252,6 +252,11 @@ void CharacterClass::OnCollided(time_t curr_time, int vx)
 		pos_yv = 1500;
 		m_TimeInvincibleEnd = m_StateStartTime + INVINCIBLE_TIME;
 	}
+}
+
+float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
+{
+	return SATURATE(-0.3f, (m_TimeSkillAvailable - curr_time) / (float)SKILL_COOLTIME, 1.0f);
 }
 
 void CharacterClass::OnSkill(time_t curr_time,

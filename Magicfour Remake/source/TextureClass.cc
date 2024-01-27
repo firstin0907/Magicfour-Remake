@@ -7,7 +7,7 @@ using namespace DirectX;
 
 IMAGE_FILE_EXTENSION getExtension(const std::wstring filename)
 {
-	auto extension = filename.substr(filename.find(L'.'));
+	auto extension = filename.substr(filename.rfind(L'.'));
 
 	if (extension == L".jpg" || extension == L".jpeg") return FILE_EXTENSION_JPEG;
 	if (extension == L".png") return FILE_EXTENSION_PNG;
@@ -27,14 +27,17 @@ TextureClass::TextureClass(ID3D11Device* device, const wchar_t* filename)
 	case FILE_EXTENSION_JPEG:
 	case FILE_EXTENSION_PNG:
 		hResult = LoadFromWICFile(filename, WIC_FLAGS_NONE, nullptr, image);
-		
+		if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to Read " + std::wstring(filename));
+		break;
 
 	case FILE_EXTENSION_TGA:
 		hResult = LoadFromTGAFile(filename, TGA_FLAGS_NONE, nullptr, image);
-
+		if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to Read " + std::wstring(filename));
+		break;
 	}
 
-	if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to Read" + std::wstring(filename));
+	m_width = image.GetMetadata().width;
+	m_height = image.GetMetadata().height;
 
 	hResult = CreateShaderResourceView(device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), m_textureView.GetAddressOf());
 	if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to create Shader Resource View of " + std::wstring(filename));

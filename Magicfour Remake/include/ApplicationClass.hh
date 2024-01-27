@@ -38,9 +38,11 @@ private:
 
 	unique_ptr<class LightShaderClass>	m_LightShader;
 	unique_ptr<class StoneShaderClass>	m_StoneShader;
+	unique_ptr<class TextureShaderClass>	m_TextureShader;
 	unique_ptr<class NormalMapShaderClass>	m_NormalMapShader;
 
 	unique_ptr<class CharacterClass>	m_Character;
+	unique_ptr<class SkillGaugeClass>		m_SkillGauge;
 
 	vector<unique_ptr<class SkillObjectClass> > m_SkillObjectList;
 	vector<unique_ptr<class MonsterClass> > m_Monsters;

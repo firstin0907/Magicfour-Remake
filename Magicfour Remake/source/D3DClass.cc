@@ -246,7 +246,7 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 
 	// 직교 투영 행렬(UI 등 2D 요소 그리기)
 	m_orthoMatrix = XMMatrixOrthographicLH(
-		static_cast<float>(screenWidth), static_cast<float>(screenHeight), screenNear, screenDepth);
+		static_cast<float>(screenWidth), static_cast<float>(screenHeight), -1, 1);
 
 
 	// 기존 desc에서 DepthEnable만 false로 바꾸기!

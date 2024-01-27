@@ -49,6 +49,8 @@ public:
 
 	void OnCollided(time_t curr_time, int vx);
 
+	float GetCooltimeGaugeRatio(time_t curr_time);
+
 private:
 	inline void SetState(int state, time_t start_time)
 	{

@@ -130,6 +130,7 @@
     <ClCompile Include="main.cc" />
     <ClCompile Include="source\AnimatedObjectClass.cc" />
     <ClCompile Include="source\ApplicationClass.cc" />
+    <ClCompile Include="source\SkillGaugeClass.cc" />
     <ClCompile Include="source\CameraClass.cc" />
     <ClCompile Include="source\CharacterClass.cc" />
     <ClCompile Include="source\D3DClass.cc" />
@@ -147,11 +148,13 @@
     <ClCompile Include="source\StoneShaderClass.cc" />
     <ClCompile Include="source\SystemClass.cc" />
     <ClCompile Include="source\TextureClass.cc" />
+    <ClCompile Include="source\TextureShaderClass.cc" />
     <ClCompile Include="source\TimerClass.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AnimatedObjectClass.hh" />
     <ClInclude Include="include\ApplicationClass.hh" />
+    <ClInclude Include="include\SkillGaugeClass.hh" />
     <ClInclude Include="include\CameraClass.hh" />
     <ClInclude Include="include\CharacterClass.hh" />
     <ClInclude Include="include\GroundClass.hh" />
@@ -172,6 +175,7 @@
     <ClInclude Include="include\StoneShaderClass.hh" />
     <ClInclude Include="include\SystemClass.hh" />
     <ClInclude Include="include\TextureClass.hh" />
+    <ClInclude Include="include\TextureShaderClass.hh" />
     <ClInclude Include="include\TimerClass.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
