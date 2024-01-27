@@ -333,7 +333,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 
 	float skill_ratio = m_Character->GetCooltimeGaugeRatio(curr_time);
 
-	if (skill_ratio > 0.0f)
+	if (skill_ratio > -0.03f)
 	{
 		m_SkillGauge->Render(m_Direct3D->GetDeviceContext(), skill_ratio);
 		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(),
@@ -341,15 +341,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
 		if (!result) return false;
 	}
-	else if (skill_ratio > -0.03f)
-	{
-		m_SkillGauge->Render(m_Direct3D->GetDeviceContext(), 1.0f);
-		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(),
-			m_SkillGauge->GetIndexCount(), XMMatrixTranslationFromVector(t),
-			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
-		if (!result) return false;
-	}
-	
+
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_Direct3D->TurnZBufferOn();
 
