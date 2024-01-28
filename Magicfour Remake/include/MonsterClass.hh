@@ -11,6 +11,7 @@
 using namespace DirectX;
 using namespace std;
 
+#define MONSTER_STATE_EMBRACE	0
 #define MONSTER_STATE_NORMAL	1
 #define MONSTER_STATE_HIT		2
 #define MONSTER_STATE_DIE		3

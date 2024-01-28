@@ -47,8 +47,13 @@ struct rect_t
 #endif
 
 constexpr int GROUND_Y = -600'000;
+
 constexpr int RIGHT_X = 2'500'000;
 constexpr int LEFT_X = -2'500'000;
+
+constexpr int SPAWN_RIGHT_X = RIGHT_X + 1'000'000;
+constexpr int SPAWN_LEFT_X = LEFT_X - 1'000'000;
+
 constexpr float SCOPE = 0.00001f;
 constexpr int GRAVITY = 10;
 

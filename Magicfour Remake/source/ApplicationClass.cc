@@ -78,7 +78,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_Ground.emplace_back(new GroundClass({ -300000, -50000, 1300000, 10000 }));
 	m_Ground.emplace_back(new GroundClass({ -1800000, 100000, -200000, 160000 }));
 	m_Ground.emplace_back(new GroundClass({ -20000, -20000, 20000, 20000 }));
-	m_Ground.emplace_back(new GroundClass({ -RIGHT_X, GROUND_Y - 100000, RIGHT_X, GROUND_Y }));
+	m_Ground.emplace_back(new GroundClass({ SPAWN_LEFT_X, GROUND_Y - 300000, SPAWN_RIGHT_X, GROUND_Y }));
 
 	m_MonsterSpawner = make_unique<MonsterSpawnerClass>();
 
@@ -205,13 +205,6 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 #if 0
 	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 		m_Character->GetRangeRepresentMatrix(), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
-		m_Light->GetDirection(), m_Light->GetDiffuseColor());
-	if (!result) return false;
-	
-	// floor
-	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-		XMMatrixTranslation(0.0f, GROUND_Y * 0.00001f, 0.0f)
-		* XMMatrixTranslation(0.0f, -1.0f, 0.0f) * XMMatrixScaling(50.0f, 1.0f, 2.0f), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
 		m_Light->GetDirection(), m_Light->GetDiffuseColor());
 	if (!result) return false;
 #endif

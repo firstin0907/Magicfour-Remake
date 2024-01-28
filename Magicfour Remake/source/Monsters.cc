@@ -7,9 +7,9 @@
 MonsterDuck::MonsterDuck(direction_t direction, time_t created_time)
 	: MonsterClass(4220, direction, {-70000, 0, 70000, 300000}), m_NextJumpTime(created_time + 5000)
 {
-	SetState(MONSTER_STATE_NORMAL, created_time);
+	SetState(MONSTER_STATE_EMBRACE, created_time);
 
-	m_PosX = RIGHT_X * ((m_Direction == LEFT_FORWARD) ? 1 : -1);
+	m_PosX = DIR_WEIGHT(m_Direction, SPAWN_LEFT_X);
 	m_PosY = GROUND_Y;
 }
 
@@ -28,6 +28,11 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 
 	switch (m_State)
 	{
+
+	case MONSTER_STATE_EMBRACE:
+		m_PosX += spd * time_delta * ((m_Direction == LEFT_FORWARD) ? -1 : 1);
+		if (LEFT_X <= m_PosX && m_PosX <= RIGHT_X) SetState(MONSTER_STATE_NORMAL, curr_time);
+		break;
 
 	case STATE_JUMP:
 	case MONSTER_STATE_NORMAL:
@@ -172,7 +177,7 @@ int MonsterDuck::GetVx()
 MonsterOctopus::MonsterOctopus(direction_t direction, time_t created_time)
 	: MonsterClass(4220, direction, { -200000, 0, 200000, 300000 })
 {
-	SetState(MONSTER_STATE_NORMAL, created_time);
+	SetState(MONSTER_STATE_EMBRACE, created_time);
 
 	m_PosX = RIGHT_X * ((m_Direction == LEFT_FORWARD) ? 1 : -1);
 	m_PosY = GROUND_Y;
@@ -193,6 +198,10 @@ void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
 
 	switch (m_State)
 	{
+	case MONSTER_STATE_EMBRACE:
+		m_PosX += spd * time_delta * ((m_Direction == LEFT_FORWARD) ? -1 : 1);
+		if (LEFT_X <= m_PosX && m_PosX <= RIGHT_X) SetState(MONSTER_STATE_NORMAL, curr_time);
+		break;
 
 	case MONSTER_STATE_NORMAL:
 		m_PosX += spd * time_delta * ((m_Direction == LEFT_FORWARD) ? -1 : 1);
@@ -255,11 +264,11 @@ int MonsterOctopus::GetVx()
 MonsterBird::MonsterBird(direction_t direction, time_t created_time)
 	: MonsterClass(20, direction, { -140000, 0, 70000, 140000 })
 {
-	SetState(MONSTER_STATE_NORMAL, created_time);
-	m_NextMoveTime = created_time;
+	SetState(MONSTER_STATE_EMBRACE, created_time);
+	m_NextMoveTime = created_time + RandomClass::rand(1000, 4000);
 
 	m_PosX = RIGHT_X * ((m_Direction == LEFT_FORWARD) ? 1 : -1);
-	m_PosY = GROUND_Y;
+	m_PosY = RandomClass::rand(-2, 2) * 250'000;
 }
 
 MonsterBird::~MonsterBird()
@@ -285,6 +294,12 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 
 	switch (m_State)
 	{
+
+	case MONSTER_STATE_EMBRACE:
+		m_PosX += X_SPEED * time_delta * ((m_Direction == LEFT_FORWARD) ? -1 : 1);
+		if (LEFT_X <= m_PosX && m_PosX <= RIGHT_X) SetState(MONSTER_STATE_NORMAL, curr_time);
+		break;
+
 	case STATE_MOVE:
 		if (m_TargetYPosition < m_PosY)
 		{
@@ -304,6 +319,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 				m_PosY = m_TargetYPosition;
 			}
 		}
+
 
 	case MONSTER_STATE_NORMAL:
 		m_PosX += X_SPEED * time_delta * ((m_Direction == LEFT_FORWARD) ? -1 : 1);
