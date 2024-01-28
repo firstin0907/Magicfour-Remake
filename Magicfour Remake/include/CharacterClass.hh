@@ -18,6 +18,7 @@ using namespace DirectX;
 #define CHARACTER_STATE_SPELL			7
 #define CHARACTER_STATE_HIT				8
 #define CHARACTER_STATE_SLIP			9
+#define CHARACTER_STATE_DIE				20
 
 
 class CharacterClass
@@ -47,7 +48,9 @@ public:
 		return range.add(pos_x, pos_y).toMatrix();
 	}
 
-	void OnCollided(time_t curr_time, int vx);
+	// If character have been killed because of this collision,
+	// this function returns false. Otherwise, returns true.
+	bool OnCollided(time_t curr_time, int vx);
 
 	float GetCooltimeGaugeRatio(time_t curr_time);
 

@@ -99,6 +99,8 @@ ApplicationClass::~ApplicationClass()
 
 bool ApplicationClass::Frame(InputClass* input)
 {
+	static time_t character_death_time = 1LL << 60;
+
 	bool result;
 	// Check if the user pressed escape and wants to exit the application.
 	if (input->IsKeyPressed(DIK_ESCAPE)) return false;
@@ -106,6 +108,13 @@ bool ApplicationClass::Frame(InputClass* input)
 	m_TimerClass->Frame();
 	time_t curr_time = m_TimerClass->GetTime();
 	time_t delta_time = m_TimerClass->GetElapsedTime();
+
+	const int GAME_OVER_SLOW = 4;
+	if (character_death_time <= curr_time)
+	{
+		delta_time = curr_time / GAME_OVER_SLOW - (curr_time - delta_time) / GAME_OVER_SLOW;
+		curr_time = character_death_time + (curr_time - character_death_time) / GAME_OVER_SLOW;
+	}
 
 	m_MonsterSpawner->Frame(curr_time, delta_time, m_Monsters);
 
@@ -144,7 +153,8 @@ bool ApplicationClass::Frame(InputClass* input)
 
 		if (m_Character->GetGlobalRange().collide(monster->GetGlobalRange()))
 		{
-			m_Character->OnCollided(curr_time, monster->GetVx());
+			bool result = m_Character->OnCollided(curr_time, monster->GetVx());
+			if (!result) character_death_time = curr_time;
 		}
 	}
 

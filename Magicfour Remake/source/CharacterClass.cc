@@ -38,29 +38,31 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 {
 	bool is_walk = false;
 
-	if (input->IsKeyPressed(DIK_LEFT))
+	if (m_State != CHARACTER_STATE_HIT && m_State != CHARACTER_STATE_SLIP && m_State != CHARACTER_STATE_DIE)
 	{
-		if (m_State == CHARACTER_STATE_STOP && m_Direction != LEFT_FORWARD)
+		if (input->IsKeyPressed(DIK_LEFT))
 		{
-			SetState(CHARACTER_STATE_NORMAL, curr_time);
+			if (m_State == CHARACTER_STATE_STOP && m_Direction != LEFT_FORWARD)
+			{
+				SetState(CHARACTER_STATE_NORMAL, curr_time);
+			}
+			m_Direction = LEFT_FORWARD;
+
+			is_walk = !is_walk;
 		}
-		m_Direction = LEFT_FORWARD;
 
-		is_walk = !is_walk;
-	}
-
-	if (input->IsKeyPressed(DIK_RIGHT))
-	{
-		if (m_State == CHARACTER_STATE_STOP && m_Direction != RIGHT_FORWARD)
+		if (input->IsKeyPressed(DIK_RIGHT))
 		{
-			SetState(CHARACTER_STATE_NORMAL, curr_time);
+			if (m_State == CHARACTER_STATE_STOP && m_Direction != RIGHT_FORWARD)
+			{
+				SetState(CHARACTER_STATE_NORMAL, curr_time);
+			}
+			m_Direction = RIGHT_FORWARD;
+
+			is_walk = !is_walk;
 		}
-		m_Direction = RIGHT_FORWARD;
-
-		is_walk = !is_walk;
+		if (input->IsKeyDown(DIK_Z)) UseSkill(curr_time, skill_objs);
 	}
-
-	if (input->IsKeyDown(DIK_Z)) UseSkill(curr_time, skill_objs);
 
 
 	if (input->IsKeyDown(DIK_X))
@@ -76,7 +78,8 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	}
 
 	// jump attempt
-	if (jump_cnt <= 1 && input->IsKeyDown(DIK_UP) && m_State != CHARACTER_STATE_SPELL && m_State != CHARACTER_STATE_HIT)
+	if (jump_cnt <= 1 && input->IsKeyDown(DIK_UP)
+		&& m_State != CHARACTER_STATE_SPELL && m_State != CHARACTER_STATE_HIT && m_State != CHARACTER_STATE_SLIP && m_State != CHARACTER_STATE_DIE)
 	{
 		pos_yv = 2'800, jump_cnt++;
 		if (m_State == CHARACTER_STATE_RUN || m_State == CHARACTER_STATE_RUNJUMP) SetState(CHARACTER_STATE_RUNJUMP, curr_time);
@@ -182,6 +185,17 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		{
 			SetState(CHARACTER_STATE_NORMAL, m_StateStartTime + 1000);
 		}
+		break;
+
+	case CHARACTER_STATE_DIE:
+		
+		if (curr_time - m_StateStartTime < 1000)
+		{
+			pos_x += (int)time_delta * pos_xv;
+			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+		}
+
+		break;
 	}
 
 	return true;
@@ -233,6 +247,11 @@ void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& s
 			50 + state_elapsed_seconds / 0.00433333, root_transform, shape_matrices);
 		break;
 
+	case CHARACTER_STATE_DIE:
+		m_FallAnimationData->UpdateGlobalMatrices(
+			min(394, 50 + state_elapsed_seconds / 0.01433333), root_transform, shape_matrices);
+		break;
+
 	}
 }
 
@@ -241,17 +260,40 @@ XMMATRIX CharacterClass::GetLocalWorldMatrix()
 	return XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0);
 }
 
-void CharacterClass::OnCollided(time_t curr_time, int vx)
+bool CharacterClass::OnCollided(time_t curr_time, int vx)
 {
 	if (m_TimeInvincibleEnd < curr_time)
 	{
 		SetState(CHARACTER_STATE_HIT, curr_time);
 		m_Direction = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
-		m_HitVx = pos_xv = vx / 3;
 
-		pos_yv = 1500;
-		m_TimeInvincibleEnd = m_StateStartTime + INVINCIBLE_TIME;
+		// lost skill
+		if (m_Skill[0] == 0)
+		{
+			SetState(CHARACTER_STATE_DIE, curr_time);
+			m_HitVx = pos_xv = vx / 2;
+
+			pos_yv = 1500;
+			m_TimeInvincibleEnd = 1 << 29;
+			return false;
+		}
+		else
+		{
+			for (int i = 3; i >= 0; i--)
+			{
+				if (m_Skill[i])
+				{
+					m_Skill[i] = 0;
+					break;
+				}
+			}
+			m_HitVx = pos_xv = vx / 3;
+			pos_yv = 1500;
+			m_TimeInvincibleEnd = m_StateStartTime + INVINCIBLE_TIME;
+			return true;
+		}
 	}
+	return true;
 }
 
 float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
