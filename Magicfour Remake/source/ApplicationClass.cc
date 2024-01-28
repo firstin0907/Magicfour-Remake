@@ -208,10 +208,11 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
+	XMMATRIX vpMatrix = viewMatrix * projectionMatrix;
+
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 
-	// Render the model using the light shader.
 #if 0
 	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 		m_Character->GetRangeRepresentMatrix(), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
@@ -223,7 +224,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	m_Character->GetShapeMatrices(curr_time, char_model_matrices);
 	for(auto &box : char_model_matrices) {
 		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			box * characterMatrix, viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
+			box * characterMatrix, vpMatrix, m_Model->GetDiffuseTexture(),
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
 
 		if (!result) return false;
@@ -249,7 +250,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	if (m_Character->GetSkill<0>())
 	{
 		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
-			pos, viewMatrix, projectionMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<0>()],
+			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<0>()],
 			m_Camera->GetPosition());
 		if (!result) return false;
 	}
@@ -257,7 +258,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
 		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
-			pos, viewMatrix, projectionMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<1>()],
+			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<1>()],
 			m_Camera->GetPosition());
 		if (!result) return false;
 	}
@@ -265,7 +266,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
 		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
-			pos, viewMatrix, projectionMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<2>()],
+			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<2>()],
 			m_Camera->GetPosition());
 		if (!result) return false;
 	}
@@ -273,7 +274,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
 		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
-			pos, viewMatrix, projectionMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<3>()],
+			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<3>()],
 			m_Camera->GetPosition());
 		if (!result) return false;
 	}
@@ -285,7 +286,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	{
 		m_Model->Render(m_Direct3D->GetDeviceContext());
 		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			skill_obj->GetRangeRepresentMatrix(), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
+			skill_obj->GetRangeRepresentMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		
 		auto obj_model = skill_obj->GetModel();
@@ -294,13 +295,13 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 		if (obj_model->GetNormalTexture())
 		{
 			result = m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
-				skill_obj->GetGlobalShapeTransform(curr_time), viewMatrix, projectionMatrix, obj_model->GetDiffuseTexture(),
+				skill_obj->GetGlobalShapeTransform(curr_time), vpMatrix, obj_model->GetDiffuseTexture(),
 				obj_model->GetNormalTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		}
 		else
 		{
 			result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
-				skill_obj->GetGlobalShapeTransform(curr_time), viewMatrix, projectionMatrix, obj_model->GetDiffuseTexture(),
+				skill_obj->GetGlobalShapeTransform(curr_time), vpMatrix, obj_model->GetDiffuseTexture(),
 				m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		}
 		
@@ -311,7 +312,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	for (auto& monster : m_Monsters)
 	{
 		result = m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			monster->GetRangeRepresentMatrix(), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
+			monster->GetRangeRepresentMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
 			m_Model->GetNormalTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		if (!result) return false;
 	}
@@ -319,7 +320,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	for (auto& ground : m_Ground)
 	{
 		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			ground->GetRange().toMatrix(), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
+			ground->GetRange().toMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		if (!result) return false;
 	}

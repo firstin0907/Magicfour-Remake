@@ -8,9 +8,7 @@
 /////////////
 cbuffer MatrixBuffer
 {
-	matrix worldMatrix;
-	matrix viewMatrix;
-	matrix projectionMatrix;
+	matrix mvpMatrix;
 
     matrix worldTrInvMatrix;
 };
@@ -44,9 +42,7 @@ PixelInputType StoneVertexShader(VertexInputType input)
     input.position.w = 1.0f;
 
 	// Calculate the position of the vertex against the world, view, and projection matrices.
-    output.position = mul(input.position, worldMatrix);
-    output.position = mul(output.position, viewMatrix);
-    output.position = mul(output.position, projectionMatrix);
+    output.position = mul(input.position, mvpMatrix);
 
 	// Calculate the normal vector against the world matrix only.
     output.normal = mul(input.normal, (float3x3)worldTrInvMatrix);

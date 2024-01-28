@@ -22,15 +22,15 @@ StoneShaderClass::~StoneShaderClass()
 
 
 bool StoneShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
+	XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition)
 {
 	bool result;
 
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix,
-		projectionMatrix, lightDirection, diffuseColor, cameraPosition);
+	result = SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
+		lightDirection, diffuseColor, cameraPosition);
 	if (!result)
 	{
 		return false;
@@ -241,9 +241,8 @@ void StoneShaderClass::OutputShaderErrorMessage(
 }
 
 
-bool StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix,
-	XMMATRIX viewMatrix, XMMATRIX projectionMatrix, XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor,
-	XMFLOAT3 cameraPosition)
+bool StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX vpMatrix, 
+	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -251,11 +250,6 @@ bool StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	MatrixBufferType* dataPtr;
 	LightBufferType* dataPtr2;
 	CameraBufferType* dataPtr3;
-
-	// Transpose the matrices to prepare them for the shader.
-	worldMatrix = XMMatrixTranspose(worldMatrix);
-	viewMatrix = XMMatrixTranspose(viewMatrix);
-	projectionMatrix = XMMatrixTranspose(projectionMatrix);
 
 	// Lock the constant buffer so it can be written to.
 	result = deviceContext->Map(m_matrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -265,10 +259,9 @@ bool StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
 
 	// Copy the matrices into the constant buffer.
-	dataPtr->world = worldMatrix;
-	dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;
-	dataPtr->world_tr_inv = XMMatrixInverse(nullptr, (XMMatrixTranspose(worldMatrix)));
+	// Transpose the matrices to prepare them for the shader.
+	dataPtr->mvp = XMMatrixTranspose(worldMatrix * vpMatrix);
+	dataPtr->world_tr_inv = XMMatrixInverse(nullptr, worldMatrix);
 
 	// Unlock the constant buffer.
 	deviceContext->Unmap(m_matrixBuffer.Get(), 0);

@@ -1,8 +1,7 @@
 cbuffer MatrixBuffer
 {
-	matrix worldMatrix;
-	matrix viewMatrix;
-	matrix projectionMatrix;
+	matrix mvpMatrix;
+	matrix worldTrInvMatrix;
 };
 
 struct VertexInputType
@@ -32,23 +31,21 @@ PixelInputType NormalMapVertexShader(VertexInputType input)
     input.position.w = 1.0f;
 
     // Calculate the position of the vertex against the world, view, and projection matrices.
-    output.position = mul(input.position, worldMatrix);
-    output.position = mul(output.position, viewMatrix);
-    output.position = mul(output.position, projectionMatrix);
+    output.position = mul(input.position, mvpMatrix);
     
     // Store the texture coordinates for the pixel shader.
     output.tex = input.tex;
     
     // Calculate the normal vector against the world matrix only and then normalize the final value.
-    output.normal = mul(input.normal, (float3x3)worldMatrix);
+    output.normal = mul(input.normal, (float3x3)worldTrInvMatrix);
     output.normal = normalize(output.normal);
 
     // Calculate the tangent vector against the world matrix only and then normalize the final value.
-    output.tangent = mul(input.tangent, (float3x3)worldMatrix);
+    output.tangent = mul(input.tangent, (float3x3)worldTrInvMatrix);
     output.tangent = normalize(output.tangent);
 
     // Calculate the binormal vector against the world matrix only and then normalize the final value.
-    output.binormal = mul(input.binormal, (float3x3)worldMatrix);
+    output.binormal = mul(input.binormal, (float3x3)worldTrInvMatrix);
     output.binormal = normalize(output.binormal);
 
     return output;

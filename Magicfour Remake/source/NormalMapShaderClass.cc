@@ -24,14 +24,14 @@ NormalMapShaderClass::~NormalMapShaderClass()
 }
 
 
-bool NormalMapShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
+bool NormalMapShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 	ID3D11ShaderResourceView* diffuse_texture, ID3D11ShaderResourceView* normal_texture, XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor)
 {
 	bool result;
 
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix,
+	result = SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
 		diffuse_texture, normal_texture, lightDirection, diffuseColor);
 	if (!result)
 	{
@@ -247,7 +247,7 @@ void NormalMapShaderClass::OutputShaderErrorMessage(
 }
 
 
-bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
+bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 	ID3D11ShaderResourceView* diffuse_texture, ID3D11ShaderResourceView* normal_texture, XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor)
 {
 	HRESULT result;
@@ -256,26 +256,17 @@ bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContex
 	MatrixBufferType* dataPtr;
 	LightBufferType* dataPtr2;
 
-
-	// Transpose the matrices to prepare them for the shader.
-	worldMatrix = XMMatrixTranspose(worldMatrix);
-	viewMatrix = XMMatrixTranspose(viewMatrix);
-	projectionMatrix = XMMatrixTranspose(projectionMatrix);
-
 	// Lock the constant buffer so it can be written to.
 	result = deviceContext->Map(m_matrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
-	{
-		return false;
-	}
+	if (FAILED(result)) return false;
 
 	// Get a pointer to the data in the constant buffer.
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
 
-	// Copy the matrices into the constant buffer.
-	dataPtr->world = worldMatrix;
-	dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;
+	// Transpose the matrices to prepare them for the shader.
+	// And Copy them.
+	dataPtr->mvp = XMMatrixTranspose(worldMatrix * vpMatrix);
+	dataPtr->world_tr_inv = XMMatrixInverse(nullptr, worldMatrix);
 
 	// Unlock the constant buffer.
 	deviceContext->Unmap(m_matrixBuffer.Get(), 0);
@@ -292,10 +283,7 @@ bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContex
 
 	// Lock the light constant buffer so it can be written to.
 	result = deviceContext->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
-	{
-		return false;
-	}
+	if (FAILED(result)) return false;
 
 	// Get a pointer to the data in the constant buffer.
 	dataPtr2 = (LightBufferType*)mappedResource.pData;

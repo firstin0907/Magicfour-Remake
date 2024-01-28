@@ -17,10 +17,7 @@ class StoneShaderClass
 private:
 	struct MatrixBufferType
 	{
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX projection;
-
+		XMMATRIX mvp;
 		XMMATRIX world_tr_inv;
 	};
 
@@ -43,14 +40,14 @@ public:
 	~StoneShaderClass();
 
 	bool Render(ID3D11DeviceContext* deviceContext, int indexCount,
-		XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
+		XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 		XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, const WCHAR*, const WCHAR*);
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, const WCHAR*);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, XMFLOAT3, XMFLOAT4,
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMFLOAT3, XMFLOAT4,
 		XMFLOAT3 cameraPosition);
 	void RenderShader(ID3D11DeviceContext*, int);
 

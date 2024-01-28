@@ -17,9 +17,8 @@ class LightShaderClass
 private:
 	struct MatrixBufferType
 	{
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX projection;
+		XMMATRIX mvp; // world * view * projection matrix
+		XMMATRIX world_tr_inv;
 	};
 
 	struct LightBufferType
@@ -34,13 +33,13 @@ public:
 	LightShaderClass(const LightShaderClass&) = delete;
 	~LightShaderClass();
 
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
+	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, const WCHAR*, const WCHAR*);
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, const WCHAR*);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:

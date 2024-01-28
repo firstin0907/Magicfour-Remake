@@ -17,9 +17,8 @@ class NormalMapShaderClass
 private:
 	struct MatrixBufferType
 	{
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX projection;
+		XMMATRIX mvp;
+		XMMATRIX world_tr_inv;
 	};
 
 	struct LightBufferType
@@ -34,14 +33,14 @@ public:
 	NormalMapShaderClass(const NormalMapShaderClass&) = delete;
 	~NormalMapShaderClass();
 
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX,
+	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, const WCHAR*, const WCHAR*);
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, const WCHAR*);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX,
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 	void RenderShader(ID3D11DeviceContext*, int);
 
