@@ -32,8 +32,10 @@ public:
 		);
 	
 	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);
-	
+
 	inline int GetPosX() { return pos_x; };
+	inline int GetPosY() { return pos_y; };
+	inline time_t GetTimeInvincibleEnd() { return m_TimeInvincibleEnd; }
 
 	template <int index>
 	int GetSkill();

@@ -20,6 +20,7 @@
 #include "../include/MonsterSpawnerClass.hh"
 #include "../include/TimerClass.hh"
 #include "../include/TextureShaderClass.hh"
+#include "../include/TextureClass.hh"
 #include "../include/SkillGaugeClass.hh"
 
 constexpr float CAMERA_Z_POSITION = -10.0f;
@@ -36,6 +37,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		"data/model/abox.obj", L"data/texture/stone01.tga",  L"data/texture/normal01.tga");
 	m_DiamondModel = make_unique<ModelClass>(m_Direct3D->GetDevice(),
 		"data/model/diamond.obj", L"data/texture/stone01.tga");
+
+	m_RainbowTexture = make_unique<TextureClass>(m_Direct3D->GetDevice(),
+		L"data/texture/skill_gauge_rainbow.png");
 
 	// Create and initialize the light shader object.
 	m_LightShader = make_unique<LightShaderClass>(m_Direct3D->GetDevice(), hwnd);
@@ -75,8 +79,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	for(int i = 1; i <= 10; i++) m_Monsters.emplace_back(new MonsterBird(RIGHT_FORWARD, 1000));
 
 	// Set ground of field.
-	m_Ground.emplace_back(new GroundClass({ -300000, -50000, 1300000, 10000 }));
+	m_Ground.emplace_back(new GroundClass({ -100000, 400000, 300000, 460000 }));
 	m_Ground.emplace_back(new GroundClass({ -1800000, 100000, -200000, 160000 }));
+	m_Ground.emplace_back(new GroundClass({ -300000, -100000, 1300000, -40000 }));
 	m_Ground.emplace_back(new GroundClass({ -20000, -20000, 20000, 20000 }));
 	m_Ground.emplace_back(new GroundClass({ SPAWN_LEFT_X, GROUND_Y - 300000, SPAWN_RIGHT_X, GROUND_Y }));
 
@@ -120,8 +125,9 @@ bool ApplicationClass::Frame(InputClass* input)
 
 	m_Character->Frame(delta_time, curr_time, input, m_SkillObjectList, m_Ground);
 
-	const float camera_x = max(min(m_Character->GetPosX(), 1'500'000), -1'500'000) * SCOPE;
-	m_Camera->SetPosition(camera_x, 0, -20.0f);
+	const float camera_x = SATURATE(-1'500'000, m_Character->GetPosX(), 1'500'000) * SCOPE;
+	const float camera_y = max(0, m_Character->GetPosY()) * SCOPE;
+	m_Camera->SetPosition(camera_x, camera_y, -20.0f);
 
 
 	// Move skill object instances.
@@ -222,13 +228,23 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	
 	vector<XMMATRIX> char_model_matrices;
 	m_Character->GetShapeMatrices(curr_time, char_model_matrices);
+
+
+	ID3D11ShaderResourceView* char_texture = m_Model->GetDiffuseTexture();
+	if (curr_time <= m_Character->GetTimeInvincibleEnd())
+	{
+		char_texture = m_RainbowTexture->GetTexture();
+	}
 	for(auto &box : char_model_matrices) {
 		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			box * characterMatrix, vpMatrix, m_Model->GetDiffuseTexture(),
+			box * characterMatrix, vpMatrix, char_texture,
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
 
 		if (!result) return false;
 	}
+
+	
+
 
 	constexpr float box_size = 0.30f;
 	XMMATRIX pos = 

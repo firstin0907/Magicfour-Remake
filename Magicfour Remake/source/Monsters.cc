@@ -268,7 +268,7 @@ MonsterBird::MonsterBird(direction_t direction, time_t created_time)
 	m_NextMoveTime = created_time + RandomClass::rand(1000, 4000);
 
 	m_PosX = RIGHT_X * ((m_Direction == LEFT_FORWARD) ? 1 : -1);
-	m_PosY = RandomClass::rand(-2, 2) * 250'000;
+	m_PosY = max(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000;
 }
 
 MonsterBird::~MonsterBird()
@@ -284,7 +284,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 	// set targetYPosition
 	if (curr_time >= m_NextMoveTime)
 	{
-		m_TargetYPosition = RandomClass::rand(-2, 2) * 250'000;
+		m_TargetYPosition = min(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000;
 
 		if (m_TargetYPosition != m_PosY) SetState(STATE_MOVE, m_NextMoveTime);
 
@@ -372,7 +372,7 @@ bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 
 		if (curr_time - m_StateStartTime >= 1000)
 		{
-			m_TargetYPosition = RandomClass::rand(-1, 2) * 40'000 + 10'000;
+			m_TargetYPosition = min(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000;
 
 			SetState(STATE_MOVE, m_StateStartTime + 1000);
 

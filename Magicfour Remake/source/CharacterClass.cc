@@ -262,7 +262,7 @@ XMMATRIX CharacterClass::GetLocalWorldMatrix()
 
 bool CharacterClass::OnCollided(time_t curr_time, int vx)
 {
-	if (m_TimeInvincibleEnd < curr_time)
+	if (m_TimeInvincibleEnd < curr_time && m_TimeSkillEnded < curr_time)
 	{
 		SetState(CHARACTER_STATE_HIT, curr_time);
 		m_Direction = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
