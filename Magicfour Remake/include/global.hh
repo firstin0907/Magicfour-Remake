@@ -28,7 +28,7 @@ struct rect_t
 
 	XMMATRIX toMatrix() const
 	{
-		return XMMatrixScaling(get_w() / 2.0f * 0.00001f, get_h() / 2.0f * 0.00001f, 1.0f) *
+		return XMMatrixScaling(get_w() / 2.0f * 0.00001f, get_h() / 2.0f * 0.00001f, 0.00001f) *
 			XMMatrixTranslation((x1 + get_w() / 2.0f) * 0.00001f, (y1 + get_h() / 2.0f) * 0.00001f, 0);
 	}
 

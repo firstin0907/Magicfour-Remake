@@ -22,6 +22,7 @@
 #include "../include/TextureShaderClass.hh"
 #include "../include/TextureClass.hh"
 #include "../include/SkillGaugeClass.hh"
+#include "../include/UserInterfaceClass.hh"
 
 constexpr float CAMERA_Z_POSITION = -10.0f;
 
@@ -93,6 +94,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
 		L"data/texture/skill_gauge_white.png",
 		-80 + 40, 180 + 16);
+
+	m_UserInterface = make_unique<UserInterfaceClass>(m_Direct3D->GetDevice(),
+		L"data/texture/monster_hp_frame.png", L"data/texture/monster_hp_gauge.png");
 
 }
 
@@ -200,7 +204,7 @@ bool ApplicationClass::Frame(InputClass* input)
 
 bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 {
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, orthoInverseMatrix;
 	bool result;
 	// Clear the buffers to begin the scene.
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
@@ -213,6 +217,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+	orthoInverseMatrix = XMMatrixInverse(nullptr, orthoMatrix);
 
 	XMMATRIX vpMatrix = viewMatrix * projectionMatrix;
 
@@ -345,11 +350,9 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 
 	// get Character coordinate in viewport coordinate system.
 	XMVECTOR t = { 0, 0, 0, 1 };
-	t = XMVector4Transform(t, characterMatrix);
-	t = XMVector4Transform(t, viewMatrix);
-	t = XMVector4Transform(t, projectionMatrix);
+	t = XMVector4Transform(t, characterMatrix * vpMatrix);
 	t /= t.m128_f32[3];
-	t = XMVector4Transform(t, XMMatrixInverse(nullptr, orthoMatrix));
+	t = XMVector4Transform(t, orthoInverseMatrix);
 
 	float skill_ratio = m_Character->GetCooltimeGaugeRatio(curr_time);
 
@@ -361,6 +364,10 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
 		if (!result) return false;
 	}
+
+	m_UserInterface->Render(m_TextureShader.get(), m_Direct3D->GetDeviceContext(),
+		m_Monsters, vpMatrix, orthoMatrix, orthoInverseMatrix);
+
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_Direct3D->TurnZBufferOn();

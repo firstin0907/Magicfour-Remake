@@ -150,6 +150,7 @@
     <ClCompile Include="source\TextureClass.cc" />
     <ClCompile Include="source\TextureShaderClass.cc" />
     <ClCompile Include="source\TimerClass.cc" />
+    <ClCompile Include="source\UserInterfaceClass.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AnimatedObjectClass.hh" />
@@ -177,6 +178,7 @@
     <ClInclude Include="include\TextureClass.hh" />
     <ClInclude Include="include\TextureShaderClass.hh" />
     <ClInclude Include="include\TimerClass.hh" />
+    <ClInclude Include="include\UserInterfaceClass.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

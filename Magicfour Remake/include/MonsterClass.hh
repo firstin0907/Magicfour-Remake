@@ -32,7 +32,7 @@ protected:
 
 	// Health point of this monster instance.
 	// The monster whose hp is below then zero is to die.
-	int m_Hp;
+	int m_Hp, m_MaxHp;
 
 	int m_PosX, m_PosY; // Position of monster instance.
 	rect_t m_Range;		// Range of monster Instance.
@@ -55,6 +55,8 @@ public:
 	~MonsterClass();
 
 	inline int GetId() { return m_Id; }
+
+	inline float GetHpRatio() { return m_Hp / (float)m_MaxHp;  }
 
 	virtual int GetVx() = 0;
 

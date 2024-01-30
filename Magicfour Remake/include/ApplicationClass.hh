@@ -52,4 +52,5 @@ private:
 	unique_ptr<class TimerClass> m_TimerClass;
 	unique_ptr<class MonsterSpawnerClass> m_MonsterSpawner;
 
+	unique_ptr<class UserInterfaceClass> m_UserInterface;
 };

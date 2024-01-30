@@ -274,7 +274,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 			m_HitVx = pos_xv = vx / 2;
 
 			pos_yv = 1500;
-			m_TimeInvincibleEnd = 1 << 29;
+			m_TimeInvincibleEnd = 1LL << 59;
 			return false;
 		}
 		else

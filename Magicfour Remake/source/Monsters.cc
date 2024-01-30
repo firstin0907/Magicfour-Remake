@@ -262,7 +262,7 @@ int MonsterOctopus::GetVx()
 }
 
 MonsterBird::MonsterBird(direction_t direction, time_t created_time)
-	: MonsterClass(20, direction, { -140000, 0, 70000, 140000 })
+	: MonsterClass(20, direction, { -105000, 0, 105000, 140000 })
 {
 	SetState(MONSTER_STATE_EMBRACE, created_time);
 	m_NextMoveTime = created_time + RandomClass::rand(1000, 4000);
