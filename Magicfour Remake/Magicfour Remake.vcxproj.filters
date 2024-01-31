@@ -87,6 +87,9 @@
     <ClCompile Include="source\UserInterfaceClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="source\ItemClass.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\InputClass.hh">
@@ -165,6 +168,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\UserInterfaceClass.hh">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ItemClass.hh">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

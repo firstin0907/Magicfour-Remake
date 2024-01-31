@@ -4,9 +4,9 @@
 
 int MonsterClass::MonsterCount = 0;
 
-MonsterClass::MonsterClass(int hp, direction_t direction, rect_t range)
+MonsterClass::MonsterClass(int type, int hp, direction_t direction, rect_t range)
 	: m_MaxHp(hp), m_Hp(hp), m_Direction(direction), m_Id(++MonsterCount), m_State(MONSTER_STATE_NORMAL),
-	m_Range(range)
+	m_Range(range), m_Type(type)
 {
 	m_HitVx = m_HitVy = 0;
 }

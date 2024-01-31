@@ -34,6 +34,9 @@ protected:
 	// The monster whose hp is below then zero is to die.
 	int m_Hp, m_MaxHp;
 
+	// Which species this mosnter instance is.
+	int m_Type;
+
 	int m_PosX, m_PosY; // Position of monster instance.
 	rect_t m_Range;		// Range of monster Instance.
 
@@ -51,10 +54,14 @@ protected:
 
 
 public:
-	MonsterClass(int hp, direction_t direction, rect_t range);
+	MonsterClass(int type, int hp, direction_t direction, rect_t range);
 	~MonsterClass();
 
 	inline int GetId() { return m_Id; }
+
+	inline int GetType() { return m_Type; }
+	inline int GetPosX() { return m_PosX; }
+	inline int GetPosY() { return m_PosY; }
 
 	inline float GetHpRatio() { return m_Hp / (float)m_MaxHp;  }
 

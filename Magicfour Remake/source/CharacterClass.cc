@@ -9,8 +9,8 @@
 #include "../include/SkillObjects.hh"
 #include "../include/GroundClass.hh"
 
-constexpr int SKILL_COOLTIME = 2'500;
-constexpr int INVINCIBLE_TIME = 2000;
+constexpr int SKILL_COOLTIME = 1'500;
+constexpr int INVINCIBLE_TIME = 5'000;
 constexpr int WALK_SPD = 700, RUN_SPD = 1300;
 
 CharacterClass::CharacterClass(int pos_x, int pos_y)
@@ -299,6 +299,14 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
 {
 	return SATURATE(-0.3f, (m_TimeSkillAvailable - curr_time) / (float)SKILL_COOLTIME, 1.0f);
+}
+
+void CharacterClass::LearnSkill(int skill_id)
+{
+	for (auto& skill : m_Skill)
+	{
+		if (!skill) { skill = skill_id; return; }
+	}
 }
 
 void CharacterClass::OnSkill(time_t curr_time,

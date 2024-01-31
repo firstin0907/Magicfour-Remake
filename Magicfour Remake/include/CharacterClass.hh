@@ -56,6 +56,8 @@ public:
 
 	float GetCooltimeGaugeRatio(time_t curr_time);
 
+	void LearnSkill(int skill_id);
+
 private:
 	inline void SetState(int state, time_t start_time)
 	{

@@ -23,8 +23,13 @@
 #include "../include/TextureClass.hh"
 #include "../include/SkillGaugeClass.hh"
 #include "../include/UserInterfaceClass.hh"
+#include "../include/ItemClass.hh"
+#include "../include/RandomClass.hh"
 
-constexpr float CAMERA_Z_POSITION = -10.0f;
+constexpr float CAMERA_Z_POSITION = -20.0f;
+constexpr int CAMERA_X_LIMIT = 1'500'000;
+
+constexpr int ITEM_DROP_PROBABILITY = 50;
 
 ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 {
@@ -73,7 +78,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Create character instance.
 	m_Character = make_unique<CharacterClass>(0, 0);
-
+	
 	// Temporary
 	m_Monsters.emplace_back(new MonsterDuck(LEFT_FORWARD, 1000));
 	m_Monsters.emplace_back(new MonsterOctopus(RIGHT_FORWARD, 1000));
@@ -102,8 +107,6 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 
 ApplicationClass::~ApplicationClass()
 {
-
-
 }
 
 bool ApplicationClass::Frame(InputClass* input)
@@ -129,9 +132,9 @@ bool ApplicationClass::Frame(InputClass* input)
 
 	m_Character->Frame(delta_time, curr_time, input, m_SkillObjectList, m_Ground);
 
-	const float camera_x = SATURATE(-1'500'000, m_Character->GetPosX(), 1'500'000) * SCOPE;
+	const float camera_x = SATURATE(-CAMERA_X_LIMIT, m_Character->GetPosX(), CAMERA_X_LIMIT) * SCOPE;
 	const float camera_y = max(0, m_Character->GetPosY()) * SCOPE;
-	m_Camera->SetPosition(camera_x, camera_y, -20.0f);
+	m_Camera->SetPosition(camera_x, camera_y, CAMERA_Z_POSITION);
 
 
 	// Move skill object instances.
@@ -141,6 +144,11 @@ bool ApplicationClass::Frame(InputClass* input)
 	// Move monsters.
 	for (auto& monster : m_Monsters)
 		monster->FrameMove(curr_time, delta_time, m_Ground);
+
+	// Move items.
+	for (auto& item : m_Items)
+		item->FrameMove(curr_time, delta_time, m_Ground);
+
 
 	// Coliide check
 	for (auto& skill_obj : m_SkillObjectList)
@@ -168,6 +176,17 @@ bool ApplicationClass::Frame(InputClass* input)
 		}
 	}
 
+	for (auto& item : m_Items)
+	{
+		if (item->GetState() == ItemClass::STATE_DIE) continue;
+
+		if (m_Character->GetGlobalRange().collide(item->GetGlobalRange()))
+		{
+			m_Character->LearnSkill(item->GetType());
+			item->SetState(ItemClass::STATE_DIE);
+		}
+	}
+
 	// Process some work which should be conducted per frame,
 	// for skill object instances
 	for (int i = 0; i < m_SkillObjectList.size(); i++)
@@ -183,15 +202,35 @@ bool ApplicationClass::Frame(InputClass* input)
 
 
 	// Process some work which should be conducted per frame,
-	// for skill object instances
+	// for monster object instances
 	for (int i = 0; i < m_Monsters.size(); i++)
 	{
-		// If this skill object should be deleted,
+		// If this monster instance should be deleted,
 		if (!m_Monsters[i]->Frame(curr_time, delta_time))
 		{
-			// swap with last element and pop it.
+			// create item for 50% probablity.
+			if (RandomClass::rand(0, 100) < ITEM_DROP_PROBABILITY)
+			{
+				m_Items.emplace_back(new ItemClass(curr_time, m_Monsters[i]->GetPosX(),
+					m_Monsters[i]->GetPosY(), m_Monsters[i]->GetType()));
+			}
+
+			// and swap with last element and pop it.
 			swap(m_Monsters[i], m_Monsters.back());
 			m_Monsters.pop_back();
+		}
+	}
+
+	// Process some work which should be conducted per frame,
+	// for items.
+	for (int i = 0; i < m_Items.size(); i++)
+	{
+		// If this monster instance should be deleted,
+		if (!m_Items[i]->Frame(curr_time, delta_time))
+		{
+			// swap with last element and pop it.
+			swap(m_Items[i], m_Items.back());
+			m_Items.pop_back();
 		}
 	}
 
@@ -226,7 +265,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 
 #if 0
 	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-		m_Character->GetRangeRepresentMatrix(), viewMatrix, projectionMatrix, m_Model->GetDiffuseTexture(),
+		m_Character->GetRangeRepresentMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
 		m_Light->GetDirection(), m_Light->GetDiffuseColor());
 	if (!result) return false;
 #endif
@@ -268,6 +307,7 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	};
 
 	m_DiamondModel->Render(m_Direct3D->GetDeviceContext());
+	
 	if (m_Character->GetSkill<0>())
 	{
 		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
@@ -299,7 +339,16 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 			m_Camera->GetPosition());
 		if (!result) return false;
 	}
-	
+
+
+	// Draw Items
+	for (auto& item : m_Items)
+	{
+		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
+			item->GetShapeMatrix(curr_time) * item->GetLocalWorldMatrix(), vpMatrix,
+			m_Light->GetDirection(), skill_color[item->GetType()], m_Camera->GetPosition());
+		if (!result) return false;
+	}
 
 
 	// Draw skill object

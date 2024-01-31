@@ -5,7 +5,7 @@
 #include "../include/RandomClass.hh"
 
 MonsterDuck::MonsterDuck(direction_t direction, time_t created_time)
-	: MonsterClass(4220, direction, {-70000, 0, 70000, 300000}), m_NextJumpTime(created_time + 5000)
+	: MonsterClass(1, 30, direction, {-70000, 0, 70000, 300000}), m_NextJumpTime(created_time + 5000)
 {
 	SetState(MONSTER_STATE_EMBRACE, created_time);
 
@@ -175,7 +175,7 @@ int MonsterDuck::GetVx()
 }
 
 MonsterOctopus::MonsterOctopus(direction_t direction, time_t created_time)
-	: MonsterClass(4220, direction, { -200000, 0, 200000, 300000 })
+	: MonsterClass(3, 100, direction, { -200000, 0, 200000, 300000 })
 {
 	SetState(MONSTER_STATE_EMBRACE, created_time);
 
@@ -262,7 +262,7 @@ int MonsterOctopus::GetVx()
 }
 
 MonsterBird::MonsterBird(direction_t direction, time_t created_time)
-	: MonsterClass(20, direction, { -105000, 0, 105000, 140000 })
+	: MonsterClass(2, 20, direction, { -105000, 0, 105000, 140000 })
 {
 	SetState(MONSTER_STATE_EMBRACE, created_time);
 	m_NextMoveTime = created_time + RandomClass::rand(1000, 4000);

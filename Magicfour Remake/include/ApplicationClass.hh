@@ -47,6 +47,7 @@ private:
 
 	vector<unique_ptr<class SkillObjectClass> > m_SkillObjectList;
 	vector<unique_ptr<class MonsterClass> > m_Monsters;
+	vector<unique_ptr<class ItemClass> > m_Items;
 	vector<unique_ptr<class GroundClass> > m_Ground;
 
 	unique_ptr<class TimerClass> m_TimerClass;

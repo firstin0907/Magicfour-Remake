@@ -130,6 +130,7 @@
     <ClCompile Include="main.cc" />
     <ClCompile Include="source\AnimatedObjectClass.cc" />
     <ClCompile Include="source\ApplicationClass.cc" />
+    <ClCompile Include="source\ItemClass.cc" />
     <ClCompile Include="source\SkillGaugeClass.cc" />
     <ClCompile Include="source\CameraClass.cc" />
     <ClCompile Include="source\CharacterClass.cc" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="include\AnimatedObjectClass.hh" />
     <ClInclude Include="include\ApplicationClass.hh" />
+    <ClInclude Include="include\ItemClass.hh" />
     <ClInclude Include="include\SkillGaugeClass.hh" />
     <ClInclude Include="include\CameraClass.hh" />
     <ClInclude Include="include\CharacterClass.hh" />
