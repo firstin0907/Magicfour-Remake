@@ -355,11 +355,11 @@ void CharacterClass::OnSkill(time_t curr_time,
 
 	case 2:
 
-		for (; m_SkillState < 3 && state_elapsed_time >= m_SkillState * 100 + 100; m_SkillState++)
+		for (; m_SkillState < 4 && state_elapsed_time >= m_SkillState * 70 + 70; m_SkillState++)
 		{
 			skill_objs.emplace_back(new SkillObjectBead(
 				pos_x, pos_y + 300000, DIR_WEIGHT(m_Direction, 1200),
-				m_SkillState * 200, m_StateStartTime + m_SkillState * 100 + 100));
+				(m_SkillState - 1) * 200, m_StateStartTime + m_SkillState * 70 + 70));
 		}
 
 		// When Skill Ended.
@@ -371,10 +371,10 @@ void CharacterClass::OnSkill(time_t curr_time,
 		break;
 
 	case 3:
-		if (m_SkillState == 0 && state_elapsed_time >= 100)
+		if (m_SkillState == 0 && state_elapsed_time >= 50)
 		{
 			skill_objs.emplace_back(new SkillObjectLeg(
-				pos_x + DIR_WEIGHT(m_Direction, 3'000), m_StateStartTime + 100));
+				pos_x + DIR_WEIGHT(m_Direction, 300'000), m_StateStartTime + 50));
 			m_SkillState = 1;
 		}
 

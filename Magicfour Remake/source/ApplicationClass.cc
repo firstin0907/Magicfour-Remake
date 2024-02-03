@@ -68,7 +68,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
 	));
 	SkillObjectLeg::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		"data/model/MagicCeramicBlade.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
+		"data/model/leg.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
 		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
 	));
 	SkillObjectBasic::initialize(new ModelClass(m_Direct3D->GetDevice(),
@@ -354,10 +354,11 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	// Draw skill object
 	for (auto& skill_obj : m_SkillObjectList)
 	{
+		/*
 		m_Model->Render(m_Direct3D->GetDeviceContext());
 		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 			skill_obj->GetRangeRepresentMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
-			m_Light->GetDirection(), m_Light->GetDiffuseColor());
+			m_Light->GetDirection(), m_Light->GetDiffuseColor());*/
 		
 		auto obj_model = skill_obj->GetModel();
 		obj_model->Render(m_Direct3D->GetDeviceContext());

@@ -166,7 +166,7 @@ ModelClass* SkillObjectBead::GetModel()
 }
 
 SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
-	: SkillObjectClass(pos_x, GROUND_Y, rect_t{ -30000, -30000, 30000, 30000 }),
+	: SkillObjectClass(pos_x, GROUND_Y, rect_t{ -50000, -1200000, 50000, 0 }),
 	m_StateStartTime(created_time)
 {
 	
@@ -175,7 +175,8 @@ SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
 void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<unique_ptr<class GroundClass> >& ground)
 {
-	m_Range.y2 += time_delta * 1'000;
+	time_delta = min(time_delta, curr_time - m_StateStartTime);
+	pos_y += 2'000 * time_delta;
 }
 
 bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -187,11 +188,11 @@ bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
 	{
 		if (upper.collide(monster->GetGlobalRange()))
 		{
-			monster->Damage(100, collided_time, 0, 3000);
+			monster->Damage(80, collided_time, 0, 3000);
 			// TODO: stop
 		}
 		// TODO; direction
-		else monster->Damage(60, collided_time, 0, 500);
+		else monster->Damage(30, collided_time, 0, 500);
 		return true;
 	}
 	return false;
@@ -199,12 +200,12 @@ bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
 
 bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta)
 {
-	return m_StateStartTime + 1000 > curr_time;
+	return m_StateStartTime + 1200 > curr_time;
 }
 
 XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
 {
-	return XMMatrixIdentity();
+	return XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0.0f);
 }
 
 
