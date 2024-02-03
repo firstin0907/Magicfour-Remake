@@ -43,7 +43,6 @@ private:
 	unique_ptr<class NormalMapShaderClass>	m_NormalMapShader;
 
 	unique_ptr<class CharacterClass>	m_Character;
-	unique_ptr<class SkillGaugeClass>		m_SkillGauge;
 
 	vector<unique_ptr<class SkillObjectClass> > m_SkillObjectList;
 	vector<unique_ptr<class MonsterClass> > m_Monsters;

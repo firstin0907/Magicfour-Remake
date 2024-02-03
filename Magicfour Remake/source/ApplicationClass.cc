@@ -95,12 +95,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 
 	m_TimerClass = make_unique<TimerClass>();
 
-	m_SkillGauge = make_unique<SkillGaugeClass>(m_Direct3D->GetDevice(),
-		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
-		L"data/texture/skill_gauge_white.png",
-		-80 + 40, 180 + 16);
-
-	m_UserInterface = make_unique<UserInterfaceClass>(m_Direct3D->GetDevice(),
+	m_UserInterface = make_unique<UserInterfaceClass>(m_Direct3D->GetDevice(), screenWidth, screenHeight,
 		L"data/texture/monster_hp_frame.png", L"data/texture/monster_hp_gauge.png");
 
 }
@@ -243,7 +238,7 @@ bool ApplicationClass::Frame(InputClass* input)
 
 bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 {
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, orthoInverseMatrix;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;
 	// Clear the buffers to begin the scene.
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
@@ -256,7 +251,6 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
-	orthoInverseMatrix = XMMatrixInverse(nullptr, orthoMatrix);
 
 	XMMATRIX vpMatrix = viewMatrix * projectionMatrix;
 
@@ -395,29 +389,13 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		if (!result) return false;
 	}
+
+
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
 
-	// get Character coordinate in viewport coordinate system.
-	XMVECTOR t = { 0, 0, 0, 1 };
-	t = XMVector4Transform(t, characterMatrix * vpMatrix);
-	t /= t.m128_f32[3];
-	t = XMVector4Transform(t, orthoInverseMatrix);
-
-	float skill_ratio = m_Character->GetCooltimeGaugeRatio(curr_time);
-
-	if (skill_ratio > -0.03f)
-	{
-		m_SkillGauge->Render(m_Direct3D->GetDeviceContext(), skill_ratio);
-		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(),
-			m_SkillGauge->GetIndexCount(), XMMatrixTranslationFromVector(t),
-			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
-		if (!result) return false;
-	}
-
 	m_UserInterface->Render(m_TextureShader.get(), m_Direct3D->GetDeviceContext(),
-		m_Monsters, vpMatrix, orthoMatrix, orthoInverseMatrix);
-
+		m_Character.get(), m_Monsters, vpMatrix, orthoMatrix, curr_time);
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_Direct3D->TurnZBufferOn();

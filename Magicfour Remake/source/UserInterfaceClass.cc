@@ -5,13 +5,18 @@
 #include "../include/MonsterClass.hh"
 #include "../include/GameException.hh"
 #include "../include/TextureShaderClass.hh"
+#include "../include/SkillGaugeClass.hh"
+#include "../include/CharacterClass.hh"
 
 using namespace std;
 using namespace DirectX;
 
-UserInterfaceClass::UserInterfaceClass(ID3D11Device* device,
+UserInterfaceClass::UserInterfaceClass(ID3D11Device* device, int screenWidth, int screenHeight,
 	const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename)
 {
+	m_SkillGauge = make_unique<SkillGaugeClass>(device,
+		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
+		L"data/texture/skill_gauge_white.png", -80 + 40, 180 + 16);
 	m_MonsterHpFrameTexture = make_unique<TextureClass>(device, monsterHpFrameFilename);
 	m_MonsterHpGaugeTexture = make_unique<TextureClass>(device, monsterHpGaugeFilename);
 
@@ -76,9 +81,26 @@ void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
 }
 
 void UserInterfaceClass::Render(TextureShaderClass* textureShader,
-	ID3D11DeviceContext* deviceContext, MonsterVector& monsters,
-	const XMMATRIX& vpMatrix, const XMMATRIX& orthoMatrix, const XMMATRIX& orthoInverseMatrix)
+	ID3D11DeviceContext* deviceContext, CharacterClass* character, MonsterVector& monsters,
+	const XMMATRIX& vpMatrix, const XMMATRIX& orthoMatrix, time_t curr_time)
 {
+	const XMMATRIX orthoInverseMatrix = XMMatrixInverse(nullptr, orthoMatrix);
+
+	float skill_ratio = character->GetCooltimeGaugeRatio(curr_time);
+	if (skill_ratio > -0.03f)
+	{
+		// get Character coordinate in viewport coordinate system.
+		XMVECTOR t = { 0, 0, 0, 1 };
+		t = XMVector4Transform(t, character->GetLocalWorldMatrix() * vpMatrix);
+		t = XMVector4Transform(t / t.m128_f32[3], orthoInverseMatrix);
+
+		m_SkillGauge->Render(deviceContext, skill_ratio);
+		bool result = textureShader->Render(deviceContext,
+			m_SkillGauge->GetIndexCount(), XMMatrixTranslationFromVector(t),
+			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
+		if (!result) GAME_EXCEPTION(L"Failed to draw skill bar.");
+	}
+
 	struct VertexType
 	{
 		XMFLOAT3 position;
@@ -86,8 +108,7 @@ void UserInterfaceClass::Render(TextureShaderClass* textureShader,
 	};
 
 	// Set vertex buffer stride and offset.
-	unsigned int stride = sizeof(VertexType);
-	unsigned int offset = 0;
+	unsigned int stride = sizeof(VertexType), offset = 0;
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
@@ -103,22 +124,21 @@ void UserInterfaceClass::Render(TextureShaderClass* textureShader,
 		// Calculate the coordinate of monster, with repect to window(screen) coordinate system.
 		XMVECTOR t = { 0, 0, 0, 1 };
 		t = XMVector4Transform(t, monster->GetLocalWorldMatrix() * vpMatrix);
-		t /= t.m128_f32[3];
-		t = XMVector4Transform(t, orthoInverseMatrix);
+		t = XMVector4Transform(t / t.m128_f32[3], orthoInverseMatrix);
 		
 		// Adjust the position where hp bar will be drawn.
 		t.m128_f32[0] -= m_MonsterHpFrameTexture->GetWidth() / 2.0f;
 		t.m128_f32[1] += m_MonsterHpFrameTexture->GetHeight();
 
-		// Draw hp frame
-		bool result = textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),
-			XMMatrixIdentity(), orthoMatrix, m_MonsterHpFrameTexture->GetTexture());
-		if (!result) throw GAME_EXCEPTION(L"Failed to draw monster hp bar.");
-
 		// Draw hp gauge according to hp of the monster.
-		result = textureShader->Render(deviceContext, 6,
+		bool result = textureShader->Render(deviceContext, 6,
 			XMMatrixScaling(monster->GetHpRatio(), 1, 1) * XMMatrixTranslationFromVector(t),
 			XMMatrixIdentity(), orthoMatrix, m_MonsterHpGaugeTexture->GetTexture());
+		if (!result) throw GAME_EXCEPTION(L"Failed to draw monster hp bar.");
+
+		// Draw hp frame
+		result = textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),
+			XMMatrixIdentity(), orthoMatrix, m_MonsterHpFrameTexture->GetTexture());
 		if (!result) throw GAME_EXCEPTION(L"Failed to draw monster hp bar.");
 	}
 }
