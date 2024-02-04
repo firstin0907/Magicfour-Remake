@@ -50,8 +50,8 @@ bool SkillObjectSpear::OnCollided(MonsterClass* monster, time_t collided_time)
 {
 	if (!SkillObjectClass::OnCollided(monster, collided_time)) return false;
 
-	if (m_State == STATE_NORMAL) monster->Damage(10, collided_time, vx / 6, 0);
-	else if (m_State == STATE_ONGROUND) monster->Damage(5, collided_time, vx / 6, 1000);
+	if (m_State == STATE_NORMAL) monster->Damage(25, collided_time, vx / 6, 0);
+	else if (m_State == STATE_ONGROUND) monster->Damage(17, collided_time, vx / 6, 1000);
 
 	m_State = STATE_DIE;
 	return true;
@@ -151,7 +151,7 @@ bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta)
 XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
 {
 	return 
-		XMMatrixScaling(0.35f, 0.35f, 0.35f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
+		XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
 		* XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0.0f);
 }
 
@@ -188,11 +188,11 @@ bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
 	{
 		if (upper.collide(monster->GetGlobalRange()))
 		{
-			monster->Damage(80, collided_time, 0, 3000);
+			monster->Damage(50, collided_time, 0, 3000);
 			// TODO: stop
 		}
 		// TODO; direction
-		else monster->Damage(30, collided_time, 0, 500);
+		else monster->Damage(25, collided_time, 0, 500);
 		return true;
 	}
 	return false;
