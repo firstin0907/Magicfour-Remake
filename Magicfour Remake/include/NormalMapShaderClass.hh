@@ -6,15 +6,18 @@
 #include <fstream>
 #include <wrl.h>
 
-using namespace DirectX;
-using namespace std;
+#include "ShaderClass.hh"
 
-template<typename T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-class NormalMapShaderClass
+class NormalMapShaderClass : public ShaderClass
 {
 private:
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+	using XMMATRIX = DirectX::XMMATRIX;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+
 	struct MatrixBufferType
 	{
 		XMMATRIX mvp;
@@ -33,21 +36,18 @@ public:
 	NormalMapShaderClass(const NormalMapShaderClass&) = delete;
 	~NormalMapShaderClass();
 
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX,
+	void Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
 private:
-	bool InitializeShader(ID3D11Device*, HWND, const WCHAR*, const WCHAR*);
-	void OutputShaderErrorMessage(ID3D10Blob*, HWND, const WCHAR*);
+	void InitializeShader(ID3D11Device* device, HWND hwnd,
+		const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX,
+	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
-	ComPtr<ID3D11VertexShader>	m_vertexShader;
-	ComPtr<ID3D11PixelShader>	m_pixelShader;
-	ComPtr<ID3D11InputLayout>	m_layout;
 	ComPtr<ID3D11SamplerState>	m_sampleState;
 	ComPtr<ID3D11Buffer>		m_matrixBuffer;
 	ComPtr<ID3D11Buffer>		m_lightBuffer;

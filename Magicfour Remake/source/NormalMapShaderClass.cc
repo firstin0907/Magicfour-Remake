@@ -8,14 +8,9 @@
 
 NormalMapShaderClass::NormalMapShaderClass(ID3D11Device* device, HWND hwnd)
 {
-	bool result;
-
 	// Initialize the vertex and pixel shaders.
-	result = InitializeShader(device, hwnd, L"shader/normalmap.vs", L"shader/normalmap.ps");
-	if (!result)
-	{
-		throw L"Could not initialize the light shader object.";
-	}
+	InitializeShader(device, hwnd, L"shader/normalmap.vs", L"shader/normalmap.ps");
+
 }
 
 NormalMapShaderClass::~NormalMapShaderClass()
@@ -24,97 +19,27 @@ NormalMapShaderClass::~NormalMapShaderClass()
 }
 
 
-bool NormalMapShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
+void NormalMapShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 	ID3D11ShaderResourceView* diffuse_texture, ID3D11ShaderResourceView* normal_texture, XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor)
 {
-	bool result;
-
-
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
+	SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
 		diffuse_texture, normal_texture, lightDirection, diffuseColor);
-	if (!result)
-	{
-		return false;
-	}
 
 	// Now render the prepared buffers with the shader.
 	RenderShader(deviceContext, indexCount);
-
-	return true;
 }
 
 
-bool NormalMapShaderClass::InitializeShader(
+void NormalMapShaderClass::InitializeShader(
 	ID3D11Device* device, HWND hwnd, const WCHAR* vsFilename, const WCHAR* psFilename)
 {
 	HRESULT result;
-	ID3D10Blob* errorMessage;
-	ComPtr<ID3D10Blob> vertexShaderBuffer;
-	ComPtr<ID3D10Blob> pixelShaderBuffer;
 	D3D11_INPUT_ELEMENT_DESC polygonLayout[5];
 	unsigned int numElements;
-	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
 
-
-	// Initialize the pointers this function will use to null.
-	errorMessage = 0;
-
-	// Compile the vertex shader code.
-	result = D3DCompileFromFile(vsFilename, NULL, NULL, "NormalMapVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
-		vertexShaderBuffer.GetAddressOf(), &errorMessage);
-	if (FAILED(result))
-	{
-		// If the shader failed to compile it should have writen something to the error message.
-		if (errorMessage)
-		{
-			OutputShaderErrorMessage(errorMessage, hwnd, vsFilename);
-		}
-		// If there was nothing in the error message then it simply could not find the shader file itself.
-		else
-		{
-			MessageBox(hwnd, vsFilename, L"Missing Shader File", MB_OK);
-		}
-
-		return false;
-	}
-
-	// Compile the pixel shader code.
-	result = D3DCompileFromFile(psFilename, NULL, NULL, "NormalMapPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
-		pixelShaderBuffer.GetAddressOf(), &errorMessage);
-	if (FAILED(result))
-	{
-		// If the shader failed to compile it should have writen something to the error message.
-		if (errorMessage)
-		{
-			OutputShaderErrorMessage(errorMessage, hwnd, psFilename);
-		}
-		// If there was nothing in the error message then it simply could not find the file itself.
-		else
-		{
-			MessageBox(hwnd, psFilename, L"Missing Shader File", MB_OK);
-		}
-
-		return false;
-	}
-
-	// Create the vertex shader from the buffer.
-	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
-		vertexShaderBuffer->GetBufferSize(), NULL, m_vertexShader.GetAddressOf());
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	// Create the pixel shader from the buffer.
-	result = device->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(),
-		pixelShaderBuffer->GetBufferSize(), NULL, m_pixelShader.GetAddressOf());
-	if (FAILED(result))
-	{
-		return false;
-	}
 
 	// Get a count of the elements in the layout.
 	numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
@@ -146,34 +71,10 @@ bool NormalMapShaderClass::InitializeShader(
 	polygonLayout[4].SemanticName = "BINORMAL";
 	polygonLayout[4].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 
-
-	// Create the vertex input layout.
-	result = device->CreateInputLayout(polygonLayout, numElements,
-		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(),
-		m_layout.GetAddressOf());
-	if (FAILED(result)) return false;
-
-	// Create a texture sampler state description.
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 0;
-	samplerDesc.BorderColor[1] = 0;
-	samplerDesc.BorderColor[2] = 0;
-	samplerDesc.BorderColor[3] = 0;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	CreateShaderObject(device, hwnd, vsFilename, psFilename, polygonLayout, numElements);
 
 	// Create the texture sampler state.
-	result = device->CreateSamplerState(&samplerDesc, m_sampleState.GetAddressOf());
-	if (FAILED(result))
-	{
-		return false;
-	}
+	m_sampleState = CreateSamplerState(device);
 
 	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -185,10 +86,8 @@ bool NormalMapShaderClass::InitializeShader(
 
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	result = device->CreateBuffer(&matrixBufferDesc, NULL, m_matrixBuffer.GetAddressOf());
-	if (FAILED(result))
-	{
-		return false;
-	}
+	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create matrix buffer");
+
 
 	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
 	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
@@ -201,53 +100,11 @@ bool NormalMapShaderClass::InitializeShader(
 
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	result = device->CreateBuffer(&lightBufferDesc, NULL, m_lightBuffer.GetAddressOf());
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	return true;
+	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create light buffer");
 }
 
 
-
-void NormalMapShaderClass::OutputShaderErrorMessage(
-	ID3D10Blob* errorMessage, HWND hwnd, const WCHAR* shaderFilename)
-{
-	char* compileErrors;
-	unsigned __int64 bufferSize, i;
-	std::ofstream fout;
-
-
-	// Get a pointer to the error message text buffer.
-	compileErrors = (char*)(errorMessage->GetBufferPointer());
-
-	// Get the length of the message.
-	bufferSize = errorMessage->GetBufferSize();
-
-	// Open a file to write the error message to.
-	fout.open("shader-error.txt");
-
-	// Write out the error message.
-	for (i = 0; i < bufferSize; i++)
-	{
-		fout << compileErrors[i];
-	}
-
-	// Close the file.
-	fout.close();
-
-	// Release the error message.
-	errorMessage->Release();
-	errorMessage = 0;
-
-	// Pop a message up on the screen to notify the user to check the text file for compile errors.
-	throw shadercompile_error(shaderFilename, WFILE, __LINE__);
-	return;
-}
-
-
-bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
+void NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 	ID3D11ShaderResourceView* diffuse_texture, ID3D11ShaderResourceView* normal_texture, XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor)
 {
 	HRESULT result;
@@ -258,7 +115,7 @@ bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContex
 
 	// Lock the constant buffer so it can be written to.
 	result = deviceContext->Map(m_matrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result)) return false;
+	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock matrix buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
@@ -283,7 +140,7 @@ bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContex
 
 	// Lock the light constant buffer so it can be written to.
 	result = deviceContext->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result)) return false;
+	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock constant buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
 	dataPtr2 = (LightBufferType*)mappedResource.pData;
@@ -301,8 +158,6 @@ bool NormalMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContex
 
 	// Finally set the light constant buffer in the pixel shader with the updated values.
 	deviceContext->PSSetConstantBuffers(bufferNumber, 1, m_lightBuffer.GetAddressOf());
-
-	return true;
 }
 
 

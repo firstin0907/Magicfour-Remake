@@ -22,7 +22,7 @@ struct PixelInputType
     float3 binormal : BINORMAL;
 };
 
-PixelInputType NormalMapVertexShader(VertexInputType input)
+PixelInputType vsMain(VertexInputType input)
 {
     PixelInputType output;
     

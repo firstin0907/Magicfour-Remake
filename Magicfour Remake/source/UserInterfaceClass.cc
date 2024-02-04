@@ -31,8 +31,8 @@ void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
 		XMFLOAT2 texture;
 	};
 
-	const int w = m_MonsterHpFrameTexture->GetWidth();
-	const int h = m_MonsterHpFrameTexture->GetHeight();
+	const float w = (float)m_MonsterHpFrameTexture->GetWidth();
+	const float h = (float)m_MonsterHpFrameTexture->GetHeight();
 
 	VertexType vertices[4] = {
 		{ XMFLOAT3(0, 0, 0.0f), XMFLOAT2(0.0f, 1.0f)},
@@ -95,10 +95,9 @@ void UserInterfaceClass::Render(TextureShaderClass* textureShader,
 		t = XMVector4Transform(t / t.m128_f32[3], orthoInverseMatrix);
 
 		m_SkillGauge->Render(deviceContext, skill_ratio);
-		bool result = textureShader->Render(deviceContext,
+		textureShader->Render(deviceContext,
 			m_SkillGauge->GetIndexCount(), XMMatrixTranslationFromVector(t),
-			XMMatrixIdentity(), orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
-		if (!result) GAME_EXCEPTION(L"Failed to draw skill bar.");
+			orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
 	}
 
 	struct VertexType
@@ -131,14 +130,12 @@ void UserInterfaceClass::Render(TextureShaderClass* textureShader,
 		t.m128_f32[1] += m_MonsterHpFrameTexture->GetHeight();
 
 		// Draw hp gauge according to hp of the monster.
-		bool result = textureShader->Render(deviceContext, 6,
+		textureShader->Render(deviceContext, 6,
 			XMMatrixScaling(monster->GetHpRatio(), 1, 1) * XMMatrixTranslationFromVector(t),
-			XMMatrixIdentity(), orthoMatrix, m_MonsterHpGaugeTexture->GetTexture());
-		if (!result) throw GAME_EXCEPTION(L"Failed to draw monster hp bar.");
+			orthoMatrix, m_MonsterHpGaugeTexture->GetTexture());
 
 		// Draw hp frame
-		result = textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),
-			XMMatrixIdentity(), orthoMatrix, m_MonsterHpFrameTexture->GetTexture());
-		if (!result) throw GAME_EXCEPTION(L"Failed to draw monster hp bar.");
+		textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),
+			orthoMatrix, m_MonsterHpFrameTexture->GetTexture());
 	}
 }

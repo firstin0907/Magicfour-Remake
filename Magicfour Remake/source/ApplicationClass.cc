@@ -108,7 +108,6 @@ bool ApplicationClass::Frame(InputClass* input)
 {
 	static time_t character_death_time = 1LL << 60;
 
-	bool result;
 	// Check if the user pressed escape and wants to exit the application.
 	if (input->IsKeyPressed(DIK_ESCAPE)) return false;
 
@@ -230,16 +229,14 @@ bool ApplicationClass::Frame(InputClass* input)
 	}
 
 	// Render the graphics scene.
-	result = Render(curr_time, m_Character.get()->GetLocalWorldMatrix());
-	if (!result) return false;
-
+	Render(curr_time);
 	return true;
 }
 
-bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
+void ApplicationClass::Render(time_t curr_time)
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
-	bool result;
+
 	// Clear the buffers to begin the scene.
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
 
@@ -269,19 +266,13 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 
 
 	ID3D11ShaderResourceView* char_texture = m_Model->GetDiffuseTexture();
-	if (curr_time <= m_Character->GetTimeInvincibleEnd())
-	{
-		char_texture = m_RainbowTexture->GetTexture();
-	}
-	for(auto &box : char_model_matrices) {
-		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			box * characterMatrix, vpMatrix, char_texture,
-			m_Light->GetDirection(), m_Light->GetDiffuseColor());
-
-		if (!result) return false;
-	}
-
+	if (curr_time <= m_Character->GetTimeInvincibleEnd()) char_texture = m_RainbowTexture->GetTexture();
 	
+	for(auto &box : char_model_matrices) {
+		m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
+			box * m_Character->GetLocalWorldMatrix(), vpMatrix, char_texture,
+			m_Light->GetDirection(), m_Light->GetDiffuseColor());
+	}
 
 
 	constexpr float box_size = 0.30f;
@@ -304,44 +295,39 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 	
 	if (m_Character->GetSkill<0>())
 	{
-		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
+		m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
 			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<0>()],
 			m_Camera->GetPosition());
-		if (!result) return false;
 	}
 	if (m_Character->GetSkill<1>())
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
+		m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
 			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<1>()],
 			m_Camera->GetPosition());
-		if (!result) return false;
 	}
 	if (m_Character->GetSkill<2>())
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
+		m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
 			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<2>()],
 			m_Camera->GetPosition());
-		if (!result) return false;
 	}
 	if (m_Character->GetSkill<3>())
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
+		m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
 			pos, vpMatrix, m_Light->GetDirection(), skill_color[m_Character->GetSkill<3>()],
 			m_Camera->GetPosition());
-		if (!result) return false;
 	}
 
 
 	// Draw Items
 	for (auto& item : m_Items)
 	{
-		result = m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
+		m_StoneShader->Render(m_Direct3D->GetDeviceContext(), m_DiamondModel->GetIndexCount(),
 			item->GetShapeMatrix(curr_time) * item->GetLocalWorldMatrix(), vpMatrix,
 			m_Light->GetDirection(), skill_color[item->GetType()], m_Camera->GetPosition());
-		if (!result) return false;
 	}
 
 
@@ -359,35 +345,32 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 
 		if (obj_model->GetNormalTexture())
 		{
-			result = m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
+			m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
 				skill_obj->GetGlobalShapeTransform(curr_time), vpMatrix, obj_model->GetDiffuseTexture(),
 				obj_model->GetNormalTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		}
 		else
 		{
-			result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
+			m_LightShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
 				skill_obj->GetGlobalShapeTransform(curr_time), vpMatrix, obj_model->GetDiffuseTexture(),
 				m_Light->GetDirection(), m_Light->GetDiffuseColor());
 		}
 		
-		if (!result) return false;
 	}
 
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 	for (auto& monster : m_Monsters)
 	{
-		result = m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
+		m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 			monster->GetRangeRepresentMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
 			m_Model->GetNormalTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor());
-		if (!result) return false;
 	}
 
 	for (auto& ground : m_Ground)
 	{
-		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
+		m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 			ground->GetRange().toMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
-		if (!result) return false;
 	}
 
 
@@ -402,7 +385,4 @@ bool ApplicationClass::Render(time_t curr_time, const XMMATRIX& characterMatrix)
 
 	// Present the rendered scene to the screen.
 	m_Direct3D->EndScene();
-
-
-	return true;
 }

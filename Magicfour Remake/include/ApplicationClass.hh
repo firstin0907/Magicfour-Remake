@@ -25,7 +25,7 @@ public:
 	bool Frame(class InputClass* input);
 
 private:
-	bool Render(time_t curr_time, const XMMATRIX&);
+	void Render(time_t curr_time);
 
 private:
 	unique_ptr<class D3DClass>			m_Direct3D;

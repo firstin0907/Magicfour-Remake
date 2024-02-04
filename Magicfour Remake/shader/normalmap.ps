@@ -18,7 +18,7 @@ struct PixelInputType
     float3 binormal : BINORMAL;
 };
 
-float4 NormalMapPixelShader(PixelInputType input) : SV_TARGET
+float4 psMain(PixelInputType input) : SV_TARGET
 {
     float4 textureColor;
     float4 bumpMap;

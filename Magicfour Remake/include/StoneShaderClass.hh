@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../include/ShaderClass.hh"
+
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -7,14 +9,16 @@
 
 #include <fstream>
 
-using namespace DirectX;
-
-template<typename T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-class StoneShaderClass
+class StoneShaderClass : public ShaderClass
 {
 private:
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+	using XMMATRIX = DirectX::XMMATRIX;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+
 	struct MatrixBufferType
 	{
 		XMMATRIX mvp;
@@ -39,22 +43,19 @@ public:
 	StoneShaderClass(const StoneShaderClass&) = delete;
 	~StoneShaderClass();
 
-	bool Render(ID3D11DeviceContext* deviceContext, int indexCount,
+	void Render(ID3D11DeviceContext* deviceContext, int indexCount,
 		XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 		XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition);
 
 private:
-	bool InitializeShader(ID3D11Device*, HWND, const WCHAR*, const WCHAR*);
-	void OutputShaderErrorMessage(ID3D10Blob*, HWND, const WCHAR*);
+	void InitializeShader(ID3D11Device* device, HWND hwnd,
+		const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMFLOAT3, XMFLOAT4,
+	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMFLOAT3, XMFLOAT4,
 		XMFLOAT3 cameraPosition);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
-	ComPtr<ID3D11VertexShader>	m_vertexShader;
-	ComPtr<ID3D11PixelShader>	m_pixelShader;
-	ComPtr<ID3D11InputLayout>	m_layout;
 	ComPtr<ID3D11SamplerState>	m_sampleState;
 
 	ComPtr<ID3D11Buffer>		m_matrixBuffer;
