@@ -104,6 +104,7 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 
 		break;
 	case MONSTER_STATE_HIT:
+	case MONSTER_STATE_DIE:
 		{
 			const time_t avg_time = (curr_time - time_delta / 2) - m_StateStartTime;
 
@@ -221,6 +222,7 @@ void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
 		break;
 
 	case MONSTER_STATE_HIT:
+	case MONSTER_STATE_DIE:
 	{
 		const time_t avg_time = (curr_time - time_delta / 2) - m_StateStartTime;
 
@@ -252,7 +254,8 @@ bool MonsterOctopus::Frame(time_t curr_time, time_t time_delta)
 		break;
 
 	case MONSTER_STATE_DIE:
-		return false;
+		if (curr_time - m_StateStartTime >= 1000) return false;
+		else return true;
 	}
 
 	return true;
@@ -340,6 +343,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 		break;
 
 	case MONSTER_STATE_HIT:
+	case MONSTER_STATE_DIE:
 	{
 		const time_t avg_time = (curr_time - time_delta / 2) - m_StateStartTime;
 
@@ -384,7 +388,8 @@ bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 		break;
 
 	case MONSTER_STATE_DIE:
-		return false;
+		if (curr_time - m_StateStartTime >= 1000) return false;
+		else return true;
 	}
 
 	return true;
