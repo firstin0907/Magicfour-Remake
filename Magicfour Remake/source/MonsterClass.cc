@@ -5,7 +5,7 @@
 int MonsterClass::MonsterCount = 0;
 
 MonsterClass::MonsterClass(int type, int hp, direction_t direction, rect_t range)
-	: m_MaxHp(hp), m_Hp(hp), m_Direction(direction), m_Id(++MonsterCount), m_State(MONSTER_STATE_NORMAL),
+	: m_MaxHp(hp), m_Hp(hp), m_prevHp(hp), m_Direction(direction), m_Id(++MonsterCount), m_State(MONSTER_STATE_NORMAL),
 	m_Range(range), m_Type(type)
 {
 	m_HitVx = m_HitVy = 0;
@@ -17,6 +17,7 @@ MonsterClass::~MonsterClass()
 
 bool MonsterClass::Frame(time_t curr_time, time_t time_delta)
 {
+	m_prevHp = (m_prevHp * 30 + m_Hp) / 31;
 	return true;
 }
 

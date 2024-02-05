@@ -32,8 +32,10 @@ private:
 	unique_ptr<class CameraClass>		m_Camera;
 
 	unique_ptr<class ModelClass>		m_Model;
+	unique_ptr<class ModelClass>		m_PlaneModel;
 	unique_ptr<class ModelClass>		m_DiamondModel;
 	unique_ptr<class TextureClass>		m_RainbowTexture;
+	unique_ptr<class TextureClass>		m_BackgroundTexture;
 
 	unique_ptr<class LightClass>		m_Light;
 

@@ -40,12 +40,16 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->SetPosition(0.0f, 0.0f, CAMERA_Z_POSITION);
 
 	m_Model = make_unique<ModelClass>(m_Direct3D->GetDevice(),
-		"data/model/abox.obj", L"data/texture/stone01.tga",  L"data/texture/normal01.tga");
+		"data/model/abox.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
+	m_PlaneModel = make_unique<ModelClass>(m_Direct3D->GetDevice(),
+		"data/model/PlaneObject.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
 	m_DiamondModel = make_unique<ModelClass>(m_Direct3D->GetDevice(),
 		"data/model/diamond.obj", L"data/texture/stone01.tga");
 
 	m_RainbowTexture = make_unique<TextureClass>(m_Direct3D->GetDevice(),
 		L"data/texture/skill_gauge_rainbow.png");
+	m_BackgroundTexture = make_unique<TextureClass>(m_Direct3D->GetDevice(),
+		L"data/texture/background.jpg");
 
 	// Create and initialize the light shader object.
 	m_LightShader = make_unique<LightShaderClass>(m_Direct3D->GetDevice(), hwnd);
@@ -96,7 +100,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	m_TimerClass = make_unique<TimerClass>();
 
 	m_UserInterface = make_unique<UserInterfaceClass>(m_Direct3D->GetDevice(), screenWidth, screenHeight,
-		L"data/texture/monster_hp_frame.png", L"data/texture/monster_hp_gauge.png");
+		L"data/texture/user_interface/monster_hp_frame.png", L"data/texture/user_interface/monster_hp_gauge.png");
 
 }
 
@@ -252,6 +256,14 @@ void ApplicationClass::Render(time_t curr_time)
 	XMMATRIX vpMatrix = viewMatrix * projectionMatrix;
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_PlaneModel->Render(m_Direct3D->GetDeviceContext());
+	m_LightShader->Render(m_Direct3D->GetDeviceContext(), 
+		m_Model->GetIndexCount(),
+		XMMatrixScaling(192.0f, 153.6f, 1)
+		* XMMatrixTranslation(0, 0, 100.0f),
+		vpMatrix,
+		m_BackgroundTexture->GetTexture(),
+		m_Light->GetDirection(), m_Light->GetDiffuseColor());
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 
 #if 0

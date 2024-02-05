@@ -134,6 +134,7 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 
 bool MonsterDuck::Frame(time_t curr_time, time_t time_delta)
 {
+	MonsterClass::Frame(curr_time, time_delta);
 	switch (m_State)
 	{
 	case MONSTER_STATE_NORMAL:
@@ -239,6 +240,7 @@ void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
 
 bool MonsterOctopus::Frame(time_t curr_time, time_t time_delta)
 {
+	MonsterClass::Frame(curr_time, time_delta);
 	switch (m_State)
 	{
 	case MONSTER_STATE_NORMAL:
@@ -366,6 +368,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 
 bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 {
+	MonsterClass::Frame(curr_time, time_delta);
 	switch (m_State)
 	{
 	case MONSTER_STATE_HIT:

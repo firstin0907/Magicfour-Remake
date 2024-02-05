@@ -34,6 +34,10 @@ protected:
 	// The monster whose hp is below then zero is to die.
 	int m_Hp, m_MaxHp;
 
+	// Previous HP. This decrease toward current hp(m_Hp)
+	// This is used to print white portion of monster hp bar. 
+	int m_prevHp;
+
 	// Which species this mosnter instance is.
 	int m_Type;
 
@@ -63,7 +67,8 @@ public:
 	inline int GetPosX() { return m_PosX; }
 	inline int GetPosY() { return m_PosY; }
 
-	inline float GetHpRatio() { return m_Hp / (float)m_MaxHp;  }
+	inline float GetPrevHpRatio() { return m_prevHp / (float)m_MaxHp; }
+	inline float GetHpRatio() { return m_Hp / (float)m_MaxHp; }
 
 	virtual int GetVx() = 0;
 

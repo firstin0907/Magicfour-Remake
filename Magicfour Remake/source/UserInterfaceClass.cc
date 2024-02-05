@@ -18,7 +18,10 @@ UserInterfaceClass::UserInterfaceClass(ID3D11Device* device, int screenWidth, in
 		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
 		L"data/texture/skill_gauge_white.png", -80 + 40, 180 + 16);
 	m_MonsterHpFrameTexture = make_unique<TextureClass>(device, monsterHpFrameFilename);
-	m_MonsterHpGaugeTexture = make_unique<TextureClass>(device, monsterHpGaugeFilename);
+	m_MonsterHpGaugeTexture[0] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_green.png");
+	m_MonsterHpGaugeTexture[1] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_yellow.png");
+	m_MonsterHpGaugeTexture[2] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_red.png");
+	m_MonsterHpGaugeTexture[3] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_white.png");
 
 	InitializeBuffers(device);
 }
@@ -129,10 +132,20 @@ void UserInterfaceClass::Render(TextureShaderClass* textureShader,
 		t.m128_f32[0] -= m_MonsterHpFrameTexture->GetWidth() / 2.0f;
 		t.m128_f32[1] += m_MonsterHpFrameTexture->GetHeight();
 
+		const float hp_ratio = monster->GetHpRatio();
+		TextureClass* gauge_texture = nullptr;
+
+		if (hp_ratio > 0.5) gauge_texture = m_MonsterHpGaugeTexture[0].get();
+		else if (hp_ratio > 0.2) gauge_texture = m_MonsterHpGaugeTexture[1].get();
+		else gauge_texture = m_MonsterHpGaugeTexture[2].get();
+		
 		// Draw hp gauge according to hp of the monster.
 		textureShader->Render(deviceContext, 6,
-			XMMatrixScaling(monster->GetHpRatio(), 1, 1) * XMMatrixTranslationFromVector(t),
-			orthoMatrix, m_MonsterHpGaugeTexture->GetTexture());
+			XMMatrixScaling(monster->GetPrevHpRatio(), 1, 1)* XMMatrixTranslationFromVector(t),
+			orthoMatrix, m_MonsterHpGaugeTexture[3]->GetTexture()); // white portion
+		textureShader->Render(deviceContext, 6,
+			XMMatrixScaling(hp_ratio, 1, 1)* XMMatrixTranslationFromVector(t),
+			orthoMatrix, gauge_texture->GetTexture()); // real hp portion
 
 		// Draw hp frame
 		textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),

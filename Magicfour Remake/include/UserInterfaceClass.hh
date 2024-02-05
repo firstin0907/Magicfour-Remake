@@ -30,7 +30,7 @@ private:
 	std::unique_ptr<class SkillGaugeClass> m_SkillGauge;
 
 	std::unique_ptr<class TextureClass> m_MonsterHpFrameTexture;
-	std::unique_ptr<class TextureClass> m_MonsterHpGaugeTexture;
+	std::unique_ptr<class TextureClass> m_MonsterHpGaugeTexture[4];
 
 	ComPtr<ID3D11Buffer> m_vertexBuffer, m_indexBuffer;
 
