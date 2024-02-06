@@ -2,6 +2,7 @@
 
 #include "../third-party/DirectXTex.h"
 #include "../include/GameException.hh"
+#include "../include/D2DClass.hh"
 
 #pragma comment(lib, "third-party/DirectXTex.lib")
 
@@ -124,7 +125,7 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	// 스왑체인, Direct3D 장치, Direct3D 장치 컨텍스트 만들기
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE,
-		NULL, 0, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, m_swapChain.GetAddressOf(),
+		NULL, D3D11_CREATE_DEVICE_BGRA_SUPPORT, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, m_swapChain.GetAddressOf(),
 		m_device.GetAddressOf(), NULL, m_deviceContext.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3D swap chain.", WFILE, __LINE__);
 
@@ -132,7 +133,7 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	ID3D11Texture2D* backBufferPtr;
 	result = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
 	if (FAILED(result)) throw GameException(L"Failed to get buffer of swap chain.", WFILE, __LINE__);
-
+	
 
 	// 그 포인터로 렌더 타겟 뷰 생성
 	result = m_device->CreateRenderTargetView(backBufferPtr, NULL, m_renderTargetView.GetAddressOf());
@@ -315,6 +316,11 @@ void D3DClass::EndScene()
 		// 가능한 빠르게!
 		m_swapChain->Present(0, 0);
 	}
+}
+
+IDXGISwapChain* D3DClass::GetSwapChain()
+{
+	return m_swapChain.Get();
 }
 
 ID3D11Device* D3DClass::GetDevice()

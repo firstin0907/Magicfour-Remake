@@ -29,6 +29,7 @@ private:
 
 private:
 	unique_ptr<class D3DClass>			m_Direct3D;
+	unique_ptr<class D2DClass>			m_Direct2D;
 	unique_ptr<class CameraClass>		m_Camera;
 
 	unique_ptr<class ModelClass>		m_Model;

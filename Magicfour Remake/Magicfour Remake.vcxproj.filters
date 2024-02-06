@@ -93,6 +93,9 @@
     <ClCompile Include="source\ShaderClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="source\D2DClass.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\InputClass.hh">
@@ -177,6 +180,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\ShaderClass.hh">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\D2DClass.hh">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "../include/D3DClass.hh"
+#include "../include/D2DClass.hh"
 #include "../include/ModelClass.hh"
 #include "../include/InputClass.hh"
 #include "../include/LightShaderClass.hh"
@@ -35,6 +36,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 {
 	m_Direct3D = make_unique<D3DClass>(screenWidth, screenHeight,
 		VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
+	m_Direct2D = make_unique<D2DClass>(m_Direct3D->GetSwapChain(), hwnd);
 
 	m_Camera = make_unique<CameraClass>();
 	m_Camera->SetPosition(0.0f, 0.0f, CAMERA_Z_POSITION);
@@ -394,6 +396,15 @@ void ApplicationClass::Render(time_t curr_time)
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_Direct3D->TurnZBufferOn();
+
+	// Direct2D rendering
+	m_Direct2D->BeginDraw();
+	
+	m_Direct2D->DrawText(L"Wtest");
+
+	m_Direct2D->EndDraw();
+
+
 
 	// Present the rendered scene to the screen.
 	m_Direct3D->EndScene();

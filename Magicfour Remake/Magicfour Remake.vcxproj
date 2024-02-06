@@ -130,6 +130,7 @@
     <ClCompile Include="main.cc" />
     <ClCompile Include="source\AnimatedObjectClass.cc" />
     <ClCompile Include="source\ApplicationClass.cc" />
+    <ClCompile Include="source\D2DClass.cc" />
     <ClCompile Include="source\ItemClass.cc" />
     <ClCompile Include="source\ShaderClass.cc" />
     <ClCompile Include="source\SkillGaugeClass.cc" />
@@ -157,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="include\AnimatedObjectClass.hh" />
     <ClInclude Include="include\ApplicationClass.hh" />
+    <ClInclude Include="include\D2DClass.hh" />
     <ClInclude Include="include\ItemClass.hh" />
     <ClInclude Include="include\ShaderClass.hh" />
     <ClInclude Include="include\SkillGaugeClass.hh" />
