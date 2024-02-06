@@ -101,7 +101,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 
 	m_TimerClass = make_unique<TimerClass>();
 
-	m_UserInterface = make_unique<UserInterfaceClass>(m_Direct3D->GetDevice(), screenWidth, screenHeight,
+	m_UserInterface = make_unique<UserInterfaceClass>(m_Direct2D.get(),
+		m_Direct3D->GetDevice(), screenWidth, screenHeight,
 		L"data/texture/user_interface/monster_hp_frame.png", L"data/texture/user_interface/monster_hp_gauge.png");
 
 }
@@ -217,6 +218,7 @@ bool ApplicationClass::Frame(InputClass* input)
 
 			// and swap with last element and pop it.
 			swap(m_Monsters[i], m_Monsters.back());
+			m_Character->AddScore();
 			m_Monsters.pop_back();
 		}
 	}
@@ -391,19 +393,11 @@ void ApplicationClass::Render(time_t curr_time)
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
 
-	m_UserInterface->Render(m_TextureShader.get(), m_Direct3D->GetDeviceContext(),
+	m_UserInterface->Render(m_Direct2D.get(), m_TextureShader.get(), m_Direct3D->GetDeviceContext(),
 		m_Character.get(), m_Monsters, vpMatrix, orthoMatrix, curr_time);
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_Direct3D->TurnZBufferOn();
-
-	// Direct2D rendering
-	m_Direct2D->BeginDraw();
-	
-	m_Direct2D->DrawText(L"Wtest");
-
-	m_Direct2D->EndDraw();
-
 
 
 	// Present the rendered scene to the screen.

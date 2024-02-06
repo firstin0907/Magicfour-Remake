@@ -14,7 +14,7 @@ constexpr int INVINCIBLE_TIME = 5'000;
 constexpr int WALK_SPD = 700, RUN_SPD = 1300;
 
 CharacterClass::CharacterClass(int pos_x, int pos_y)
-	: pos_x(pos_x), pos_y(pos_y), pos_yv(0), jump_cnt(0)
+	: pos_x(pos_x), pos_y(pos_y), pos_yv(0), jump_cnt(0), m_Score(0)
 {
 	m_JumpAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt");
 	m_FallAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh");

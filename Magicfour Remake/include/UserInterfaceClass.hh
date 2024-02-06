@@ -4,6 +4,8 @@
 #include <memory>
 #include <d3d11.h>
 #include <wrl.h>
+#include <d2d1.h>
+#include <dwrite.h>
 
 #include <DirectXMath.h>
 
@@ -16,22 +18,27 @@ private:
 	using MonsterVector = std::vector<std::unique_ptr<class MonsterClass> >;
 
 public:
-	UserInterfaceClass(ID3D11Device* device, int screenWidth, int screenHeight,
+	UserInterfaceClass(class D2DClass* direct2D, ID3D11Device* device, int screenWidth, int screenHeight,
 		const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename);
 
 	void InitializeBuffers(ID3D11Device* device);
 
-	void Render(class TextureShaderClass* textureShader,
+	void Render(class D2DClass* direct2D,
+		class TextureShaderClass* textureShader,
 		ID3D11DeviceContext* deviceContext, class CharacterClass* character,
 		MonsterVector& monsters,
 		const XMMATRIX& vpMatrix, const XMMATRIX& orthoMatrix, time_t curr_time);
 
 private:
+	int m_ScreenWidth, m_ScreenHeight;
+
 	std::unique_ptr<class SkillGaugeClass> m_SkillGauge;
+	ComPtr<struct IDWriteTextFormat> m_ScoreTextFormat;
 
 	std::unique_ptr<class TextureClass> m_MonsterHpFrameTexture;
 	std::unique_ptr<class TextureClass> m_MonsterHpGaugeTexture[4];
 
 	ComPtr<ID3D11Buffer> m_vertexBuffer, m_indexBuffer;
+
 
 };

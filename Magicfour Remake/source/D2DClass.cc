@@ -15,7 +15,6 @@ D2DClass::D2DClass(IDXGISwapChain* swapChain, HWND hwnd)
 		d2dFactory.GetAddressOf());
 	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to initialize Direct2D factory");
 
-	float dpi = GetDpiForWindow(hwnd);
 	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -24,26 +23,12 @@ D2DClass::D2DClass(IDXGISwapChain* swapChain, HWND hwnd)
 	d2dFactory->CreateDxgiSurfaceRenderTarget(
 		backBuffer.Get(), &props, &m_D2Rtg);
 
-	ComPtr<IDWriteFactory> dwFactory;
 	hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
 		__uuidof(IDWriteFactory),
-		reinterpret_cast<IUnknown**>(dwFactory.GetAddressOf())
+		reinterpret_cast<IUnknown**>(m_dwFactory.GetAddressOf())
 	);
 	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to initialize Dwrite factory");
 	
-	hr = dwFactory->CreateTextFormat(
-		L"ÇÔÃÊ·Òµ¸¿ò", 0, DWRITE_FONT_WEIGHT::DWRITE_FONT_WEIGHT_NORMAL,
-		DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL,
-		DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-		45, L"ko", m_Format.GetAddressOf()
-	);
-	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to create text format");
-
-	hr = m_Format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to set text alignment");
-
-	hr = m_Format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to set text alignment");
 
 	hr = m_D2Rtg->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &m_brush);
 }
@@ -59,12 +44,30 @@ void D2DClass::EndDraw()
 	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to draw text");
 }
 
-
-void D2DClass::DrawText(const wchar_t* contents)
+void D2DClass::CreateTextFormat(const wchar_t* fontFamily, float fontSize,
+	DWRITE_TEXT_ALIGNMENT text_alignment, DWRITE_PARAGRAPH_ALIGNMENT paragraph_alignment,
+	ComPtr<IDWriteTextFormat>& format)
 {
-	D2D1_RECT_F layoutRect = D2D1::RectF(0.f, 0.f, 1000.0f, 100.f);
-
-	m_D2Rtg->DrawText(contents, wcslen(contents),
-		m_Format.Get(), layoutRect, m_brush.Get()
+	HRESULT hr = m_dwFactory->CreateTextFormat(
+		fontFamily, 0, DWRITE_FONT_WEIGHT::DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
+		fontSize, L"ko", format.GetAddressOf()
 	);
+	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to create text format");
+
+	hr = format->SetTextAlignment(text_alignment);
+	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to set text alignment");
+
+	hr = format->SetParagraphAlignment(paragraph_alignment);
+	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to set text alignment");
+}
+
+void D2DClass::RenderText(IDWriteTextFormat* format, const wchar_t* contents,
+	float left, float top, float right, float bottom)
+{
+	D2D1_RECT_F layoutRect = D2D1::RectF(left, top, right, bottom);
+
+	m_D2Rtg->DrawText(contents, static_cast<UINT32>(wcslen(contents)),
+		format, layoutRect, m_brush.Get());
 }

@@ -7,12 +7,15 @@
 #include "../include/TextureShaderClass.hh"
 #include "../include/SkillGaugeClass.hh"
 #include "../include/CharacterClass.hh"
+#include "../include/D2DClass.hh"
 
 using namespace std;
 using namespace DirectX;
 
-UserInterfaceClass::UserInterfaceClass(ID3D11Device* device, int screenWidth, int screenHeight,
+UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
+	ID3D11Device* device, int screenWidth, int screenHeight,
 	const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename)
+	: m_ScreenHeight(screenHeight), m_ScreenWidth(screenWidth)
 {
 	m_SkillGauge = make_unique<SkillGaugeClass>(device,
 		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
@@ -24,6 +27,10 @@ UserInterfaceClass::UserInterfaceClass(ID3D11Device* device, int screenWidth, in
 	m_MonsterHpGaugeTexture[3] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_white.png");
 
 	InitializeBuffers(device);
+
+	direct2D->CreateTextFormat(L"Arial", 44,
+		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
+		m_ScoreTextFormat);
 }
 
 void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
@@ -83,7 +90,7 @@ void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create index buffer.");
 }
 
-void UserInterfaceClass::Render(TextureShaderClass* textureShader,
+void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* textureShader,
 	ID3D11DeviceContext* deviceContext, CharacterClass* character, MonsterVector& monsters,
 	const XMMATRIX& vpMatrix, const XMMATRIX& orthoMatrix, time_t curr_time)
 {
@@ -151,4 +158,15 @@ void UserInterfaceClass::Render(TextureShaderClass* textureShader,
 		textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),
 			orthoMatrix, m_MonsterHpFrameTexture->GetTexture());
 	}
+
+	// Direct2D rendering
+	direct2D->BeginDraw();
+
+	std::to_wstring(character->GetTotalScore(curr_time));
+
+	direct2D->RenderText(m_ScoreTextFormat.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
+		0, 30, m_ScreenWidth - 30, 200);
+
+	direct2D->EndDraw();
+
 }

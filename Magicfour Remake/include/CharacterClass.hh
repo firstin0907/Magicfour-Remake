@@ -58,6 +58,13 @@ public:
 
 	void LearnSkill(int skill_id);
 
+	inline int GetTotalScore(time_t curr_time)
+	{
+		if (m_State == CHARACTER_STATE_DIE) return m_Score * 1'000 + m_StateStartTime;
+		else return m_Score * 1'000 + curr_time;
+	}
+	inline void AddScore() { ++m_Score; }
+
 private:
 	inline void SetState(int state, time_t start_time)
 	{
@@ -89,6 +96,8 @@ private:
 	
 	int m_SkillState; // be used in OnSkill(...) method.
 	int m_SkillUsed; // ID of skill which is being used.
+
+	int m_Score;
 
 	time_t m_TimeInvincibleEnd;
 	time_t m_TimeSkillAvailable;
