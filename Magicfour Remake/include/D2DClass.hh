@@ -20,12 +20,16 @@ public:
 	void BeginDraw();
 	void EndDraw();
 
-	void CreateTextFormat(const wchar_t* fontFamily, float fontSize,
+	IDWriteTextFormat* CreateTextFormat(const wchar_t* fontFamily, float fontSize,
 		DWRITE_TEXT_ALIGNMENT text_alignment,
-		DWRITE_PARAGRAPH_ALIGNMENT paragraph_alignment,
-		ComPtr<IDWriteTextFormat>& format);
+		DWRITE_PARAGRAPH_ALIGNMENT paragraph_alignment);
+
+	void SetBrushColor(D2D1_COLOR_F color);
+
 	void RenderText(IDWriteTextFormat* format, const wchar_t* contents,
 		float left, float top, float right, float bottom);
+	void RenderTextWithInstantFormat(IDWriteTextFormat* format,
+		const wchar_t* contents, float left, float top, float right, float bottom);
 
 private:
 	HWND m_hwnd;

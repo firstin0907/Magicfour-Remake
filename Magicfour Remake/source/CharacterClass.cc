@@ -10,6 +10,7 @@
 #include "../include/GroundClass.hh"
 
 constexpr int SKILL_COOLTIME = 1'500;
+constexpr int COMBO_DURATION = 5'000;
 constexpr int INVINCIBLE_TIME = 5'000;
 constexpr int WALK_SPD = 700, RUN_SPD = 1300;
 
@@ -75,6 +76,11 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 				break;
 			}
 		}
+	}
+
+	if (m_TimeComboEnd < curr_time)
+	{
+		m_Combo = 0;
 	}
 
 	// jump attempt
@@ -264,6 +270,9 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 {
 	if (m_TimeInvincibleEnd < curr_time && m_TimeSkillEnded < curr_time)
 	{
+		m_Combo = 0;
+
+
 		SetState(CHARACTER_STATE_HIT, curr_time);
 		m_Direction = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
 
@@ -307,6 +316,12 @@ void CharacterClass::LearnSkill(int skill_id)
 	{
 		if (!skill) { skill = skill_id; return; }
 	}
+}
+
+void CharacterClass::AddCombo(time_t curr_time)
+{
+	++m_Combo;
+	m_TimeComboEnd = curr_time + COMBO_DURATION;
 }
 
 void CharacterClass::OnSkill(time_t curr_time,

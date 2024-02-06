@@ -128,8 +128,7 @@ bool ApplicationClass::Frame(InputClass* input)
 		delta_time = curr_time / GAME_OVER_SLOW - (curr_time - delta_time) / GAME_OVER_SLOW;
 		curr_time = character_death_time + (curr_time - character_death_time) / GAME_OVER_SLOW;
 	}
-
-	m_MonsterSpawner->Frame(curr_time, delta_time, m_Monsters);
+	else m_MonsterSpawner->Frame(curr_time, delta_time, m_Monsters);
 
 	m_Character->Frame(delta_time, curr_time, input, m_SkillObjectList, m_Ground);
 
@@ -160,7 +159,11 @@ bool ApplicationClass::Frame(InputClass* input)
 
 			if (skill_obj->GetGlobalRange().collide(monster->GetGlobalRange()))
 			{
-				skill_obj->OnCollided(monster.get(), curr_time);
+				if (skill_obj->OnCollided(monster.get(), curr_time))
+				{
+					// If monster was sucessfully hit, add combo
+					m_Character->AddCombo(curr_time);
+				}
 			}
 		}
 	}

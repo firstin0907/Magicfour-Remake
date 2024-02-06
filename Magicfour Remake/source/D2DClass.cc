@@ -44,15 +44,16 @@ void D2DClass::EndDraw()
 	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to draw text");
 }
 
-void D2DClass::CreateTextFormat(const wchar_t* fontFamily, float fontSize,
-	DWRITE_TEXT_ALIGNMENT text_alignment, DWRITE_PARAGRAPH_ALIGNMENT paragraph_alignment,
-	ComPtr<IDWriteTextFormat>& format)
+IDWriteTextFormat* D2DClass::CreateTextFormat(const wchar_t* fontFamily, float fontSize,
+	DWRITE_TEXT_ALIGNMENT text_alignment, DWRITE_PARAGRAPH_ALIGNMENT paragraph_alignment)
 {
+	IDWriteTextFormat* format;
+
 	HRESULT hr = m_dwFactory->CreateTextFormat(
 		fontFamily, 0, DWRITE_FONT_WEIGHT::DWRITE_FONT_WEIGHT_NORMAL,
 		DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL,
 		DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-		fontSize, L"ko", format.GetAddressOf()
+		fontSize, L"ko", &format
 	);
 	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to create text format");
 
@@ -61,13 +62,31 @@ void D2DClass::CreateTextFormat(const wchar_t* fontFamily, float fontSize,
 
 	hr = format->SetParagraphAlignment(paragraph_alignment);
 	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to set text alignment");
+
+	return format;
 }
 
-void D2DClass::RenderText(IDWriteTextFormat* format, const wchar_t* contents,
-	float left, float top, float right, float bottom)
+void D2DClass::SetBrushColor(D2D1_COLOR_F color)
+{
+	m_brush->SetColor(color);
+}
+
+void D2DClass::RenderText(IDWriteTextFormat* format,
+	const wchar_t* contents, float left, float top, float right, float bottom)
 {
 	D2D1_RECT_F layoutRect = D2D1::RectF(left, top, right, bottom);
 
 	m_D2Rtg->DrawText(contents, static_cast<UINT32>(wcslen(contents)),
 		format, layoutRect, m_brush.Get());
+}
+
+void D2DClass::RenderTextWithInstantFormat(IDWriteTextFormat* format,
+	const wchar_t* contents, float left, float top, float right, float bottom)
+{
+	D2D1_RECT_F layoutRect = D2D1::RectF(left, top, right, bottom);
+
+	m_D2Rtg->DrawText(contents, static_cast<UINT32>(wcslen(contents)),
+		format, layoutRect, m_brush.Get());
+
+	format->Release();
 }

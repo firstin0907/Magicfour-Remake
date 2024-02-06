@@ -28,9 +28,8 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 
 	InitializeBuffers(device);
 
-	direct2D->CreateTextFormat(L"Arial", 44,
-		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
-		m_ScoreTextFormat);
+	m_ScoreTextFormat = direct2D->CreateTextFormat(L"Arial", 40,
+		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
 
 void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
@@ -162,10 +161,27 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 	// Direct2D rendering
 	direct2D->BeginDraw();
 
-	std::to_wstring(character->GetTotalScore(curr_time));
-
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
 	direct2D->RenderText(m_ScoreTextFormat.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
 		0, 30, m_ScreenWidth - 30, 200);
+
+	const int combo = character->GetCombo();
+
+	if (combo > 0)
+	{
+		const time_t combo_durable_time = character->GetComboDurableTime(curr_time);
+
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black,
+			SATURATE(0.0f, (combo_durable_time - 500.0f) * (1 / 3000.0f), 1.0f)));
+
+
+		float font_size = max(45.0f + 30.0f - (5000 - combo_durable_time) * 0.15f, 45.0f);
+		direct2D->RenderTextWithInstantFormat(
+			direct2D->CreateTextFormat(L"Arial", font_size,
+				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER),
+			(std::to_wstring(combo) + L" Combo").c_str(),
+			0, (float)(m_ScreenHeight / 2), (float)(m_ScreenWidth - 30), (float)(m_ScreenHeight / 2));
+	}
 
 	direct2D->EndDraw();
 
