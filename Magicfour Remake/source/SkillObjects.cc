@@ -11,34 +11,35 @@ unique_ptr<class ModelClass> SkillObjectLeg::m_Model = nullptr;
 unique_ptr<class ModelClass> SkillObjectBasic::m_Model = nullptr;
 
 SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t created_time)
-	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 }),
-	vx(vx), vy(vy), m_State(STATE_NORMAL), m_StateStartTime(created_time)
+	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 },
+		vx, vy)
 {
+	SetState(SkillObjectState::kNormal, created_time);
 	m_Angle = (float)atan(vx / (double)vy);
 }
 
 void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<unique_ptr<class GroundClass> >& ground)
 {
-	switch (m_State)
+	switch (state_)
 	{
-	case STATE_NORMAL:
+	case SkillObjectState::kNormal:
 	{
 		// Movement acoording to the current velocity.
-		pos_x += (int)time_delta * vx;
-		int start_y = pos_y, target_y = pos_y + (int)time_delta * vy;
-		pos_y = target_y;
+		position_.x += (int)time_delta * velocity_.x;
+		int start_y = position_.y, target_y = position_.y + (int)time_delta * velocity_.y;
+		position_.y = target_y;
 
 		for (auto& ground_obj : ground)
 		{
-			pos_y = max(pos_y,
-				ground_obj->IsColiided(m_Range.x1 + pos_x, m_Range.x2 + pos_x, start_y, target_y));
+			position_.y = max(position_.y,
+				ground_obj->IsColiided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
 		}
 
-		if (pos_y != target_y)
+		if (position_.y != target_y)
 		{
-			m_State = STATE_ONGROUND;
-			m_StateStartTime = curr_time;
+			state_ = SkillObjectState::kSpearOnGround;
+			state_start_time_ = curr_time;
 		}
 
 	}
@@ -50,26 +51,26 @@ bool SkillObjectSpear::OnCollided(MonsterClass* monster, time_t collided_time)
 {
 	if (!SkillObjectClass::OnCollided(monster, collided_time)) return false;
 
-	if (m_State == STATE_NORMAL) monster->Damage(25, collided_time, vx / 6, 0);
-	else if (m_State == STATE_ONGROUND) monster->Damage(17, collided_time, vx / 6, 1000);
+	if (state_ == SkillObjectState::kNormal) monster->Damage(25, collided_time, velocity_.x / 6, 0);
+	else if (state_ == SkillObjectState::kSpearOnGround) monster->Damage(17, collided_time, velocity_.x / 6, 1000);
 
-	m_State = STATE_DIE;
+	state_ = SkillObjectState::kDie;
 	return true;
 }
 
 bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 {
-	switch (m_State)
+	switch (state_)
 	{
-	case STATE_ONGROUND:
-		if (m_StateStartTime + 1000 < curr_time)
+	case SkillObjectState::kSpearOnGround:
+		if (state_start_time_ + 1000 < curr_time)
 		{
-			m_State = STATE_DIE;
+			state_ = SkillObjectState::kDie;
 			return false;
 		}
 		break;
 
-	case STATE_DIE:
+	case SkillObjectState::kDie:
 		return false;
 	}
 
@@ -79,7 +80,7 @@ bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
 {
 	return XMMatrixRotationY(XM_PI / 2)
-		* XMMatrixRotationZ(XM_PI - m_Angle) * XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0.0f);
+		* XMMatrixRotationZ(XM_PI - m_Angle) * XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
 }
 
 void SkillObjectSpear::initialize(ModelClass* model)
@@ -93,37 +94,34 @@ ModelClass* SkillObjectSpear::GetModel()
 }
 
 SkillObjectBead::SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t created_time)
-	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 }),
-	vx(vx), vy(vy), m_State(STATE_NORMAL), m_StateStartTime(created_time)
+	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 }, vx, vy)
 {
+	SetState(SkillObjectState::kNormal, created_time);
 }
 
 void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<unique_ptr<class GroundClass> >& ground)
 {
-	pos_x += (int)time_delta * vx;
-	pos_y += (int)time_delta * vy;
+	position_.x += (int)time_delta * velocity_.x;
+	position_.y += (int)time_delta * velocity_.y;
 }
 
 bool SkillObjectBead::OnCollided(MonsterClass* monster, time_t collided_time)
 {
 	if (!SkillObjectClass::OnCollided(monster, collided_time)) return false;
 
-	switch (m_State)
+	switch (state_)
 	{
-	case STATE_NORMAL:
-		monster->Damage(20, collided_time, vx / 8, 0);
-		vx *= 2, vy *= 2;
+	case SkillObjectState::kNormal:
+		monster->Damage(20, collided_time, velocity_.x / 8, 0);
+		velocity_.x *= 2, velocity_.y *= 2;
 
-		m_State = STATE_ONEHIT;
-		m_StateStartTime = collided_time;
+		SetState(SkillObjectState::kBeadOneHit, collided_time);
 		break;
 		
-	case STATE_ONEHIT:
-		monster->Damage(20, collided_time, vx / 8, 0);
-
-		m_State = STATE_DIE;
-		m_StateStartTime = collided_time;
+	case SkillObjectState::kBeadOneHit:
+		monster->Damage(20, collided_time, velocity_.x / 8, 0);
+		SetState(SkillObjectState::kDie, collided_time);
 	}
 	return true;
 
@@ -131,18 +129,18 @@ bool SkillObjectBead::OnCollided(MonsterClass* monster, time_t collided_time)
 
 bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta)
 {
-	switch (m_State)
+	switch (state_)
 	{
-	case STATE_NORMAL:
-	case STATE_ONEHIT:
-		if (m_StateStartTime + 1000 < curr_time)
+	case SkillObjectState::kNormal:
+	case SkillObjectState::kBeadOneHit:
+		if (GetStateTime(curr_time) >= 1'000)
 		{
-			m_State = STATE_DIE;
+			state_ = SkillObjectState::kDie;
 			return false;
 		}
 		break;
 
-	case STATE_DIE:
+	case SkillObjectState::kDie:
 		return false;
 	}
 	return true;
@@ -152,7 +150,7 @@ XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
 {
 	return 
 		XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
-		* XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0.0f);
+		* XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
 }
 
 void SkillObjectBead::initialize(class ModelClass* model)
@@ -166,17 +164,17 @@ ModelClass* SkillObjectBead::GetModel()
 }
 
 SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
-	: SkillObjectClass(pos_x, GROUND_Y, rect_t{ -50000, -1200000, 50000, 0 }),
-	m_StateStartTime(created_time)
+	: SkillObjectClass(pos_x, GROUND_Y, rect_t{ -50000, -1200000, 50000, 0 },
+		0, 0)
 {
-	
+	SetState(SkillObjectState::kNormal, created_time);
 }
 
 void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<unique_ptr<class GroundClass> >& ground)
 {
-	time_delta = min(time_delta, curr_time - m_StateStartTime);
-	pos_y += 2'000 * time_delta;
+	time_delta = min(time_delta, curr_time - state_start_time_);
+	position_.y += 2'000 * time_delta;
 }
 
 bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -200,12 +198,12 @@ bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
 
 bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta)
 {
-	return m_StateStartTime + 1200 > curr_time;
+	return state_start_time_ + 1200 > curr_time;
 }
 
 XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
 {
-	return XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0.0f);
+	return XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
 }
 
 
@@ -223,9 +221,9 @@ ModelClass* SkillObjectLeg::GetModel()
 
 
 SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx, time_t created_time)
-	: SkillObjectClass(pos_x, pos_y, rect_t{ -60000, 80000, 60000, 380000 }),
-	m_StateStartTime(created_time), vx(vx)
+	: SkillObjectClass(pos_x, pos_y, rect_t{ -60000, 80000, 60000, 380000 }, vx, 0)
 {
+	SetState(SkillObjectState::kNormal, created_time);
 }
 
 void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
@@ -237,14 +235,14 @@ void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
 bool SkillObjectBasic::OnCollided(MonsterClass* monster, time_t collided_time)
 {
 	if (!SkillObjectClass::OnCollided(monster, collided_time)) return false;
-	monster->Damage(40, collided_time, vx, 0);
+	monster->Damage(40, collided_time, velocity_.x, 0);
 	return true;
 }
 
 bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
 {
 	constexpr time_t lifetime = 200;
-	return m_StateStartTime + lifetime > curr_time;
+	return state_start_time_ + lifetime > curr_time;
 }
 
 XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)

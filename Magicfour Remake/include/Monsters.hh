@@ -13,7 +13,7 @@ class MonsterDuck : public MonsterClass
 {
 public:
 	MonsterDuck(direction_t direction, time_t created_time);
-	~MonsterDuck();
+	~MonsterDuck() = default;
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
@@ -26,10 +26,6 @@ public:
 	virtual int GetVx();
 
 private:
-	static constexpr int STATE_JUMP_READY = 4;
-	static constexpr int STATE_JUMP = 5;
-
-	int vy;
 	time_t m_NextJumpTime;
 };
 
@@ -37,7 +33,7 @@ class MonsterOctopus : public MonsterClass
 {
 public: 
 	MonsterOctopus(direction_t direction, time_t created_time);
-	~MonsterOctopus();
+	~MonsterOctopus() = default;
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
@@ -55,7 +51,7 @@ class MonsterBird : public MonsterClass
 {
 public:
 	MonsterBird(direction_t direction, time_t created_time);
-	~MonsterBird();
+	~MonsterBird() = default;
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
@@ -68,9 +64,6 @@ public:
 	virtual int GetVx();
 
 public:
-	// is the state 
-	static constexpr int STATE_MOVE = 4;
-
 	int m_TargetYPosition;
 	int m_NextMoveTime;
 

@@ -2,8 +2,10 @@
 
 #include "../include/MonsterClass.hh"
 
-SkillObjectClass::SkillObjectClass(int pos_x, int pos_y, rect_t range)
-	: pos_x(pos_x), pos_y(pos_y), m_Range(range)
+SkillObjectClass::SkillObjectClass(int pos_x, int pos_y,
+	rect_t range, int vx, int vy)
+	: RigidbodyClass<SkillObjectState>(
+		Point2d(pos_x, pos_y), rect_t(range), LEFT_FORWARD, Vector2d(vx, vy))
 {
 	
 }

@@ -163,17 +163,16 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
 	direct2D->RenderText(m_ScoreTextFormat.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
-		0, 30, m_ScreenWidth - 30, 200);
+		0, 30.0f, (float)(m_ScreenWidth - 30), 200.0f);
 
 	const int combo = character->GetCombo();
 
 	if (combo > 0)
 	{
 		const time_t combo_durable_time = character->GetComboDurableTime(curr_time);
+		const float combo_text_alpha_value = SATURATE(0.0f, (combo_durable_time - 500.0f) * (1 / 3000.0f), 1.0f);
 
-		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black,
-			SATURATE(0.0f, (combo_durable_time - 500.0f) * (1 / 3000.0f), 1.0f)));
-
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, combo_text_alpha_value));
 
 		float font_size = max(45.0f + 30.0f - (5000 - combo_durable_time) * 0.15f, 45.0f);
 		direct2D->RenderTextWithInstantFormat(

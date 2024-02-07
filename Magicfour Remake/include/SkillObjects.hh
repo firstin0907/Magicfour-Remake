@@ -25,18 +25,8 @@ public:
 
 private:
 	static unique_ptr<class ModelClass> m_Model;
-	static int t;
 
-	int vx, vy;
 	float m_Angle;
-
-	enum state_t
-	{
-		STATE_NORMAL,
-		STATE_ONGROUND,
-		STATE_DIE
-	} m_State;
-	time_t m_StateStartTime;
 };
 
 class SkillObjectBead : public SkillObjectClass
@@ -62,16 +52,6 @@ public:
 private:
 
 	static unique_ptr<class ModelClass> m_Model;
-
-	int vx, vy;
-	enum state_t
-	{
-		STATE_NORMAL,
-		STATE_ONEHIT,
-		STATE_DIE
-	} m_State;
-
-	time_t m_StateStartTime;
 };
 
 class SkillObjectLeg : public SkillObjectClass
@@ -97,8 +77,6 @@ public:
 
 private:
 	static unique_ptr<class ModelClass> m_Model;
-
-	time_t m_StateStartTime;
 };
 
 class SkillObjectBasic : public SkillObjectClass
@@ -124,8 +102,4 @@ public:
 
 private:
 	static unique_ptr<class ModelClass> m_Model;
-
-	int vx;
-
-	time_t m_StateStartTime;
 };

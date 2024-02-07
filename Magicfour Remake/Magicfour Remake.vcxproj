@@ -160,6 +160,7 @@
     <ClInclude Include="include\ApplicationClass.hh" />
     <ClInclude Include="include\D2DClass.hh" />
     <ClInclude Include="include\ItemClass.hh" />
+    <ClInclude Include="include\RigidbodyClass.hh" />
     <ClInclude Include="include\ShaderClass.hh" />
     <ClInclude Include="include\SkillGaugeClass.hh" />
     <ClInclude Include="include\CameraClass.hh" />

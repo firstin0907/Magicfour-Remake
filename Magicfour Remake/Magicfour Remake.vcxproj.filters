@@ -185,5 +185,8 @@
     <ClInclude Include="include\D2DClass.hh">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="include\RigidbodyClass.hh">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

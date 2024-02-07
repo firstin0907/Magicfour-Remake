@@ -1,10 +1,16 @@
 #pragma once
 #include "global.hh"
+#include "RigidbodyClass.hh"
 
 #include <memory>
 #include <vector>
 
-class ItemClass
+enum class ItemState
+{
+	kNormal, kDie
+};
+
+class ItemClass : public RigidbodyClass<ItemState>
 {
 private:
 	using XMMATRIX = DirectX::XMMATRIX;
@@ -22,28 +28,11 @@ public:
 	// Decide this item should be deleted due to the time.
 	bool Frame(time_t curr_time, time_t time_delta);
 
-	XMMATRIX GetLocalWorldMatrix();
 	XMMATRIX GetShapeMatrix(time_t curr_time);
-	
-	// for debug
-	XMMATRIX GetRangeRepresentMatrix();
-	rect_t GetGlobalRange();
-
 
 	inline int GetType() { return m_type; }
 
-	inline void SetState(state_t state)
-	{
-		m_state = state;
-	}
-	inline state_t GetState()
-	{
-		return m_state;
-	}
-
 private:
-	state_t m_state;
-
-	int m_xPos, m_yPos, m_vy, m_type;
+	int m_type;
 	time_t m_createTime;
 };

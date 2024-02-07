@@ -7,16 +7,19 @@
 #include <memory>
 
 #include "global.hh"
+#include "RigidbodyClass.hh"
 
 using namespace DirectX;
 using namespace std;
 
-#define MONSTER_STATE_EMBRACE	0
-#define MONSTER_STATE_NORMAL	1
-#define MONSTER_STATE_HIT		2
-#define MONSTER_STATE_DIE		3
+enum class MonsterState
+{
+	kEmbryo, kNormal, kHit, kDie,
+	kDuckJump, kDuckJumpReady,
+	kBirdMove
+};
 
-class MonsterClass
+class MonsterClass : public RigidbodyClass<MonsterState>
 {
 private:
 	// It is used to determine the ID(m_Id) of newly create MonsterClass instance.
@@ -41,31 +44,18 @@ protected:
 	// Which species this mosnter instance is.
 	int m_Type;
 
-	int m_PosX, m_PosY; // Position of monster instance.
-	rect_t m_Range;		// Range of monster Instance.
-
 	// Knock-back speed which is set if some skill objects hit this monster.
 	int m_HitVx, m_HitVy;
 
-	// State of monster. The valid state is defined in MonsterClass.hh.
-	int m_State;
-
-	// When m_State variable has been changed lastly?
-	time_t m_StateStartTime;
-
-	// Which direction this monster instance is heading?
-	direction_t m_Direction;
-
 
 public:
-	MonsterClass(int type, int hp, direction_t direction, rect_t range);
-	~MonsterClass();
+	MonsterClass(Point2d position, direction_t direction,
+		int type, int hp, rect_t range);
+	~MonsterClass() = default;
 
 	inline int GetId() { return m_Id; }
 
 	inline int GetType() { return m_Type; }
-	inline int GetPosX() { return m_PosX; }
-	inline int GetPosY() { return m_PosY; }
 
 	inline float GetPrevHpRatio() { return m_prevHp / (float)m_MaxHp; }
 	inline float GetHpRatio() { return m_Hp / (float)m_MaxHp; }
@@ -79,16 +69,6 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;
 
-	inline int GetState() { return m_State; }
-	void SetState(const int state, time_t time);
-
-	bool Damage(const int amount, time_t time, int vx, int vy);
-
-	XMMATRIX GetLocalWorldMatrix();
-
-	inline rect_t GetGlobalRange() { return m_Range.add(m_PosX, m_PosY); }
-	inline XMMATRIX GetRangeRepresentMatrix() {
-		return m_Range.add(m_PosX, m_PosY).toMatrix();
-	}
+	bool Damage(const int amount, time_t damaged_time, int vx, int vy);
 };
 

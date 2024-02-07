@@ -15,7 +15,10 @@ constexpr int INVINCIBLE_TIME = 5'000;
 constexpr int WALK_SPD = 700, RUN_SPD = 1300;
 
 CharacterClass::CharacterClass(int pos_x, int pos_y)
-	: pos_x(pos_x), pos_y(pos_y), pos_yv(0), jump_cnt(0), m_Score(0)
+	: RigidbodyClass(
+		Point2d(pos_x, pos_y),
+		rect_t{ -50000, 0, 50000, 400000 }, LEFT_FORWARD
+	), jump_cnt(0), m_Score(0)
 {
 	m_JumpAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt");
 	m_FallAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh");
@@ -23,7 +26,7 @@ CharacterClass::CharacterClass(int pos_x, int pos_y)
 	m_RunAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt");
 	m_SkillAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh");
 
-	SetState(CHARACTER_STATE_NORMAL, 0);
+	SetState(CharacterState::kNormal, 0);
 
 	m_Skill[0] = 4;
 	m_Skill[1] = 3;
@@ -39,26 +42,26 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 {
 	bool is_walk = false;
 
-	if (m_State != CHARACTER_STATE_HIT && m_State != CHARACTER_STATE_SLIP && m_State != CHARACTER_STATE_DIE)
+	if (state_ != CharacterState::kHit && state_ != CharacterState::kSlip && state_ != CharacterState::kDie)
 	{
 		if (input->IsKeyPressed(DIK_LEFT))
 		{
-			if (m_State == CHARACTER_STATE_STOP && m_Direction != LEFT_FORWARD)
+			if (state_ == CharacterState::kStop && direction_ != LEFT_FORWARD)
 			{
-				SetState(CHARACTER_STATE_NORMAL, curr_time);
+				SetState(CharacterState::kNormal, curr_time);
 			}
-			m_Direction = LEFT_FORWARD;
+			direction_ = LEFT_FORWARD;
 
 			is_walk = !is_walk;
 		}
 
 		if (input->IsKeyPressed(DIK_RIGHT))
 		{
-			if (m_State == CHARACTER_STATE_STOP && m_Direction != RIGHT_FORWARD)
+			if (state_ == CharacterState::kStop && direction_ != RIGHT_FORWARD)
 			{
-				SetState(CHARACTER_STATE_NORMAL, curr_time);
+				SetState(CharacterState::kNormal, curr_time);
 			}
-			m_Direction = RIGHT_FORWARD;
+			direction_ = RIGHT_FORWARD;
 
 			is_walk = !is_walk;
 		}
@@ -85,120 +88,118 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 
 	// jump attempt
 	if (jump_cnt <= 1 && input->IsKeyDown(DIK_UP)
-		&& m_State != CHARACTER_STATE_SPELL && m_State != CHARACTER_STATE_HIT && m_State != CHARACTER_STATE_SLIP && m_State != CHARACTER_STATE_DIE)
+		&& state_ != CharacterState::kSpell && state_ != CharacterState::kHit
+		&& state_ != CharacterState::kSlip && state_ != CharacterState::kDie)
 	{
-		pos_yv = 2'800, jump_cnt++;
-		if (m_State == CHARACTER_STATE_RUN || m_State == CHARACTER_STATE_RUNJUMP) SetState(CHARACTER_STATE_RUNJUMP, curr_time);
-		else SetState(CHARACTER_STATE_JUMP, curr_time);
+		velocity_.y = 2'800, jump_cnt++;
+		if (state_ == CharacterState::kRun || state_ == CharacterState::kRunJump)
+			SetState(CharacterState::kRunJump, curr_time);
+		else SetState(CharacterState::kJump, curr_time);
 	}
 	else
 	{
-		const int start_y = pos_y;
-		const int target_y = pos_y + time_delta * (pos_yv - (GRAVITY / 2) * time_delta);
-		pos_yv -= GRAVITY * time_delta;
+		const int start_y = position_.y;
+		const int target_y = position_.y + time_delta * (velocity_.y - (GRAVITY / 2) * time_delta);
+		velocity_.y -= GRAVITY * (int)time_delta;
 
-		pos_y = target_y;
+		position_.y = target_y;
 		for (auto& ground_obj : ground)
 		{
-			pos_y = max(pos_y,
-				ground_obj->IsColiided(range.x1 + pos_x, range.x2 + pos_x, start_y, target_y));
+			position_.y = max(position_.y,
+				ground_obj->IsColiided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
 		}
 
-		if (pos_y != target_y)
+		if (position_.y != target_y)
 		{
-			pos_yv = jump_cnt = 0;
+			velocity_.y = jump_cnt = 0;
 		}
 	}
 
 
 
-	switch (m_State)
+	switch (state_)
 	{
-	case CHARACTER_STATE_JUMP:
+	case CharacterState::kJump:
 		if(is_walk)
 		{
-			pos_x += DIR_WEIGHT(m_Direction, WALK_SPD) * (int)time_delta;
-			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, WALK_SPD) * (int)time_delta;
+			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
 		}
 
-		if (curr_time - m_StateStartTime >= 1000) SetState(CHARACTER_STATE_NORMAL, curr_time);
-		else if (jump_cnt == 0 && is_walk) SetState(CHARACTER_STATE_WALK, curr_time);
+		if (GetStateTime(curr_time) >= 1000) SetState(CharacterState::kNormal, curr_time);
+		else if (jump_cnt == 0 && is_walk) SetState(CharacterState::kWalk, curr_time);
 		break;
 
-	case CHARACTER_STATE_RUNJUMP:
+	case CharacterState::kRunJump:
 		if (is_walk)
 		{
-			pos_x += DIR_WEIGHT(m_Direction, RUN_SPD) * (int)time_delta;
-			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, RUN_SPD) * (int)time_delta;
+			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
 		}
 
 		if (jump_cnt == 0)
 		{
-			if (is_walk) SetState(CHARACTER_STATE_RUN, curr_time);
-			else m_State = CHARACTER_STATE_JUMP;
+			if (is_walk) SetState(CharacterState::kRun, curr_time);
+			else state_ = CharacterState::kJump;
 		}
 		break;
 
-	case CHARACTER_STATE_NORMAL:
+	case CharacterState::kNormal:
 		if (is_walk)
 		{
-			SetState(CHARACTER_STATE_WALK, curr_time);
-			pos_x += DIR_WEIGHT(m_Direction, WALK_SPD) * (int)time_delta;
-			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+			SetState(CharacterState::kWalk, curr_time);
+			position_.x += DIR_WEIGHT(direction_, WALK_SPD) * (int)time_delta;
+			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
 		}
 		break;
 
-	case CHARACTER_STATE_WALK:
-		if (!is_walk) SetState(CHARACTER_STATE_STOP, curr_time);
+	case CharacterState::kWalk:
+		if (!is_walk) SetState(CharacterState::kStop, curr_time);
 		else
 		{
-			pos_x += DIR_WEIGHT(m_Direction, WALK_SPD) * (int)time_delta;
-			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, WALK_SPD) * (int)time_delta;
+			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
 		}
 		break;
 
-	case CHARACTER_STATE_RUN:
-		if (!is_walk) SetState(CHARACTER_STATE_STOP, curr_time);
+	case CharacterState::kRun:
+		if (!is_walk) SetState(CharacterState::kStop, curr_time);
 		else
 		{
-			pos_x += DIR_WEIGHT(m_Direction, RUN_SPD) * (int)time_delta;
-			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, RUN_SPD) * (int)time_delta;
+			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
 		}
 		break;
 
-	case CHARACTER_STATE_STOP:
-		if (curr_time - m_StateStartTime >= 150)
-			SetState(CHARACTER_STATE_NORMAL, m_StateStartTime + 150);
-		else if(is_walk) SetState(CHARACTER_STATE_RUN, curr_time);
+	case CharacterState::kStop:
+		if (GetStateTime(curr_time) >= 150)
+			SetState(CharacterState::kNormal, state_start_time_ + 150);
+		else if(is_walk) SetState(CharacterState::kRun, curr_time);
 		break;
 
 
-	case CHARACTER_STATE_SPELL:
+	case CharacterState::kSpell:
 		OnSkill(curr_time, skill_objs);
 		break;
 
 
-	case CHARACTER_STATE_HIT:
-		pos_x += (int)time_delta * pos_xv;
-		if (curr_time - m_StateStartTime >= 500)
+	case CharacterState::kHit:
+		position_.x += (int)time_delta * velocity_.x;
+		if (GetStateTime(curr_time) >= 500)
 		{
-			SetState(CHARACTER_STATE_SLIP, m_StateStartTime);
+			SetState(CharacterState::kSlip, state_start_time_);
 		}
 		break;
 
-	case CHARACTER_STATE_SLIP:
-		if (curr_time - m_StateStartTime >= 1000)
-		{
-			SetState(CHARACTER_STATE_NORMAL, m_StateStartTime + 1000);
-		}
+	case CharacterState::kSlip:
+		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 1'000);
 		break;
 
-	case CHARACTER_STATE_DIE:
+	case CharacterState::kDie:
 		
-		if (curr_time - m_StateStartTime < 1000)
+		if (GetStateTime(curr_time) < 1000)
 		{
-			pos_x += (int)time_delta * pos_xv;
-			pos_x = SATURATE(LEFT_X, pos_x, RIGHT_X);
+			position_.x = SATURATE(LEFT_X, position_.x + (int)time_delta * velocity_.x, RIGHT_X);
 		}
 
 		break;
@@ -209,61 +210,56 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 
 void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& shape_matrices)
 {
-	XMMATRIX root_transform = XMMatrixRotationY(XM_PI * 0.65f * ((m_Direction == LEFT_FORWARD) ? -1 : 1));
+	XMMATRIX root_transform = XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PI * 0.65f));
 	//XMMATRIX root_transform = XMMatrixIdentity();
 
-	float state_elapsed_seconds = (curr_time - m_StateStartTime) / 1000.0f;
+	float state_elapsed_seconds = (GetStateTime(curr_time)) / 1000.0f;
 
-	switch (m_State)
+	switch (state_)
 	{
-	case CHARACTER_STATE_NORMAL:
-	case CHARACTER_STATE_STOP:
+	case CharacterState::kNormal:
+	case CharacterState::kStop:
 		m_RunAnimationData->UpdateGlobalMatrices(0, root_transform, shape_matrices);
 		break;
 
-	case CHARACTER_STATE_WALK:
+	case CharacterState::kWalk:
 		m_WalkAnimationData->UpdateGlobalMatrices(
 			state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
 		break;
 
-	case CHARACTER_STATE_RUN:
+	case CharacterState::kRun:
 		m_RunAnimationData->UpdateGlobalMatrices(
 			state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
 		break;
 
-	case CHARACTER_STATE_JUMP:
-	case CHARACTER_STATE_RUNJUMP:
-		if(curr_time - m_StateStartTime > 90)
+	case CharacterState::kJump:
+	case CharacterState::kRunJump:
+		if(GetStateTime(curr_time) > 90)
 			m_JumpAnimationData->UpdateGlobalMatrices(
 				20 + state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
 		else
 			m_JumpAnimationData->UpdateGlobalMatrices(
 				43 + state_elapsed_seconds / 0.00833333, root_transform, shape_matrices);
 		break;
-
-	case CHARACTER_STATE_SPELL:
+		
+	case CharacterState::kSpell:
 		root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
 		m_SkillAnimationData->UpdateGlobalMatrices(
 			state_elapsed_seconds / 0.00133333, root_transform, shape_matrices);
 		break;
 
-	case CHARACTER_STATE_HIT:
-	case CHARACTER_STATE_SLIP:
+	case CharacterState::kHit:
+	case CharacterState::kSlip:
 		m_FallAnimationData->UpdateGlobalMatrices(
 			50 + state_elapsed_seconds / 0.00433333, root_transform, shape_matrices);
 		break;
 
-	case CHARACTER_STATE_DIE:
+	case CharacterState::kDie:
 		m_FallAnimationData->UpdateGlobalMatrices(
 			min(394, 50 + state_elapsed_seconds / 0.01433333), root_transform, shape_matrices);
 		break;
 
 	}
-}
-
-XMMATRIX CharacterClass::GetLocalWorldMatrix()
-{
-	return XMMatrixTranslation(pos_x * SCOPE, pos_y * SCOPE, 0);
 }
 
 bool CharacterClass::OnCollided(time_t curr_time, int vx)
@@ -273,16 +269,16 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 		m_Combo = 0;
 
 
-		SetState(CHARACTER_STATE_HIT, curr_time);
-		m_Direction = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
+		SetState(CharacterState::kHit, curr_time);
+		direction_ = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
 
 		// lost skill
 		if (m_Skill[0] == 0)
 		{
-			SetState(CHARACTER_STATE_DIE, curr_time);
-			m_HitVx = pos_xv = vx / 2;
+			SetState(CharacterState::kDie, curr_time);
+			m_HitVx = velocity_.x = vx / 2;
 
-			pos_yv = 1500;
+			velocity_.y = 1500;
 			m_TimeInvincibleEnd = 1LL << 59;
 			return false;
 		}
@@ -296,9 +292,9 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 					break;
 				}
 			}
-			m_HitVx = pos_xv = vx / 3;
-			pos_yv = 1500;
-			m_TimeInvincibleEnd = m_StateStartTime + INVINCIBLE_TIME;
+			m_HitVx = velocity_.x = vx / 3;
+			velocity_.y = 1500;
+			m_TimeInvincibleEnd = state_start_time_ + INVINCIBLE_TIME;
 			return true;
 		}
 	}
@@ -327,80 +323,53 @@ void CharacterClass::AddCombo(time_t curr_time)
 void CharacterClass::OnSkill(time_t curr_time,
 	vector<unique_ptr<class SkillObjectClass> >& skill_objs)
 {
-	const time_t state_elapsed_time = curr_time - m_StateStartTime;
+	const time_t state_elapsed_time = GetStateTime(curr_time);
 
 	switch (m_SkillUsed)
 	{
 	case 0:
-		// When Skill Ended.
-		if (curr_time >= m_TimeSkillEnded)
-		{
-			SetState(CHARACTER_STATE_NORMAL, m_TimeSkillEnded);
-		}
-
 		if (m_SkillState == 0 && state_elapsed_time >= 100)
 		{
-			skill_objs.emplace_back(new SkillObjectBasic(pos_x + DIR_WEIGHT(m_Direction, 185000), pos_y,
-				DIR_WEIGHT(m_Direction, 100), m_StateStartTime + 100));
+			skill_objs.emplace_back(new SkillObjectBasic(position_.x + DIR_WEIGHT(direction_, 185000), position_.y,
+				DIR_WEIGHT(direction_, 100), state_start_time_ + 100));
 			m_SkillState = 1;
 		}
-
 		break;
 
-	case 1:
-		
+	case 1:	
 		if (m_SkillState == 0 && state_elapsed_time >= 100)
 		{
-			skill_objs.emplace_back(new SkillObjectSpear(pos_x, pos_y, 4000, -4000, m_StateStartTime + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(pos_x, pos_y, 2000, -4000, m_StateStartTime + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(pos_x, pos_y, 0, -4000, m_StateStartTime + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(pos_x, pos_y, -2000, -4000, m_StateStartTime + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(pos_x, pos_y, -4000, -4000, m_StateStartTime + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 4000, -4000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 2000, -4000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 0, -4000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -2000, -4000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -4000, -4000, state_start_time_ + 100));
 
 			m_SkillState = 1;
-		}
-
-		// When Skill Ended.
-		if (state_elapsed_time >= 300)
-		{
-			SetState(CHARACTER_STATE_JUMP, m_StateStartTime - 200);
-		}
-			
+		}			
 		break;
 
 	case 2:
-
 		for (; m_SkillState < 4 && state_elapsed_time >= m_SkillState * 70 + 70; m_SkillState++)
 		{
 			skill_objs.emplace_back(new SkillObjectBead(
-				pos_x, pos_y + 300000, DIR_WEIGHT(m_Direction, 1200),
-				(m_SkillState - 1) * 200, m_StateStartTime + m_SkillState * 70 + 70));
+				position_.x, position_.y + 300000, DIR_WEIGHT(direction_, 1200),
+				(m_SkillState - 1) * 200, state_start_time_ + m_SkillState * 70 + 70));
 		}
-
-		// When Skill Ended.
-		if (state_elapsed_time >= 300)
-		{
-			SetState(CHARACTER_STATE_NORMAL, m_TimeSkillEnded);
-		}
-
 		break;
 
 	case 3:
 		if (m_SkillState == 0 && state_elapsed_time >= 50)
 		{
 			skill_objs.emplace_back(new SkillObjectLeg(
-				pos_x + DIR_WEIGHT(m_Direction, 300'000), m_StateStartTime + 50));
+				position_.x + DIR_WEIGHT(direction_, 300'000), state_start_time_ + 50));
 			m_SkillState = 1;
-		}
-
-
-		// When Skill Ended.
-		if (state_elapsed_time >= 300)
-		{
-			SetState(CHARACTER_STATE_NORMAL, m_TimeSkillEnded);
 		}
 		break;
 	}
+
+	// When Skill Ended, return to normal state_.
+	SetStateIfTimeOver(CharacterState::kNormal, curr_time, 300);
 }
 
 bool CharacterClass::UseSkill(time_t curr_time,
@@ -423,26 +392,26 @@ bool CharacterClass::UseSkill(time_t curr_time,
 	}
 
 	m_SkillState = 0;
-	SetState(CHARACTER_STATE_SPELL, curr_time);
+	SetState(CharacterState::kSpell, curr_time);
 
 	switch (m_SkillUsed)
 	{
 	case 0:
-		m_TimeSkillEnded = m_StateStartTime + 300;
+		m_TimeSkillEnded = state_start_time_ + 300;
 		break;
 
 	case 1:
-		if (pos_yv == 0 && jump_cnt == 0) pos_yv = 3'600;
+		if (velocity_.y == 0 && jump_cnt == 0) velocity_.y = 3'600;
 
-		m_TimeSkillEnded = m_StateStartTime + 300;
+		m_TimeSkillEnded = state_start_time_ + 300;
 		break;
 
 	case 2:
-		m_TimeSkillEnded = m_StateStartTime + 300;
+		m_TimeSkillEnded = state_start_time_ + 300;
 		break;
 
 	case 3:
-		m_TimeSkillEnded = m_StateStartTime + 300;
+		m_TimeSkillEnded = state_start_time_ + 300;
 		break;
 	}
 

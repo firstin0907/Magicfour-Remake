@@ -132,8 +132,8 @@ bool ApplicationClass::Frame(InputClass* input)
 
 	m_Character->Frame(delta_time, curr_time, input, m_SkillObjectList, m_Ground);
 
-	const float camera_x = SATURATE(-CAMERA_X_LIMIT, m_Character->GetPosX(), CAMERA_X_LIMIT) * SCOPE;
-	const float camera_y = max(0, m_Character->GetPosY()) * SCOPE;
+	const float camera_x = SATURATE(-CAMERA_X_LIMIT, m_Character->GetPosition().x, CAMERA_X_LIMIT) * SCOPE;
+	const float camera_y = max(0, m_Character->GetPosition().y) * SCOPE;
 	m_Camera->SetPosition(camera_x, camera_y, CAMERA_Z_POSITION);
 
 
@@ -155,7 +155,7 @@ bool ApplicationClass::Frame(InputClass* input)
 	{
 		for (auto& monster : m_Monsters)
 		{
-			if (monster->GetState() == MONSTER_STATE_DIE) continue;
+			if (monster->GetState() == MonsterState::kDie) continue;
 
 			if (skill_obj->GetGlobalRange().collide(monster->GetGlobalRange()))
 			{
@@ -171,7 +171,7 @@ bool ApplicationClass::Frame(InputClass* input)
 
 	for (auto& monster : m_Monsters)
 	{
-		if (monster->GetState() == MONSTER_STATE_DIE) continue;
+		if (monster->GetState() == MonsterState::kDie) continue;
 
 		if (m_Character->GetGlobalRange().collide(monster->GetGlobalRange()))
 		{
@@ -182,12 +182,12 @@ bool ApplicationClass::Frame(InputClass* input)
 
 	for (auto& item : m_Items)
 	{
-		if (item->GetState() == ItemClass::STATE_DIE) continue;
+		if (item->GetState() == ItemState::kDie) continue;
 
 		if (m_Character->GetGlobalRange().collide(item->GetGlobalRange()))
 		{
 			m_Character->LearnSkill(item->GetType());
-			item->SetState(ItemClass::STATE_DIE);
+			item->SetState(ItemState::kDie, curr_time);
 		}
 	}
 
@@ -215,8 +215,8 @@ bool ApplicationClass::Frame(InputClass* input)
 			// create item for 50% probablity.
 			if (RandomClass::rand(0, 100) < ITEM_DROP_PROBABILITY)
 			{
-				m_Items.emplace_back(new ItemClass(curr_time, m_Monsters[i]->GetPosX(),
-					m_Monsters[i]->GetPosY(), m_Monsters[i]->GetType()));
+				m_Items.emplace_back(new ItemClass(curr_time, m_Monsters[i]->GetPosition().x,
+					m_Monsters[i]->GetPosition().y, m_Monsters[i]->GetType()));
 			}
 
 			// and swap with last element and pop it.
@@ -273,13 +273,11 @@ void ApplicationClass::Render(time_t curr_time)
 		m_Light->GetDirection(), m_Light->GetDiffuseColor());
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 
-#if 0
-	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
+#if 1
+	m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 		m_Character->GetRangeRepresentMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
 		m_Light->GetDirection(), m_Light->GetDiffuseColor());
-	if (!result) return false;
 #endif
-	
 	vector<XMMATRIX> char_model_matrices;
 	m_Character->GetShapeMatrices(curr_time, char_model_matrices);
 

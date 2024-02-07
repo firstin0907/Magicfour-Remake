@@ -5,24 +5,24 @@
 #include <vector>
 
 #include "global.hh"
+#include "RigidbodyClass.hh"
 
-using namespace std;
-using namespace DirectX;
-
-#define CHARACTER_STATE_NORMAL			1
-#define CHARACTER_STATE_JUMP			2
-#define CHARACTER_STATE_WALK			3
-#define CHARACTER_STATE_STOP			4
-#define CHARACTER_STATE_RUN				5
-#define CHARACTER_STATE_RUNJUMP			6
-#define CHARACTER_STATE_SPELL			7
-#define CHARACTER_STATE_HIT				8
-#define CHARACTER_STATE_SLIP			9
-#define CHARACTER_STATE_DIE				20
-
-
-class CharacterClass
+enum class CharacterState
 {
+	kNormal, kJump, kWalk, kStop, kRun,
+	kRunJump, kSpell, kHit, kSlip, kDie
+};
+
+
+class CharacterClass : public RigidbodyClass<CharacterState>
+{
+private:
+	template<typename T>
+	using vector = std::vector<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
 public:
 	CharacterClass(int pos_x, int pos_y);
 
@@ -32,23 +32,10 @@ public:
 		);
 	
 	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);
-
-	inline int GetPosX() { return pos_x; };
-	inline int GetPosY() { return pos_y; };
 	inline time_t GetTimeInvincibleEnd() { return m_TimeInvincibleEnd; }
 
 	template <int index>
 	int GetSkill();
-
-	XMMATRIX GetLocalWorldMatrix();
-
-	inline rect_t GetGlobalRange() { return range.add(pos_x, pos_y); }
-	
-	// for debug
-	inline XMMATRIX GetRangeRepresentMatrix()
-	{
-		return range.add(pos_x, pos_y).toMatrix();
-	}
 
 	// If character have been killed because of this collision,
 	// this function returns false. Otherwise, returns true.
@@ -58,9 +45,10 @@ public:
 
 	void LearnSkill(int skill_id);
 
-	inline int GetTotalScore(time_t curr_time)
+	inline unsigned long long GetTotalScore(time_t curr_time)
 	{
-		if (m_State == CHARACTER_STATE_DIE) return m_Score * 1'000 + m_StateStartTime;
+		if (state_ == CharacterState::kDie)
+			return m_Score * 1'000 + state_start_time_;
 		else return m_Score * 1'000 + curr_time;
 	}
 	inline int GetCombo() { return m_Combo; }
@@ -71,11 +59,6 @@ public:
 	void AddCombo(time_t curr_time);
 
 private:
-	inline void SetState(int state, time_t start_time)
-	{
-		m_State = state;
-		m_StateStartTime = start_time;
-	}
 
 	void OnSkill(time_t curr_time,
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
@@ -84,20 +67,11 @@ private:
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
 
 private:
-	static constexpr rect_t range = { -50000, 0, 50000, 400000 };
-
-	direction_t m_Direction;
-
 	int m_HitVx;
 
-	int pos_x, pos_y, pos_xv, pos_yv;
 	int jump_cnt;
 
 	int m_Skill[4] = { 0 };
-
-	int m_State;
-	time_t m_StateStartTime;
-
 	
 	int m_SkillState; // be used in OnSkill(...) method.
 	int m_SkillUsed; // ID of skill which is being used.
