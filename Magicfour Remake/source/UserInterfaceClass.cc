@@ -161,25 +161,44 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 	// Direct2D rendering
 	direct2D->BeginDraw();
 
+	// Draw Score
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
 	direct2D->RenderText(m_ScoreTextFormat.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
 		0, 30.0f, (float)(m_ScreenWidth - 30), 200.0f);
 
+	// Draw Combo
 	const int combo = character->GetCombo();
-
 	if (combo > 0)
 	{
+		// Remained time for combo.
 		const time_t combo_durable_time = character->GetComboDurableTime(curr_time);
 		const float combo_text_alpha_value = SATURATE(0.0f, (combo_durable_time - 500.0f) * (1 / 3000.0f), 1.0f);
 
-		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, combo_text_alpha_value));
 
-		float font_size = max(45.0f + 30.0f - (5000 - combo_durable_time) * 0.15f, 45.0f);
+		if (combo < 10) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, combo_text_alpha_value));
+		else if (combo < 30) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkBlue, combo_text_alpha_value));
+		else direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed, combo_text_alpha_value));
+
+
+		float font_size_1, font_size_2 = 45.0f;
+		font_size_1 = 65.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 30.0f;
+
+		if (combo_durable_time < 4970)
+			font_size_2 = 45.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 20.0f;
+
+		int font_offset = combo_durable_time > 4800 ? (combo_durable_time - 4800) / 5 : 0;
+
+
 		direct2D->RenderTextWithInstantFormat(
-			direct2D->CreateTextFormat(L"Arial", font_size,
-				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER),
-			(std::to_wstring(combo) + L" Combo").c_str(),
+			direct2D->CreateTextFormat(L"Arial", font_size_1,
+				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), std::to_wstring(combo).c_str(),
+			0, (float)(m_ScreenHeight / 2), (float)(m_ScreenWidth - 190 - font_offset), (float)(m_ScreenHeight / 2));
+
+		direct2D->RenderTextWithInstantFormat(
+			direct2D->CreateTextFormat(L"Arial", font_size_2,
+				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
 			0, (float)(m_ScreenHeight / 2), (float)(m_ScreenWidth - 30), (float)(m_ScreenHeight / 2));
+
 	}
 
 	direct2D->EndDraw();
