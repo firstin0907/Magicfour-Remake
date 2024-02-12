@@ -48,25 +48,44 @@ private:
 		float x, y, z;
 	};
 
+	struct MaterialType
+	{
+		XMFLOAT3 ambient;
+		XMFLOAT3 diffuse;
+		XMFLOAT3 specular;
+	};
+
 public:
 	ModelClass(ID3D11Device* device, const char* modelFilename,
-		const wchar_t* diffuse_filename, const wchar_t* normal_filename = nullptr);
+		const wchar_t* diffuse_filename,
+		const wchar_t* normal_filename = nullptr,
+		const wchar_t* emissive_filename = nullptr
+	);
 	ModelClass(const ModelClass&) = delete;
 	~ModelClass();
 
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
+	inline const vector<pair<MaterialType, int> >& GetMaterial()
+	{
+		return m_MaterialList; 
+	}
+
 	int GetIndexCount();
 	ID3D11ShaderResourceView* GetDiffuseTexture();
 	ID3D11ShaderResourceView* GetNormalTexture();
+	ID3D11ShaderResourceView* GetEmissiveTexture();
 
 
 private:
 	void InitializeBuffers(ID3D11Device*);
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	void LoadTextures(ID3D11Device*, const wchar_t*, const wchar_t*);
+	void LoadTextures(ID3D11Device* device,
+		const wchar_t* diffuse_filename,
+		const wchar_t* normal_filename,
+		const wchar_t* emissive_filename);
 
 	void LoadModel(const char*);
 	void ReleaseModel();
@@ -81,5 +100,8 @@ private:
 	int m_vertexCount, m_indexCount;
 	unique_ptr<class TextureClass> m_DiffuseTexture;
 	unique_ptr<class TextureClass> m_NormalTexture;
+	unique_ptr<class TextureClass> m_EmissiveTexture;
 	vector<ModelType> m_model;
+
+	vector<pair<MaterialType, int> > m_MaterialList;
 };

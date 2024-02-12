@@ -47,6 +47,11 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		"data/model/PlaneObject.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
 	m_DiamondModel = make_unique<ModelClass>(m_Direct3D->GetDevice(),
 		"data/model/diamond.obj", L"data/texture/stone01.tga");
+	m_GemModel = make_unique<ModelClass>(m_Direct3D->GetDevice(),
+		"data/model/Crystal/Crystals_low.obj",
+		L"data/model/Crystal/None_BaseColor.png",
+		L"data/model/Crystal/None_Normal.png",
+		L"data/model/Crystal/None_Emissive.png");
 
 	m_RainbowTexture = make_unique<TextureClass>(m_Direct3D->GetDevice(),
 		L"data/texture/skill_gauge_rainbow.png");
@@ -67,19 +72,27 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Set model of skill object to be rendered.
 	SkillObjectBead::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		"data/model/orb_low.obj", L"data/model/orb_low_fragment_BaseColor.tga"
+		"data/model/Orb/orb_low.obj",
+		L"data/model/Orb/orb_low_fragment_BaseColor.png",
+		L"data/model/Orb/orb_low_fragment_Normal.png",
+		L"data/model/Orb/orb_low_fragment_Emissive.png"
 	));
 	SkillObjectSpear::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		"data/model/MagicCeramicBlade.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_Emissive.tga",
-		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
+		"data/model/Blade/MagicCeramicBlade.obj",
+		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg",
+		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg",
+		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"
 	));
 	SkillObjectLeg::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		"data/model/leg.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
-		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
+		"data/model/Crystal/Crystals_low.obj",
+		L"data/model/Crystal/None_BaseColor.png",
+		L"data/model/Crystal/None_Normal.png"
 	));
 	SkillObjectBasic::initialize(new ModelClass(m_Direct3D->GetDevice(),
-		"data/model/MagicCeramicBlade.obj", L"data/model/MagicCeramicBlade_MagicCeramicKnife_BaseColor.tga",
-		L"data/model/MagicCeramicBlade_MagicCeramicKnife_Normal.tga"
+		"data/model/Blade/MagicCeramicBlade.obj",
+		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg",
+		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg",
+		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"
 	));
 
 	// Create character instance.
@@ -362,12 +375,12 @@ void ApplicationClass::Render(time_t curr_time)
 
 		if (obj_model->GetNormalTexture())
 		{
-			m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
-				skill_obj->GetGlobalShapeTransform(curr_time), vpMatrix, obj_model->GetDiffuseTexture(),
-				obj_model->GetNormalTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor());
+			m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), obj_model,
+				skill_obj->GetGlobalShapeTransform(curr_time), vpMatrix,
+				m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition());
 		}
 		else
-		{
+		{			
 			m_LightShader->Render(m_Direct3D->GetDeviceContext(), obj_model->GetIndexCount(),
 				skill_obj->GetGlobalShapeTransform(curr_time), vpMatrix, obj_model->GetDiffuseTexture(),
 				m_Light->GetDirection(), m_Light->GetDiffuseColor());
@@ -380,7 +393,7 @@ void ApplicationClass::Render(time_t curr_time)
 	{
 		m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 			monster->GetRangeRepresentMatrix(), vpMatrix, m_Model->GetDiffuseTexture(),
-			m_Model->GetNormalTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor());
+			m_Model->GetNormalTexture(), m_Model->GetEmissiveTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition());
 	}
 
 	for (auto& ground : m_Ground)
@@ -390,6 +403,11 @@ void ApplicationClass::Render(time_t curr_time)
 			m_Light->GetDirection(), m_Light->GetDiffuseColor());
 	}
 
+	m_GemModel->Render(m_Direct3D->GetDeviceContext());
+	m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), m_GemModel->GetIndexCount(),
+		XMMatrixScaling(10, 10, 10) * XMMatrixTranslation(0, -10, 0), vpMatrix, m_GemModel->GetDiffuseTexture(),
+		m_GemModel->GetNormalTexture(), m_GemModel->GetEmissiveTexture(), m_Light->GetDirection(),
+		m_Light->GetDiffuseColor(), m_Camera->GetPosition());
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();

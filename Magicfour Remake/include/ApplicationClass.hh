@@ -35,6 +35,7 @@ private:
 	unique_ptr<class ModelClass>		m_Model;
 	unique_ptr<class ModelClass>		m_PlaneModel;
 	unique_ptr<class ModelClass>		m_DiamondModel;
+	unique_ptr<class ModelClass>		m_GemModel;
 	unique_ptr<class TextureClass>		m_RainbowTexture;
 	unique_ptr<class TextureClass>		m_BackgroundTexture;
 

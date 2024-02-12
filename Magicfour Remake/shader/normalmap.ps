@@ -1,5 +1,6 @@
-Texture2D shaderTexture1 : register(t0);
-Texture2D shaderTexture2 : register(t1);
+Texture2D diffuseTexture : register(t0);
+Texture2D normalTexture : register(t1);
+Texture2D emissiveTexture : register(t2);
 SamplerState SampleType : register(s0);
 
 cbuffer LightBuffer
@@ -7,7 +8,17 @@ cbuffer LightBuffer
     float4 diffuseColor;
     float3 lightDirection;
     float padding;
+
+    float4 ambientWeight;
+    float4 diffuseWeight;
+    float4 specularWeight;
 };
+
+cbuffer CameraBuffer
+{
+    float3 cameraPosition;
+    float padding2;
+}
 
 struct PixelInputType
 {
@@ -24,36 +35,35 @@ float4 psMain(PixelInputType input) : SV_TARGET
     float4 bumpMap;
     float3 bumpNormal;
     float3 lightDir;
-    float lightIntensity;
     float4 color;
+    float shininess = 15.0;
 
-	
     // Sample the pixel color from the color texture at this location.
-    textureColor = shaderTexture1.Sample(SampleType, input.tex);
-
+    textureColor = diffuseTexture.Sample(SampleType, input.tex);
     // Sample the pixel from the normal map.
-    bumpMap = shaderTexture2.Sample(SampleType, input.tex);
-
+    bumpMap = normalTexture.Sample(SampleType, input.tex);
     // Expand the range of the normal value from (0, +1) to (-1, +1).
     bumpMap = (bumpMap * 2.0f) - 1.0f;
 
-    // Calculate the normal from the data in the normal map.
-    bumpNormal = (bumpMap.x * input.tangent) + (bumpMap.y * input.binormal) + (bumpMap.z * input.normal);
+    float4 emissiveColor = emissiveTexture.Sample(SampleType, input.tex);
 
-    // Normalize the resulting bump normal.
-    bumpNormal = normalize(bumpNormal);
-
-    // Invert the light direction for calculations.
     lightDir = -lightDirection;
 
-    // Calculate the amount of light on this pixel based on the normal map value.
-    lightIntensity = saturate(dot(bumpNormal, lightDir));
+    // ambient
+    float4 ambient = 0.1 * textureColor * ambientWeight;
 
-    // Determine the final amount of diffuse color based on the diffuse color combined with the light intensity.
-    color = saturate(diffuseColor * lightIntensity);
+    // diffuse
+    bumpNormal = normalize((bumpMap.x * input.tangent) + (bumpMap.y * input.binormal) + (bumpMap.z * input.normal));
+    float lightIntensity = saturate(dot(bumpNormal, lightDir));
+    float4 diffuse = saturate(textureColor * lightIntensity) * diffuseWeight;
 
-    // Combine the final light color with the texture color.
-    color = color * textureColor;
+    // specular
+    float4 white = {1, 1, 1, 1};
+    float3 viewDir = normalize(cameraPosition - input.position);
+    float3 reflectDir = normalize(lightDir - 2.0f * dot(input.normal, lightDir) * input.normal);
+    float spec = pow(saturate(dot(viewDir, reflectDir)), shininess);
+    float4 specular = spec * white * specularWeight;
 
-    return color;
+
+    return ambient + diffuse + specular + emissiveColor;
 }

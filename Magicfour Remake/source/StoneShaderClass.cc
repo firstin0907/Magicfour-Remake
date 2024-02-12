@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 
+#include "../include/ModelClass.hh"
 #include "../include/GameException.hh"
 
 StoneShaderClass::StoneShaderClass(ID3D11Device* device, HWND hwnd)
@@ -17,13 +18,47 @@ StoneShaderClass::~StoneShaderClass()
 }
 
 
+void StoneShaderClass::Render(ID3D11DeviceContext* deviceContext,
+	ModelClass* model, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
+	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition)
+{
+	auto& material_list = model->GetMaterial();
+	
+	int curr = 0;
+	// Set the shader parameters that it will use for rendering.
+	for (size_t i = 0; i < material_list.size(); i++)
+	{
+		SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
+			lightDirection, diffuseColor, cameraPosition,
+			material_list[i].first.ambient,
+			material_list[i].first.diffuse,
+			material_list[i].first.specular);
+
+		// Set the vertex input layout.
+		deviceContext->IASetInputLayout(m_layout.Get());
+
+		// Set the vertex and pixel shaders that will be used to render this triangle.
+		deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
+		deviceContext->PSSetShader(m_pixelShader.Get(), NULL, 0);
+
+		// Set the sampler state in the pixel shader.
+		deviceContext->PSSetSamplers(0, 1, m_sampleState.GetAddressOf());
+
+		// Render the triangle.
+		if(i == material_list.size() - 1)
+			deviceContext->DrawIndexed(model->GetIndexCount() - material_list[i].second, material_list[i].second, 0);
+		else deviceContext->DrawIndexed(material_list[i+1].second - material_list[i].second, material_list[i].second, 0);
+	}
+}
+
 void StoneShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
 	XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition)
 {
 	// Set the shader parameters that it will use for rendering.
 	SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
-		lightDirection, diffuseColor, cameraPosition);
+		lightDirection, diffuseColor, cameraPosition,
+		{ 1, 1, 1}, { 1, 1, 1 }, { 1, 1, 1 });
 
 	// Now render the prepared buffers with the shader.
 	RenderShader(deviceContext, indexCount);
@@ -114,7 +149,8 @@ void StoneShaderClass::InitializeShader(
 
 
 void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX vpMatrix, 
-	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition)
+	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition,
+	XMFLOAT3 ambient_weight, XMFLOAT3 diffuse_weight, XMFLOAT3 specular_weight)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -157,6 +193,10 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr2->diffuseColor = diffuseColor;
 	dataPtr2->lightDirection = lightDirection;
 	dataPtr2->padding = 0.0f;
+
+	dataPtr2->ambient_weight = XMFLOAT4(ambient_weight.x, ambient_weight.y, ambient_weight.z, 1.0f);
+	dataPtr2->diffuse_weight = XMFLOAT4(diffuse_weight.x, diffuse_weight.y, diffuse_weight.z, 1.0f);
+	dataPtr2->specular_weight = XMFLOAT4(specular_weight.x, specular_weight.y, specular_weight.z, 1.0f);
 
 	// Unlock the constant buffer.
 	deviceContext->Unmap(m_lightBuffer.Get(), 0);

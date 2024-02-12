@@ -11,11 +11,12 @@
 
 using namespace std;
 
-ModelClass::ModelClass(ID3D11Device* device, const char* modelFilename,
-	const wchar_t* diffuse_filename, const wchar_t* normal_filename)
+ModelClass::ModelClass(ID3D11Device* device,
+	const char* modelFilename,
+	const wchar_t* diffuse_filename,
+	const wchar_t* normal_filename,
+	const wchar_t* emissive_filename)
 {
-	bool result;
-
 	// Load in the m_model data.
 	LoadModel(modelFilename);
 
@@ -26,7 +27,7 @@ ModelClass::ModelClass(ID3D11Device* device, const char* modelFilename,
 	InitializeBuffers(device);
 
 	// Load the texture for this m_model.
-	LoadTextures(device, diffuse_filename, normal_filename);
+	LoadTextures(device, diffuse_filename, normal_filename, emissive_filename);
 }
 
 
@@ -69,7 +70,11 @@ ID3D11ShaderResourceView* ModelClass::GetNormalTexture()
 	else return nullptr;
 }
 
-
+ID3D11ShaderResourceView* ModelClass::GetEmissiveTexture()
+{
+	if (m_EmissiveTexture) return m_EmissiveTexture->GetTexture();
+	return nullptr;
+}
 
 void ModelClass::InitializeBuffers(ID3D11Device* device)
 {
@@ -164,7 +169,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 
 void ModelClass::LoadTextures(ID3D11Device* device,
-	const wchar_t* diffuse_filename, const wchar_t* normal_filename)
+	const wchar_t* diffuse_filename, const wchar_t* normal_filename, const wchar_t* emissive_filename)
 {
 	// Create and initialize the diffuse texture object.
 	m_DiffuseTexture = make_unique<TextureClass>(device, diffuse_filename);
@@ -175,15 +180,76 @@ void ModelClass::LoadTextures(ID3D11Device* device,
 		m_NormalTexture = make_unique<TextureClass>(device, normal_filename);
 	}
 	else m_NormalTexture = nullptr;
+
+
+	if (emissive_filename)
+	{
+		m_EmissiveTexture = make_unique<TextureClass>(device, emissive_filename);
+	}
+	else m_EmissiveTexture = make_unique<TextureClass>(device, L"data/texture/black.png");
 }
 
 
-#include <vector>
 
+#include <vector>
+#include <map>
 void ModelClass::LoadModel(const char* filename)
 {
 	struct Vertex { float x, y, z; };
 	vector<Vertex> v_list, vt_list, vn_list;
+	map<string, MaterialType> meterial;
+
+	auto read_mtl_file = [&](const char* filename) {
+		string mtl_name = "";
+		MaterialType curr_mtl = {
+			XMFLOAT3(1.0f, 1.0f, 1.0f),
+			XMFLOAT3(1.0f, 1.0f, 1.0f),
+			XMFLOAT3(1.0f, 1.0f, 1.0f)
+		};
+
+		ifstream fin(filename);
+		if (fin.fail()) return; //throw filenotfound_error(filename, WFILE, __LINE__);
+
+		string buffer;
+		while (getline(fin, buffer))
+		{
+			istringstream iss(buffer);
+			getline(iss, buffer, ' ');
+
+			if (buffer == "#") continue; // case: comments
+			else if (buffer == "newmtl")
+			{
+				if (mtl_name.size() > 0)
+				{
+					meterial[mtl_name] = curr_mtl;
+					curr_mtl.ambient = curr_mtl.diffuse = curr_mtl.specular = XMFLOAT3(1.0f, 1.0f, 1.0f);
+				}
+				iss >> mtl_name;
+			}
+			else if (buffer == "Ka")
+			{
+				float r, g, b; iss >> r >> g >> b;
+				curr_mtl.ambient = XMFLOAT3(r, g, b);
+			}
+			else if (buffer == "Kd")
+			{
+				float r, g, b; iss >> r >> g >> b;
+				curr_mtl.diffuse = XMFLOAT3(r, g, b);
+			}
+			else if (buffer == "Ks")
+			{
+				float r, g, b; iss >> r >> g >> b;
+				curr_mtl.specular = XMFLOAT3(r, g, b);
+			}
+		}
+
+		if (mtl_name.size() > 0)
+		{
+			meterial[mtl_name] = curr_mtl;
+		}
+	};
+
+	
 
 	ifstream fin(filename);
 	if (fin.fail()) throw filenotfound_error(filename, WFILE, __LINE__);
@@ -205,7 +271,7 @@ void ModelClass::LoadModel(const char* filename)
 		{
 			float x, y;
 			iss >> x >> y;
-			vt_list.push_back({ x, y });
+			vt_list.push_back({ x, 1 - y });
 		}
 		else if (buffer == "vn")
 		{
@@ -257,8 +323,25 @@ void ModelClass::LoadModel(const char* filename)
 				m_model.push_back(face_v[i + 2]);
 			}
 		}
+		else if (buffer == "mtllib")
+		{
+			string path = string(filename);
+			const int last = path.find_last_of('/');
+			path = path.substr(0, path.find_last_of('/') + 1);
+			iss >> buffer;
+
+			read_mtl_file((path + buffer).c_str());
+		}
+		else if (buffer == "usemtl")
+		{
+			iss >> buffer;
+			if (meterial.find(buffer) == meterial.end()) continue;
+			m_MaterialList.emplace_back(meterial[buffer], (int)m_model.size());
+		}
 	}
 
+	if (m_MaterialList.empty()) m_MaterialList.emplace_back(MaterialType{
+			XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) }, 0);
 
 	m_indexCount = m_vertexCount = m_model.size();
 }

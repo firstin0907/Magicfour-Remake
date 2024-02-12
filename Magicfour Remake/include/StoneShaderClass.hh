@@ -30,6 +30,10 @@ private:
 		XMFLOAT4 diffuseColor;
 		XMFLOAT3 lightDirection;
 		float padding;  // Added extra padding so structure is a multiple of 16 for CreateBuffer function requirements.
+
+		XMFLOAT4 ambient_weight;
+		XMFLOAT4 diffuse_weight;
+		XMFLOAT4 specular_weight;
 	};
 
 	struct CameraBufferType
@@ -43,6 +47,10 @@ public:
 	StoneShaderClass(const StoneShaderClass&) = delete;
 	~StoneShaderClass();
 
+	void Render(ID3D11DeviceContext* deviceContext,
+		class ModelClass* model, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
+		XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition);
+
 	void Render(ID3D11DeviceContext* deviceContext, int indexCount,
 		XMMATRIX worldMatrix, XMMATRIX vpMatrix,
 		XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition);
@@ -51,8 +59,9 @@ private:
 	void InitializeShader(ID3D11Device* device, HWND hwnd,
 		const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMFLOAT3, XMFLOAT4,
-		XMFLOAT3 cameraPosition);
+	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX,
+		XMFLOAT3, XMFLOAT4,
+		XMFLOAT3 cameraPosition, XMFLOAT3, XMFLOAT3, XMFLOAT3);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:

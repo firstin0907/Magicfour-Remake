@@ -8,8 +8,7 @@
 /////////////
 cbuffer MatrixBuffer
 {
-	matrix mvpMatrix;
-
+    matrix mvpMatrix;
     matrix worldTrInvMatrix;
 };
 
