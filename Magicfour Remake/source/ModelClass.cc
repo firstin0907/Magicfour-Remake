@@ -4,6 +4,7 @@
 #include "../include/GameException.hh"
 
 #include <sstream>
+#include <algorithm>
 
 #define WIDE2(x) L##x
 #define WIDE(x) WIDE2(x)
@@ -257,6 +258,7 @@ void ModelClass::LoadModel(const char* filename)
 	string buffer;
 	while (getline(fin, buffer))
 	{
+		replace(buffer.begin(), buffer.end(), '\r', ' ');
 		istringstream iss(buffer);
 		getline(iss, buffer, ' ');
 
@@ -284,6 +286,7 @@ void ModelClass::LoadModel(const char* filename)
 			vector<ModelType> face_v;
 			while (getline(iss, buffer, ' '))
 			{
+				if (buffer.size() == 0) continue;
 				face_v.push_back({ 0 });
 				istringstream point_iss(buffer);
 

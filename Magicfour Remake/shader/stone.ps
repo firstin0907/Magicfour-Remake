@@ -41,7 +41,7 @@ float4 psMain(PixelInputType input) : SV_TARGET
 	float lightIntensity, specularIntensity;
 	float4 color;
 
-    float shininess = 80.0;
+    float shininess = 10.0;
 
     normal = normalize(input.normal);
 	// Invert the light direction for calculations.
@@ -57,10 +57,10 @@ float4 psMain(PixelInputType input) : SV_TARGET
 
     // specular
     float4 white = {1, 1, 1, 1};
-
     float3 viewDir = normalize(cameraPosition - input.position);
-    float3 reflectDir = normalize(lightDir - 2.0f * dot(input.normal, lightDir) * input.normal);
-    float spec = pow(saturate(dot(viewDir, reflectDir)), shininess);
+    float3 halfDir = normalize(viewDir + lightDir);
+
+    float spec =  pow(saturate(dot(halfDir, input.normal)), shininess);
     float4 specular = spec * white * specularWeight;
 
 	return ambient + diffuse + specular;

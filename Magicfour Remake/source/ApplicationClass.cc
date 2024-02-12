@@ -405,7 +405,7 @@ void ApplicationClass::Render(time_t curr_time)
 
 	m_GemModel->Render(m_Direct3D->GetDeviceContext());
 	m_NormalMapShader->Render(m_Direct3D->GetDeviceContext(), m_GemModel->GetIndexCount(),
-		XMMatrixScaling(10, 10, 10) * XMMatrixTranslation(0, -10, 0), vpMatrix, m_GemModel->GetDiffuseTexture(),
+		XMMatrixScaling(5, 5, 5) * XMMatrixTranslation(0, 0, 0), vpMatrix, m_GemModel->GetDiffuseTexture(),
 		m_GemModel->GetNormalTexture(), m_GemModel->GetEmissiveTexture(), m_Light->GetDirection(),
 		m_Light->GetDiffuseColor(), m_Camera->GetPosition());
 

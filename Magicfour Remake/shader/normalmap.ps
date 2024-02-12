@@ -36,7 +36,7 @@ float4 psMain(PixelInputType input) : SV_TARGET
     float3 bumpNormal;
     float3 lightDir;
     float4 color;
-    float shininess = 15.0;
+    float shininess = 1.0;
 
     // Sample the pixel color from the color texture at this location.
     textureColor = diffuseTexture.Sample(SampleType, input.tex);
@@ -60,8 +60,9 @@ float4 psMain(PixelInputType input) : SV_TARGET
     // specular
     float4 white = {1, 1, 1, 1};
     float3 viewDir = normalize(cameraPosition - input.position);
-    float3 reflectDir = normalize(lightDir - 2.0f * dot(input.normal, lightDir) * input.normal);
-    float spec = pow(saturate(dot(viewDir, reflectDir)), shininess);
+    float3 halfDir = normalize(viewDir - lightDir);
+
+    float spec =  pow(saturate(dot(halfDir, bumpNormal)), shininess);
     float4 specular = spec * white * specularWeight;
 
 
