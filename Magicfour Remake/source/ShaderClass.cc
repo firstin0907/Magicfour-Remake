@@ -1,5 +1,7 @@
 #include "../include/ShaderClass.hh"
 
+#include <fstream>
+
 #include "../include/GameException.hh"
 
 ShaderClass::ShaderClass()
@@ -7,121 +9,105 @@ ShaderClass::ShaderClass()
 
 }
 
-bool ShaderClass::CreateShaderObject(ID3D11Device* device, HWND hwnd,
-	const WCHAR* vsFilename, const WCHAR* psFilename,
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[], int numElements)
+void ShaderClass::CreateShaderObject(ID3D11Device* device, HWND hwnd,
+	const WCHAR* vs_filename, const WCHAR* ps_filename,
+	D3D11_INPUT_ELEMENT_DESC polygon_layout[], int num_of_elements)
 {
 	HRESULT result;
-	ID3D10Blob* errorMessage = nullptr;
+	ComPtr<ID3D10Blob> error_message = nullptr;
 
-	ComPtr<ID3D10Blob> vertexShaderBuffer;
-	ComPtr<ID3D10Blob> pixelShaderBuffer;
+	ComPtr<ID3D10Blob> vs_buffer;
+	ComPtr<ID3D10Blob> ps_buffer;
 
 	// Compile the vertex shader code.
-	result = D3DCompileFromFile(vsFilename, NULL, NULL, "vsMain", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
-		vertexShaderBuffer.GetAddressOf(), &errorMessage);
+	result = D3DCompileFromFile(vs_filename, NULL, NULL, "vsMain", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
+		vs_buffer.GetAddressOf(), error_message.GetAddressOf());
 
 	if (FAILED(result))
 	{
 		// If the shader failed to compile it should have writen something to the error message.
-		if (errorMessage) OutputShaderErrorMessage(errorMessage, hwnd, vsFilename);
+		if (error_message) OutputShaderErrorMessage(error_message.Get(), hwnd, vs_filename);
 		// If there was nothing in the error message then it simply could not find the shader file itself.
-		else MessageBox(hwnd, vsFilename, L"Missing Shader File", MB_OK);
+		else MessageBox(hwnd, vs_filename, L"Missing Shader File", MB_OK);
 
 		throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 	}
 
 	// Compile the pixel shader code.
-	result = D3DCompileFromFile(psFilename, NULL, NULL, "psMain", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
-		pixelShaderBuffer.GetAddressOf(), &errorMessage);
+	result = D3DCompileFromFile(ps_filename, NULL, NULL, "psMain", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
+		ps_buffer.GetAddressOf(), error_message.GetAddressOf());
 	if (FAILED(result))
 	{
 		// If the shader failed to compile it should have writen something to the error message.
-		if (errorMessage) OutputShaderErrorMessage(errorMessage, hwnd, psFilename);
+		if (error_message) OutputShaderErrorMessage(error_message.Get(), hwnd, ps_filename);
 		// If there was nothing in the error message then it simply could not find the file itself.
-		else MessageBox(hwnd, psFilename, L"Missing Shader File", MB_OK);
+		else MessageBox(hwnd, ps_filename, L"Missing Shader File", MB_OK);
 		
 		throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 	}
 	
 	// Create the vertex shader from the buffer.
-	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
-		vertexShaderBuffer->GetBufferSize(), NULL, m_vertexShader.GetAddressOf());
+	result = device->CreateVertexShader(vs_buffer->GetBufferPointer(),
+		vs_buffer->GetBufferSize(), NULL, vertex_shader_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 
 	// Create the pixel shader from the buffer.
-	result = device->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(),
-		pixelShaderBuffer->GetBufferSize(), NULL, m_pixelShader.GetAddressOf());
+	result = device->CreatePixelShader(ps_buffer->GetBufferPointer(),
+		ps_buffer->GetBufferSize(), NULL, pixel_shader_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 
 	// Create the vertex input layout.
-	result = device->CreateInputLayout(polygonLayout, numElements,
-		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(),
-		m_layout.GetAddressOf());
+	result = device->CreateInputLayout(polygon_layout, num_of_elements,
+		vs_buffer->GetBufferPointer(), vs_buffer->GetBufferSize(),
+		input_layout_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
-	return true;
 }
 
 ID3D11SamplerState* ShaderClass::CreateSamplerState(ID3D11Device* device)
 {
-	ID3D11SamplerState* samplerState;
-	D3D11_SAMPLER_DESC samplerDesc;
+	ID3D11SamplerState* sampler_state;
+	D3D11_SAMPLER_DESC sampler_desc;
 
 	// Create a texture sampler state description.
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 0;
-	samplerDesc.BorderColor[1] = 0;
-	samplerDesc.BorderColor[2] = 0;
-	samplerDesc.BorderColor[3] = 0;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.MipLODBias = 0.0f;
+	sampler_desc.MaxAnisotropy = 1;
+	sampler_desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	sampler_desc.BorderColor[0] = 0;
+	sampler_desc.BorderColor[1] = 0;
+	sampler_desc.BorderColor[2] = 0;
+	sampler_desc.BorderColor[3] = 0;
+	sampler_desc.MinLOD = 0;
+	sampler_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Create the texture sampler state.
-	bool result = device->CreateSamplerState(&samplerDesc, &samplerState);
+	HRESULT result = device->CreateSamplerState(&sampler_desc, &sampler_state);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create sampler state.");
 
-	return samplerState;
+	return sampler_state;
 }
 ;
 
 void ShaderClass::OutputShaderErrorMessage(
-	ID3D10Blob* errorMessage, HWND hwnd, const WCHAR* shaderFilename)
+	ID3D10Blob* error_message, HWND hwnd, const WCHAR* shader_filename)
 {
 	char* compileErrors;
-	unsigned __int64 bufferSize, i;
-	std::ofstream fout;
-
+	std::ofstream fout("shader-error.txt");
 
 	// Get a pointer to the error message text buffer.
-	compileErrors = (char*)(errorMessage->GetBufferPointer());
+	compileErrors = (char*)(error_message->GetBufferPointer());
 
 	// Get the length of the message.
-	bufferSize = errorMessage->GetBufferSize();
-
-	// Open a file to write the error message to.
-	fout.open("shader-error.txt");
+	size_t bufferSize = error_message->GetBufferSize();
 
 	// Write out the error message.
-	for (i = 0; i < bufferSize; i++)
-	{
-		fout << compileErrors[i];
-	}
-
-	// Close the file.
-	fout.close();
-
-	// Release the error message.
-	errorMessage->Release();
-	errorMessage = 0;
+	for (size_t i = 0; i < bufferSize; i++) fout << compileErrors[i];
 
 	// Pop a message up on the screen to notify the user to check the text file for compile errors.
-	MessageBox(hwnd, L"Error compiling shader.  Check shader-error.txt for message.", shaderFilename, MB_OK);
+	MessageBox(hwnd, L"Error compiling shader. Check shader-error.txt for message.", shader_filename, MB_OK);
 
 	return;
 }

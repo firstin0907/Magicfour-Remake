@@ -8,11 +8,11 @@ SkillGaugeClass::SkillGaugeClass(ID3D11Device* device,
 	int screenWidth, int screenHeight, const wchar_t* textureFilenameGray,
 	const wchar_t* textureFilenameWhite, int renderX, int renderY)
 {
-	m_screenWidth = screenWidth;
-	m_screenHeight = screenHeight;
+	screenWidth_ = screenWidth;
+	screenHeight_ = screenHeight;
 
-	m_renderX = renderX;
-	m_renderY = renderY;
+	renderX_ = renderX;
+	renderY_ = renderY;
 
 	InitializeBuffers(device);
 	LoadTexture(device, textureFilenameGray, textureFilenameWhite);
@@ -36,13 +36,13 @@ void SkillGaugeClass::Render(ID3D11DeviceContext* deviceContext, float ratio)
 
 int SkillGaugeClass::GetIndexCount()
 {
-	return m_indexCount;
+	return indexCount_;
 }
 
 ID3D11ShaderResourceView* SkillGaugeClass::GetTexture(float skill_ratio)
 {
-	if (skill_ratio > 0.0f) return m_TextureGray->GetTexture();
-	else return m_TextureWhite->GetTexture();
+	if (skill_ratio > 0.0f) return textureGray_->GetTexture();
+	else return textureWhite_->GetTexture();
 }
 
 void SkillGaugeClass::InitializeBuffers(ID3D11Device* device)
@@ -55,23 +55,23 @@ void SkillGaugeClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 
 	// Initialize the previous rendering position to negative one.
-	m_prevPosX = -1, m_prevPosY = -1;
-	m_prevHeight = -(1 << 30);
+	prevPosX_ = -1, prevPosY_ = -1;
+	prevHeight_ = -(1 << 30);
 
 	// Set the number of vertices in the vertex array.
-	m_vertexCount = 4;
+	vertexCount_ = 4;
 
 	// Set the number of indices in the index array.
-	m_indexCount = 6;
+	indexCount_ = 6;
 
 	// Create the vertex array.
-	vertices = new VertexType[m_vertexCount];
+	vertices = new VertexType[vertexCount_];
 
 	// Create the index array.
-	indices = new unsigned long[m_indexCount];
+	indices = new unsigned long[indexCount_];
 
 	// Initialize vertex array to zeros at first.
-	memset(vertices, 0, (sizeof(VertexType) * m_vertexCount));
+	memset(vertices, 0, (sizeof(VertexType) * vertexCount_));
 
 	// Load the index array with data.
 	indices[0] = 0, indices[1] = 1, indices[2] = 2;
@@ -79,7 +79,7 @@ void SkillGaugeClass::InitializeBuffers(ID3D11Device* device)
 
 	// Set up the description of the dynamic vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC; // !!!!!!!!!!! Dynamic
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertexCount_;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	vertexBufferDesc.MiscFlags = 0;
@@ -91,7 +91,7 @@ void SkillGaugeClass::InitializeBuffers(ID3D11Device* device)
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now finally create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_vertexBuffer.GetAddressOf());
+	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, vertexBuffer_.GetAddressOf());
 	if (FAILED(result))
 	{
 		throw GAME_EXCEPTION(L"Failed to create vertex buffer for SkillGaugeClass.");
@@ -99,7 +99,7 @@ void SkillGaugeClass::InitializeBuffers(ID3D11Device* device)
 
 	// 인덱스 버퍼의 description을 작성합니다.
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount_;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
@@ -111,7 +111,7 @@ void SkillGaugeClass::InitializeBuffers(ID3D11Device* device)
 	indexData.SysMemSlicePitch = 0;
 
 	// 인덱스 버퍼를 생성합니다.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, m_indexBuffer.GetAddressOf());
+	result = device->CreateBuffer(&indexBufferDesc, &indexData, indexBuffer_.GetAddressOf());
 	if (FAILED(result))
 	{
 		throw GAME_EXCEPTION(L"Failed to create index buffer for SkillGaugeClass.");
@@ -127,19 +127,19 @@ bool SkillGaugeClass::UpdateBuffers(ID3D11DeviceContext* deviceContext, float ra
 
 	ratio = (ratio < 0) ? 1.0f : ratio;
 
-	float x1 = m_renderX, y1 = m_renderY;
+	float x1 = renderX_, y1 = renderY_;
 
-	float x2 = x1 + (float)m_bitmapWidth;
-	float y2 = y1 - (float)m_bitmapHeight;
+	float x2 = x1 + (float)bitmapWidth_;
+	float y2 = y1 - (float)bitmapHeight_;
 
-	int height = (int)(round(ratio * m_bitmapHeight));
-	int width = (int)m_bitmapWidth;
+	int height = (int)(round(ratio * bitmapHeight_));
+	int width = (int)bitmapWidth_;
 
-	if (height == m_prevHeight) return true;
-	m_prevHeight = height;
+	if (height == prevHeight_) return true;
+	prevHeight_ = height;
 
 	// Create the vertex array.
-	VertexType* vertices = new VertexType[m_vertexCount];
+	VertexType* vertices = new VertexType[vertexCount_];
 
 					// POSITION							// TEXTURE
 	vertices[0] = { XMFLOAT3(x1, y2 + height, 0.0f), XMFLOAT2(0.0f, 1 - ratio) };
@@ -148,13 +148,13 @@ bool SkillGaugeClass::UpdateBuffers(ID3D11DeviceContext* deviceContext, float ra
 	vertices[3] = { XMFLOAT3(x2, y2 + height, 0.0f), XMFLOAT2(1.0f, 1 - ratio) };
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	result = deviceContext->Map(m_vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(vertexBuffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) return false;
 
 	auto dataPtr = (VertexType*)mappedResource.pData;
-	memcpy(dataPtr, (void*)vertices, (sizeof(VertexType) * m_vertexCount));
+	memcpy(dataPtr, (void*)vertices, (sizeof(VertexType) * vertexCount_));
 
-	deviceContext->Unmap(m_vertexBuffer.Get(), 0);
+	deviceContext->Unmap(vertexBuffer_.Get(), 0);
 
 	delete[] vertices;
 	return true;
@@ -164,17 +164,17 @@ void SkillGaugeClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 {
 	unsigned int stride = sizeof(VertexType), offset = 0;
 
-	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
-	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), &stride, &offset);
+	deviceContext->IASetIndexBuffer(indexBuffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void SkillGaugeClass::LoadTexture(ID3D11Device* device,
 	const wchar_t* grayFilename, const wchar_t* whiteFilename )
 {
-	m_TextureGray = make_unique<TextureClass>(device, grayFilename);
-	m_TextureWhite = make_unique<TextureClass>(device, whiteFilename);
+	textureGray_ = make_unique<TextureClass>(device, grayFilename);
+	textureWhite_ = make_unique<TextureClass>(device, whiteFilename);
 
-	m_bitmapWidth = m_TextureGray->GetWidth();
-	m_bitmapHeight = m_TextureGray->GetHeight();
+	bitmapWidth_ = textureGray_->GetWidth();
+	bitmapHeight_ = textureGray_->GetHeight();
 }

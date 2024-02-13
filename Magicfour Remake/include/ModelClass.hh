@@ -5,15 +5,22 @@
 #include <wrl.h>
 #include <vector>
 
-using namespace DirectX;
-using namespace std;
-
-template<typename T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
-
 class ModelClass
 {
 private:
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
+	template<typename T>
+	using vector = std::vector<T>;
+
+	using XMFLOAT2 = DirectX::XMFLOAT2;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+
 	struct VertexType
 	{
 		XMFLOAT3 position;
@@ -67,9 +74,9 @@ public:
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
-	inline const vector<pair<MaterialType, int> >& GetMaterial()
+	inline const vector<std::pair<MaterialType, int> >& GetMaterial()
 	{
-		return m_MaterialList; 
+		return materialList_; 
 	}
 
 	int GetIndexCount();
@@ -96,12 +103,12 @@ private:
 
 
 private:
-	ComPtr<ID3D11Buffer> m_vertexBuffer, m_indexBuffer;
-	int m_vertexCount, m_indexCount;
-	unique_ptr<class TextureClass> m_DiffuseTexture;
-	unique_ptr<class TextureClass> m_NormalTexture;
-	unique_ptr<class TextureClass> m_EmissiveTexture;
-	vector<ModelType> m_model;
+	ComPtr<ID3D11Buffer> vertexBuffer_, indexBuffer_;
+	int vertexCount_, indexCount_;
+	unique_ptr<class TextureClass> diffuseTexture_;
+	unique_ptr<class TextureClass> normalTexture_;
+	unique_ptr<class TextureClass> emissiveTexture_;
+	vector<ModelType> model_;
 
-	vector<pair<MaterialType, int> > m_MaterialList;
+	vector<std::pair<MaterialType, int> > materialList_;
 };

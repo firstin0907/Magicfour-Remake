@@ -27,18 +27,18 @@ public:
 		class TextureShaderClass* textureShader,
 		ID3D11DeviceContext* deviceContext, class CharacterClass* character,
 		MonsterVector& monsters,
-		const XMMATRIX& vpMatrix, const XMMATRIX& orthoMatrix, time_t curr_time);
+		const XMMATRIX& vp_matrix, const XMMATRIX& orthoMatrix, time_t curr_time);
 
 private:
-	int m_ScreenWidth, m_ScreenHeight;
+	int screenWidth_, screenHeight_;
 
-	std::unique_ptr<class SkillGaugeClass> m_SkillGauge;
-	ComPtr<struct IDWriteTextFormat> m_ScoreTextFormat;
+	std::unique_ptr<class SkillGaugeClass> skillGauge_;
+	ComPtr<struct IDWriteTextFormat> scoreTextFormat_;
 
-	std::unique_ptr<class TextureClass> m_MonsterHpFrameTexture;
-	std::unique_ptr<class TextureClass> m_MonsterHpGaugeTexture[4];
+	std::unique_ptr<class TextureClass> monsterHpFrameTexture_;
+	std::unique_ptr<class TextureClass> monsterHpGaugeTexture_[4];
 
-	ComPtr<ID3D11Buffer> m_vertexBuffer, m_indexBuffer;
+	ComPtr<ID3D11Buffer> vertexBuffer_, indexBuffer_;
 
 
 };

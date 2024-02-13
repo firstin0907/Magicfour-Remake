@@ -19,14 +19,14 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 	
-	static void initialize(ModelClass* model);
+	static void initialize(class ModelClass* model);
 
 	virtual class ModelClass* GetModel();
 
 private:
-	static unique_ptr<class ModelClass> m_Model;
+	static unique_ptr<class ModelClass> model_;
 
-	float m_Angle;
+	float angle_;
 };
 
 class SkillObjectBead : public SkillObjectClass
@@ -51,7 +51,7 @@ public:
 	virtual class ModelClass* GetModel();
 private:
 
-	static unique_ptr<class ModelClass> m_Model;
+	static unique_ptr<class ModelClass> model_;
 };
 
 class SkillObjectLeg : public SkillObjectClass
@@ -76,7 +76,7 @@ public:
 	virtual class ModelClass* GetModel();
 
 private:
-	static unique_ptr<class ModelClass> m_Model;
+	static unique_ptr<class ModelClass> model_;
 };
 
 class SkillObjectBasic : public SkillObjectClass
@@ -101,5 +101,5 @@ public:
 	virtual class ModelClass* GetModel();
 
 private:
-	static unique_ptr<class ModelClass> m_Model;
+	static unique_ptr<class ModelClass> model_;
 };

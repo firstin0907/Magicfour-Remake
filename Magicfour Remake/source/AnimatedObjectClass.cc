@@ -4,12 +4,12 @@
 
 #include "../include/GameException.hh"
 
-using namespace std; 
-
 #define WIDE2(x) L##x
 #define WIDE(x) WIDE2(x)
 #define WFILE WIDE(__FILE__)
 
+using namespace std; 
+using namespace DirectX;
 
 AnimatedObjectClass::AnimationNode*
 	AnimatedObjectClass::create_hierarchy(

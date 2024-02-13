@@ -15,11 +15,14 @@ enum channel_t
 	ANIMATION_CHANNEL_ZROT
 };
 
-using namespace std;
-using namespace DirectX;
-
 class AnimatedObjectClass
 {
+private:
+	using XMMATRIX = DirectX::XMMATRIX;
+
+	template<typename T>
+	using vector = std::vector<T>;
+
 	struct AnimationNode
 	{
 		float offset_x, offset_y, offset_z;
@@ -38,7 +41,7 @@ class AnimatedObjectClass
 		AnimationNode(std::string name, AnimationNode* parent)
 			: name(name), parent(parent), channels(nullptr)
 		{
-			global_transform = link_matrix = XMMatrixIdentity();
+			global_transform = link_matrix = DirectX::XMMatrixIdentity();
 		};
 		~AnimationNode() { delete[] channels; }
 	};
@@ -54,7 +57,7 @@ class AnimatedObjectClass
 
 private:
 	AnimationNode* create_hierarchy(
-		AnimationNode* curr_node, ifstream& fin);
+		AnimationNode* curr_node, std::ifstream& fin);
 
 public:
 	void UpdateGlobalMatrices(const int frame, XMMATRIX, vector<XMMATRIX>& result);

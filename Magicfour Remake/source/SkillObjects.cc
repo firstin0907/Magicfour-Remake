@@ -5,17 +5,21 @@
 #include "../include/ModelClass.hh"
 #include "../include/GroundClass.hh"
 
-unique_ptr<class ModelClass> SkillObjectSpear::m_Model = nullptr;
-unique_ptr<class ModelClass> SkillObjectBead::m_Model = nullptr;
-unique_ptr<class ModelClass> SkillObjectLeg::m_Model = nullptr;
-unique_ptr<class ModelClass> SkillObjectBasic::m_Model = nullptr;
+using namespace std;
+using namespace DirectX;
+
+
+unique_ptr<class ModelClass> SkillObjectSpear::model_ = nullptr;
+unique_ptr<class ModelClass> SkillObjectBead::model_ = nullptr;
+unique_ptr<class ModelClass> SkillObjectLeg::model_ = nullptr;
+unique_ptr<class ModelClass> SkillObjectBasic::model_ = nullptr;
 
 SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t created_time)
 	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 },
 		vx, vy)
 {
 	SetState(SkillObjectState::kNormal, created_time);
-	m_Angle = (float)atan(vx / (double)vy);
+	angle_ = (float)atan(vx / (double)vy);
 }
 
 void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
@@ -80,17 +84,17 @@ bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
 {
 	return XMMatrixRotationY(XM_PI / 2)
-		* XMMatrixRotationZ(XM_PI - m_Angle) * XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
+		* XMMatrixRotationZ(XM_PI - angle_) * XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
 }
 
 void SkillObjectSpear::initialize(ModelClass* model)
 {
-	m_Model = unique_ptr<ModelClass>(model);
+	model_ = unique_ptr<ModelClass>(model);
 }
 
 ModelClass* SkillObjectSpear::GetModel()
 {
-	return m_Model.get();
+	return model_.get();
 }
 
 SkillObjectBead::SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t created_time)
@@ -155,12 +159,12 @@ XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
 
 void SkillObjectBead::initialize(class ModelClass* model)
 {
-	m_Model = unique_ptr<ModelClass>(model);
+	model_ = unique_ptr<ModelClass>(model);
 }
 
 ModelClass* SkillObjectBead::GetModel()
 {
-	return m_Model.get();
+	return model_.get();
 }
 
 SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
@@ -209,13 +213,13 @@ XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
 
 void SkillObjectLeg::initialize(class ModelClass* model)
 {
-	m_Model = unique_ptr<ModelClass>(model);
+	model_ = unique_ptr<ModelClass>(model);
 }
 
 
 ModelClass* SkillObjectLeg::GetModel()
 {
-	return m_Model.get();
+	return model_.get();
 }
 
 
@@ -252,10 +256,10 @@ XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)
 
 void SkillObjectBasic::initialize(ModelClass* model)
 {
-	m_Model = unique_ptr<ModelClass>(model);
+	model_ = unique_ptr<ModelClass>(model);
 }
 
 ModelClass* SkillObjectBasic::GetModel()
 {
-	return m_Model.get();
+	return model_.get();
 }

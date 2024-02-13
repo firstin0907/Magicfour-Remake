@@ -16,19 +16,19 @@ SystemClass::SystemClass()
 	try
 	{
 		// Create and initialize the input object.  This object will be used to handle reading the keyboard input from the user.
-		m_Input = make_unique<InputClass>(m_hinstance, m_hwnd, screenWidth, screenHeight);
+		input_ = make_unique<InputClass>(hinstance_, hwnd_, screenWidth, screenHeight);
 
 		// Create and initialize the application class object.  This object will handle rendering all the graphics for this application.
-		m_Application = make_unique<ApplicationClass>(screenWidth, screenHeight, m_hwnd);
+		application_ = make_unique<ApplicationClass>(screenWidth, screenHeight, hwnd_);
 	}
 	catch (const wchar_t* message)
 	{
-		MessageBox(m_hwnd, message, L"Error", MB_OK);
+		MessageBox(hwnd_, message, L"Error", MB_OK);
 		throw;
 	}
 	catch (const GameException& e)
 	{
-		MessageBox(m_hwnd, e.to_wstring().c_str(), L"Game Error", MB_OK);
+		MessageBox(hwnd_, e.to_wstring().c_str(), L"Game Error", MB_OK);
 		throw;
 	}
 	
@@ -88,11 +88,11 @@ bool SystemClass::Frame()
 {
 	bool result;
 
-	result = m_Input.get()->Frame();
+	result = input_.get()->Frame();
 	if (!result) return false;
 
 	// Do the frame processing for the application class object.
-	result = m_Application->Frame(m_Input.get());
+	result = application_->Frame(input_.get());
 	if (!result) return false;
 
 	return true;
@@ -123,23 +123,23 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	ApplicationHandle = this;
 
 	// Get the instance of this application.
-	m_hinstance = GetModuleHandle(NULL);
+	hinstance_ = GetModuleHandle(NULL);
 
 	// Give the application a name.
-	m_applicationName = L"Engine";
+	applicationName_ = L"Engine";
 
 	// Setup the windows class with default settings.
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hInstance = m_hinstance;
+	wc.hInstance = hinstance_;
 	wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
 	wc.hIconSm = wc.hIcon;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName = NULL;
-	wc.lpszClassName = m_applicationName;
+	wc.lpszClassName = applicationName_;
 	wc.cbSize = sizeof(WNDCLASSEX);
 
 	// Register the window class.
@@ -178,14 +178,14 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	}
 
 	// Create the window with the screen settings and get the handle to it.
-	m_hwnd = CreateWindowEx(WS_EX_APPWINDOW, m_applicationName, m_applicationName,
+	hwnd_ = CreateWindowEx(WS_EX_APPWINDOW, applicationName_, applicationName_,
 		WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
-		posX, posY, screenWidth, screenHeight, NULL, NULL, m_hinstance, NULL);
+		posX, posY, screenWidth, screenHeight, NULL, NULL, hinstance_, NULL);
 
 	// Bring the window up on the screen and set it as main focus.
-	ShowWindow(m_hwnd, SW_SHOW);
-	SetForegroundWindow(m_hwnd);
-	SetFocus(m_hwnd);
+	ShowWindow(hwnd_, SW_SHOW);
+	SetForegroundWindow(hwnd_);
+	SetFocus(hwnd_);
 
 	// Hide the mouse cursor.
 	ShowCursor(false);
@@ -206,12 +206,12 @@ void SystemClass::ShutdownWindows()
 	}
 
 	// Remove the window.
-	DestroyWindow(m_hwnd);
-	m_hwnd = NULL;
+	DestroyWindow(hwnd_);
+	hwnd_ = NULL;
 
 	// Remove the application instance.
-	UnregisterClass(m_applicationName, m_hinstance);
-	m_hinstance = NULL;
+	UnregisterClass(applicationName_, hinstance_);
+	hinstance_ = NULL;
 
 	// Release the pointer to this class.
 	ApplicationHandle = NULL;

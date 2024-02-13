@@ -21,14 +21,14 @@ private:
 	struct MatrixBufferType
 	{
 		XMMATRIX mvp;
-		XMMATRIX worldMatrix;
+		XMMATRIX world;
 		XMMATRIX world_tr_inv;
 	};
 
 	struct LightBufferType
 	{
-		XMFLOAT4 diffuseColor;
-		XMFLOAT3 lightDirection;
+		XMFLOAT4 diffuse_color;
+		XMFLOAT3 light_direction;
 		float padding;  // Added extra padding so structure is a multiple of 16 for CreateBuffer function requirements.
 		
 		XMFLOAT4 ambient_weight;
@@ -38,28 +38,28 @@ private:
 
 	struct CameraBufferType
 	{
-		XMFLOAT3 cameraPosition;
+		XMFLOAT3 camera_pos;
 		float padding;
 	};
 
 public:
 	NormalMapShaderClass(ID3D11Device* device, HWND hwnd);
 	NormalMapShaderClass(const NormalMapShaderClass&) = delete;
-	~NormalMapShaderClass();
+	~NormalMapShaderClass() = default;
 
 	void Render(ID3D11DeviceContext* deviceContext,
-		class ModelClass* model, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
-		XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition);
+		class ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
+		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
 	void Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView* diffuse_texture,
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture,
-		XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition);
+		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
 private:
 	void InitializeShader(ID3D11Device* device, HWND hwnd,
-		const WCHAR* vsFilename, const WCHAR* psFilename);
+		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
 	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView* diffuse_texture,
@@ -70,9 +70,9 @@ private:
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
-	ComPtr<ID3D11SamplerState>	m_sampleState;
+	ComPtr<ID3D11SamplerState>	sample_state_;
 
-	ComPtr<ID3D11Buffer>		m_matrixBuffer;
-	ComPtr<ID3D11Buffer>		m_lightBuffer;
-	ComPtr<ID3D11Buffer>		m_cameraBuffer;
+	ComPtr<ID3D11Buffer>		matrix_buffer_;
+	ComPtr<ID3D11Buffer>		light_buffer_;
+	ComPtr<ID3D11Buffer>		camera_buffer_;
 };

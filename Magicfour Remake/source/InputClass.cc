@@ -11,78 +11,78 @@
 InputClass::InputClass(HINSTANCE hinstance,
     HWND hwnd, int screenWidth, int screenHeight)
 {
-    m_directInput = nullptr;
-    m_keyboard = m_mouse = nullptr;
+    directInput_ = nullptr;
+    keyboard_ = mouse_ = nullptr;
 
-    m_keyboardState_curr = m_keyboardState[0];
-    m_keyboardState_prev = m_keyboardState[1];
+    m_keyboardState_curr = keyboardState_[0];
+    m_keyboardState_prev = keyboardState_[1];
 
     HRESULT result;
 
-    m_screenWidth = screenWidth;
-    m_screenHeight = screenHeight;
+    screenWidth_ = screenWidth;
+    screenHeight_ = screenHeight;
 
-    m_mouseX = m_mouseY = 0;
+    mouseX_ = mouseY_ = 0;
 
     result = DirectInput8Create(hinstance, DIRECTINPUT_VERSION,
-        IID_IDirectInput8, (void**)&m_directInput, NULL);
+        IID_IDirectInput8, (void**)&directInput_, NULL);
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
 
     // keyboard
-    result = m_directInput->CreateDevice(GUID_SysKeyboard, &m_keyboard, NULL);
+    result = directInput_->CreateDevice(GUID_SysKeyboard, &keyboard_, NULL);
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
-    result = m_keyboard->SetDataFormat(&c_dfDIKeyboard);
+    result = keyboard_->SetDataFormat(&c_dfDIKeyboard);
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
 
     // set cooperative level
     // --> exclusive: input is only used for this application.
     // --> non-exclusive: input can be widely used for any application.
-    result = m_keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_EXCLUSIVE);
+    result = keyboard_->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_EXCLUSIVE);
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
 
-    result = m_keyboard->Acquire();
+    result = keyboard_->Acquire();
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
 
 
     // mouse
-    result = m_directInput->CreateDevice(GUID_SysMouse, &m_mouse, NULL);
+    result = directInput_->CreateDevice(GUID_SysMouse, &mouse_, NULL);
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
-    result = m_mouse->SetDataFormat(&c_dfDIMouse);
+    result = mouse_->SetDataFormat(&c_dfDIMouse);
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
 
     // set cooperative level
     // --> exclusive: input is only used for this application.
     // --> non-exclusive: input can be widely used for any application. (now)
-    result = m_mouse->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+    result = mouse_->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
 
-    result = m_mouse->Acquire();
+    result = mouse_->Acquire();
     if (FAILED(result)) throw GameException(L"Failed to initialize InputClass", WFILE, __LINE__);
 }
 
 InputClass::~InputClass()
 {
     // Release the mouse.
-    if (m_mouse)
+    if (mouse_)
     {
-        m_mouse->Unacquire();
-        m_mouse->Release();
-        m_mouse = 0;
+        mouse_->Unacquire();
+        mouse_->Release();
+        mouse_ = 0;
     }
 
     // Release the keyboard.
-    if (m_keyboard)
+    if (keyboard_)
     {
-        m_keyboard->Unacquire();
-        m_keyboard->Release();
-        m_keyboard = 0;
+        keyboard_->Unacquire();
+        keyboard_->Release();
+        keyboard_ = 0;
     }
 
     // Release the main interface to direct input.
-    if (m_directInput)
+    if (directInput_)
     {
-        m_directInput->Release();
-        m_directInput = 0;
+        directInput_->Release();
+        directInput_ = 0;
     }
 
     return;
@@ -109,12 +109,12 @@ bool InputClass::ReadKeyboard()
 
     std::swap(m_keyboardState_curr, m_keyboardState_prev);
 
-    result = m_keyboard->GetDeviceState(sizeof(m_keyboardState[0]), (LPVOID)m_keyboardState_curr);
+    result = keyboard_->GetDeviceState(sizeof(keyboardState_[0]), (LPVOID)m_keyboardState_curr);
     if (FAILED(result))
     {
         // If the keyboard lost focus or was not acquired then try to get control back.
         if ((result == DIERR_INPUTLOST) || (result == DIERR_NOTACQUIRED))
-            m_keyboard->Acquire();
+            keyboard_->Acquire();
         else return false;
     }
     return true;
@@ -124,12 +124,12 @@ bool InputClass::ReadMouse()
 {
     HRESULT result;
 
-    result = m_mouse->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&m_mouseState);
+    result = mouse_->GetDeviceState(sizeof(DIMOUSESTATE), (LPVOID)&mouseState_);
     if (FAILED(result))
     {
         // If the keyboard lost focus or was not acquired then try to get control back.
         if ((result == DIERR_INPUTLOST) || (result == DIERR_NOTACQUIRED))
-            m_mouse->Acquire();
+            mouse_->Acquire();
         else return false;
     }
     return true;
@@ -137,14 +137,14 @@ bool InputClass::ReadMouse()
 
 void InputClass::ProcessInput()
 {
-    m_mouseX += m_mouseState.lX;
-    m_mouseY += m_mouseState.lY;
+    mouseX_ += mouseState_.lX;
+    mouseY_ += mouseState_.lY;
 
-    if (m_mouseX < 0) m_mouseX = 0;
-    if (m_mouseY < 0) m_mouseY = 0;
+    if (mouseX_ < 0) mouseX_ = 0;
+    if (mouseY_ < 0) mouseY_ = 0;
 
-    if (m_mouseX > m_screenWidth) m_mouseX = m_screenWidth;
-    if (m_mouseY > m_screenHeight) m_mouseY = m_screenHeight;
+    if (mouseX_ > screenWidth_) mouseX_ = screenWidth_;
+    if (mouseY_ > screenHeight_) mouseY_ = screenHeight_;
 }
 
 bool InputClass::IsEscapePressed()
@@ -164,10 +164,10 @@ bool InputClass::IsKeyDown(int keysym)
 
 void InputClass::GetMouseLocation(int& x, int& y)
 {
-    x = m_mouseX, y = m_mouseY;
+    x = mouseX_, y = mouseY_;
 }
 
 bool InputClass::IsMousePressed()
 {
-    return m_mouseState.rgbButtons[0] & 0x80;
+    return mouseState_.rgbButtons[0] & 0x80;
 }

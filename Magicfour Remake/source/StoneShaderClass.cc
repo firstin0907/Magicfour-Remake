@@ -1,8 +1,5 @@
 #include "../include/StoneShaderClass.hh"
 
-#include <algorithm>
-#include <fstream>
-
 #include "../include/ModelClass.hh"
 #include "../include/GameException.hh"
 
@@ -12,15 +9,9 @@ StoneShaderClass::StoneShaderClass(ID3D11Device* device, HWND hwnd)
 	InitializeShader(device, hwnd, L"shader/stone.vs", L"shader/stone.ps");
 }
 
-StoneShaderClass::~StoneShaderClass()
-{
-
-}
-
-
 void StoneShaderClass::Render(ID3D11DeviceContext* deviceContext,
-	ModelClass* model, XMMATRIX worldMatrix, XMMATRIX vpMatrix,
-	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition)
+	ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
+	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos)
 {
 	auto& material_list = model->GetMaterial();
 	
@@ -28,21 +19,21 @@ void StoneShaderClass::Render(ID3D11DeviceContext* deviceContext,
 	// Set the shader parameters that it will use for rendering.
 	for (size_t i = 0; i < material_list.size(); i++)
 	{
-		SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
-			lightDirection, diffuseColor, cameraPosition,
+		SetShaderParameters(deviceContext, world_matrix, vp_matrix,
+			light_direction, diffuse_color, camera_pos,
 			material_list[i].first.ambient,
 			material_list[i].first.diffuse,
 			material_list[i].first.specular);
 
 		// Set the vertex input layout.
-		deviceContext->IASetInputLayout(m_layout.Get());
+		deviceContext->IASetInputLayout(input_layout_.Get());
 
 		// Set the vertex and pixel shaders that will be used to render this triangle.
-		deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
-		deviceContext->PSSetShader(m_pixelShader.Get(), NULL, 0);
+		deviceContext->VSSetShader(vertex_shader_.Get(), NULL, 0);
+		deviceContext->PSSetShader(pixel_shader_.Get(), NULL, 0);
 
 		// Set the sampler state in the pixel shader.
-		deviceContext->PSSetSamplers(0, 1, m_sampleState.GetAddressOf());
+		deviceContext->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 
 		// Render the triangle.
 		if(i == material_list.size() - 1)
@@ -52,12 +43,12 @@ void StoneShaderClass::Render(ID3D11DeviceContext* deviceContext,
 }
 
 void StoneShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX vpMatrix,
-	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition)
+	XMMATRIX world_matrix, XMMATRIX vp_matrix,
+	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos)
 {
 	// Set the shader parameters that it will use for rendering.
-	SetShaderParameters(deviceContext, worldMatrix, vpMatrix,
-		lightDirection, diffuseColor, cameraPosition,
+	SetShaderParameters(deviceContext, world_matrix, vp_matrix,
+		light_direction, diffuse_color, camera_pos,
 		{ 1, 1, 1}, { 1, 1, 1 }, { 1, 1, 1 });
 
 	// Now render the prepared buffers with the shader.
@@ -66,73 +57,49 @@ void StoneShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount
 
 
 void StoneShaderClass::InitializeShader(
-	ID3D11Device* device, HWND hwnd, const WCHAR* vsFilename, const WCHAR* psFilename)
+	ID3D11Device* device, HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename)
 {
-	HRESULT result;
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[3];
-	unsigned int numElements;
-
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	D3D11_BUFFER_DESC lightBufferDesc;
-	D3D11_BUFFER_DESC cameraBufferDesc;
-
-
-	// Get a count of the elements in the layout.
-	numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
+	constexpr int num_of_elements = 3;
+	D3D11_INPUT_ELEMENT_DESC polygon_layout[num_of_elements];
 
 	// Create the vertex input layout description.
 	// This setup needs to match the VertexType stucture in the ModelClass and in the shader.
-	for (int i = 0; i < numElements; i++)
+	for (int i = 0; i < num_of_elements; i++)
 	{
-		polygonLayout[i].SemanticIndex = 0;
-		polygonLayout[i].InputSlot = 0;
-		polygonLayout[i].InstanceDataStepRate = 0;
-		polygonLayout[i].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		polygon_layout[i].SemanticIndex = 0;
+		polygon_layout[i].InputSlot = 0;
+		polygon_layout[i].InstanceDataStepRate = 0;
+		polygon_layout[i].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		polygon_layout[i].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 	}
+	polygon_layout[0].AlignedByteOffset = 0;
 
-	polygonLayout[0].SemanticName = "POSITION";
-	polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	polygonLayout[0].AlignedByteOffset = 0;
+	polygon_layout[0].SemanticName = "POSITION";
+	polygon_layout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 
-	polygonLayout[1].SemanticName = "TEXCOORD";
-	polygonLayout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	polygonLayout[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygon_layout[1].SemanticName = "TEXCOORD";
+	polygon_layout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 
-	polygonLayout[2].SemanticName = "NORMAL";
-	polygonLayout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	polygonLayout[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygon_layout[2].SemanticName = "NORMAL";
+	polygon_layout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 
-	CreateShaderObject(device, hwnd, vsFilename, psFilename, polygonLayout, numElements);
+	CreateShaderObject(device, hwnd, vs_filename, ps_filename, polygon_layout, num_of_elements);
 
-	m_sampleState = CreateSamplerState(device);
+	sample_state_ = CreateSamplerState(device);
 
-	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
-	D3D11_BUFFER_DESC constantBufferDesc;
-	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	constantBufferDesc.MiscFlags = 0;
-	constantBufferDesc.StructureByteStride = 0;
+	matrix_buffer_ = CreateBasicConstantBuffer<MatrixBufferType>(device);
+	if (!matrix_buffer_) throw GAME_EXCEPTION(L"Failed to create matrix buffer");
 
-	constantBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	result = device->CreateBuffer(&constantBufferDesc, NULL, m_matrixBuffer.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create matrix buffer");
+	camera_buffer_ = CreateBasicConstantBuffer<CameraBufferType>(device);
+	if (!camera_buffer_) throw GAME_EXCEPTION(L"Failed to create camera buffer");
 
-	constantBufferDesc.ByteWidth = sizeof(CameraBufferType);
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	result = device->CreateBuffer(&constantBufferDesc, NULL, m_cameraBuffer.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create camera buffer");
-
-	constantBufferDesc.ByteWidth = sizeof(LightBufferType);
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	result = device->CreateBuffer(&constantBufferDesc, NULL, m_lightBuffer.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create light buffer");
+	light_buffer_ = CreateBasicConstantBuffer<LightBufferType>(device);
+	if (!light_buffer_) throw GAME_EXCEPTION(L"Failed to create light buffer");
 }
 
 
-void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX vpMatrix, 
-	XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor, XMFLOAT3 cameraPosition,
+void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX world_matrix, XMMATRIX vp_matrix, 
+	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos,
 	XMFLOAT3 ambient_weight, XMFLOAT3 diffuse_weight, XMFLOAT3 specular_weight)
 {
 	HRESULT result;
@@ -143,7 +110,7 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	CameraBufferType* dataPtr3;
 
 	// Lock the constant buffer so it can be written to.
-	result = deviceContext->Map(m_matrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(matrix_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock matrix buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
@@ -151,21 +118,21 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 
 	// Copy the matrices into the constant buffer.
 	// Transpose the matrices to prepare them for the shader.
-	dataPtr->mvp = XMMatrixTranspose(worldMatrix * vpMatrix);
-	dataPtr->worldMatrix = XMMatrixTranspose(worldMatrix);
-	dataPtr->world_tr_inv = XMMatrixInverse(nullptr, worldMatrix);
+	dataPtr->mvp = XMMatrixTranspose(world_matrix * vp_matrix);
+	dataPtr->world = XMMatrixTranspose(world_matrix);
+	dataPtr->world_tr_inv = XMMatrixInverse(nullptr, world_matrix);
 
 	// Unlock the constant buffer.
-	deviceContext->Unmap(m_matrixBuffer.Get(), 0);
+	deviceContext->Unmap(matrix_buffer_.Get(), 0);
 
 	// Set the position of the constant buffer in the vertex shader.
 	bufferNumber = 0;
 
 	// Now set the constant buffer in the vertex shader with the updated values.
-	deviceContext->VSSetConstantBuffers(bufferNumber, 1, m_matrixBuffer.GetAddressOf());
+	deviceContext->VSSetConstantBuffers(bufferNumber, 1, matrix_buffer_.GetAddressOf());
 
 	// Lock the light constant buffer so it can be written to.
-	result = deviceContext->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(light_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock light buffer to set shader parameter.");
 
 
@@ -173,8 +140,8 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr2 = (LightBufferType*)mappedResource.pData;
 
 	// Copy the lighting variables into the constant buffer.
-	dataPtr2->diffuseColor = diffuseColor;
-	dataPtr2->lightDirection = lightDirection;
+	dataPtr2->diffuse_color = diffuse_color;
+	dataPtr2->light_direction = light_direction;
 	dataPtr2->padding = 0.0f;
 
 	dataPtr2->ambient_weight = XMFLOAT4(ambient_weight.x, ambient_weight.y, ambient_weight.z, 1.0f);
@@ -182,15 +149,15 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr2->specular_weight = XMFLOAT4(specular_weight.x, specular_weight.y, specular_weight.z, 1.0f);
 
 	// Unlock the constant buffer.
-	deviceContext->Unmap(m_lightBuffer.Get(), 0);
+	deviceContext->Unmap(light_buffer_.Get(), 0);
 
 	// Set the position of the light constant buffer in the pixel shader.
 	bufferNumber = 0;
 
 	// Finally set the light constant buffer in the pixel shader with the updated values.
-	deviceContext->PSSetConstantBuffers(bufferNumber, 1, m_lightBuffer.GetAddressOf());
+	deviceContext->PSSetConstantBuffers(bufferNumber, 1, light_buffer_.GetAddressOf());
 
-	result = deviceContext->Map(m_cameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(camera_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to camera matrix buffer to set shader parameter.");
 
 
@@ -198,31 +165,31 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr3 = (CameraBufferType*)mappedResource.pData;
 
 	// Copy the camera position into the constant buffer.
-	dataPtr3->cameraPosition = cameraPosition;
+	dataPtr3->camera_pos = camera_pos;
 	dataPtr3->padding = 0.0f;
 
 	// Unlock the camera constant buffer.
-	deviceContext->Unmap(m_cameraBuffer.Get(), 0);
+	deviceContext->Unmap(camera_buffer_.Get(), 0);
 
 	// Set the position of the light constant buffer in the pixel shader.
 	bufferNumber = 1;
 
 	// Finally set the light constant buffer in the pixel shader with the updated values.
-	deviceContext->PSSetConstantBuffers(bufferNumber, 1, m_cameraBuffer.GetAddressOf());
+	deviceContext->PSSetConstantBuffers(bufferNumber, 1, camera_buffer_.GetAddressOf());
 }
 
 
 void StoneShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
 {
 	// Set the vertex input layout.
-	deviceContext->IASetInputLayout(m_layout.Get());
+	deviceContext->IASetInputLayout(input_layout_.Get());
 
 	// Set the vertex and pixel shaders that will be used to render this triangle.
-	deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
-	deviceContext->PSSetShader(m_pixelShader.Get(), NULL, 0);
+	deviceContext->VSSetShader(vertex_shader_.Get(), NULL, 0);
+	deviceContext->PSSetShader(pixel_shader_.Get(), NULL, 0);
 
 	// Set the sampler state in the pixel shader.
-	deviceContext->PSSetSamplers(0, 1, m_sampleState.GetAddressOf());
+	deviceContext->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 
 	// Render the triangle.
 	deviceContext->DrawIndexed(indexCount, 0, 0);

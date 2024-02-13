@@ -41,5 +41,5 @@ protected:
 	// Monster who has been collided with this SkillObjectClass instance.
 	// Key = id of monster instance.
 	// Value = the time when collided with that monster.
-	map<int, time_t>					m_hitMonsters;
+	map<int, time_t>					hitMonsters_;
 };

@@ -13,24 +13,24 @@
 class GroundClass
 {
 public:
-	GroundClass(const rect_t& range) : m_Range(range) {};
+	GroundClass(const rect_t& range) : range_(range) {};
 
 	inline int IsColiided(int x1, int x2, int from_bottom_coord, int to_bottom_coord)
 	{
-		if ((ISBETWEEN(m_Range.x1, x1, m_Range.x2) || ISBETWEEN(m_Range.x1, x2, m_Range.x2)) &&
-			to_bottom_coord <= m_Range.y2 && m_Range.y2 <= from_bottom_coord)
+		if ((ISBETWEEN(range_.x1, x1, range_.x2) || ISBETWEEN(range_.x1, x2, range_.x2)) &&
+			to_bottom_coord <= range_.y2 && range_.y2 <= from_bottom_coord)
 		{
-			return m_Range.y2;
+			return range_.y2;
 		}
 		else return to_bottom_coord;
 	}
 
 	inline rect_t GetRange()
 	{
-		return m_Range;
+		return range_;
 	}
 
 private:
-	rect_t m_Range;
+	rect_t range_;
 
 };

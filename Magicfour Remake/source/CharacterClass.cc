@@ -9,6 +9,8 @@
 #include "../include/SkillObjects.hh"
 #include "../include/GroundClass.hh"
 
+using namespace DirectX;
+
 constexpr int SKILL_COOLTIME = 1'500;
 constexpr int COMBO_DURATION = 5'000;
 constexpr int INVINCIBLE_TIME = 5'000;
@@ -18,22 +20,22 @@ CharacterClass::CharacterClass(int pos_x, int pos_y)
 	: RigidbodyClass(
 		Point2d(pos_x, pos_y),
 		rect_t{ -50000, 0, 50000, 400000 }, LEFT_FORWARD
-	), jump_cnt(0), m_Score(0)
+	), jump_cnt(0), score_(0)
 {
-	m_JumpAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt");
-	m_FallAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh");
-	m_WalkAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\walk_motion.txt");
-	m_RunAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt");
-	m_SkillAnimationData = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh");
+	jump_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt");
+	fall_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh");
+	walk_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\walk_motion.txt");
+	run_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt");
+	skill_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh");
 
 	SetState(CharacterState::kNormal, 0);
 
-	m_Skill[0] = 4;
-	m_Skill[1] = 3;
-	m_Skill[2] = 1;
-	m_Skill[3] = 2;
+	skill_[0] = 4;
+	skill_[1] = 3;
+	skill_[2] = 1;
+	skill_[3] = 2;
 
-	m_TimeInvincibleEnd = 0;
+	time_invincible_end_ = 0;
 }
 
 bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* input,
@@ -73,17 +75,17 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	{
 		for (int i = 3; i >= 0; i--)
 		{
-			if (m_Skill[i])
+			if (skill_[i])
 			{
-				m_Skill[i] = 0;
+				skill_[i] = 0;
 				break;
 			}
 		}
 	}
 
-	if (m_TimeComboEnd < curr_time)
+	if (time_combo_end_ < curr_time)
 	{
-		m_Combo = 0;
+		combo_ = 0;
 	}
 
 	// jump attempt
@@ -219,43 +221,43 @@ void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& s
 	{
 	case CharacterState::kNormal:
 	case CharacterState::kStop:
-		m_RunAnimationData->UpdateGlobalMatrices(0, root_transform, shape_matrices);
+		run_animation_data_->UpdateGlobalMatrices(0, root_transform, shape_matrices);
 		break;
 
 	case CharacterState::kWalk:
-		m_WalkAnimationData->UpdateGlobalMatrices(
+		walk_animation_data_->UpdateGlobalMatrices(
 			state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
 		break;
 
 	case CharacterState::kRun:
-		m_RunAnimationData->UpdateGlobalMatrices(
+		run_animation_data_->UpdateGlobalMatrices(
 			state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
 		break;
 
 	case CharacterState::kJump:
 	case CharacterState::kRunJump:
 		if(GetStateTime(curr_time) > 90)
-			m_JumpAnimationData->UpdateGlobalMatrices(
+			jump_animation_data_->UpdateGlobalMatrices(
 				20 + state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
 		else
-			m_JumpAnimationData->UpdateGlobalMatrices(
+			jump_animation_data_->UpdateGlobalMatrices(
 				43 + state_elapsed_seconds / 0.00833333, root_transform, shape_matrices);
 		break;
 		
 	case CharacterState::kSpell:
 		root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
-		m_SkillAnimationData->UpdateGlobalMatrices(
+		skill_animation_data_->UpdateGlobalMatrices(
 			state_elapsed_seconds / 0.00133333, root_transform, shape_matrices);
 		break;
 
 	case CharacterState::kHit:
 	case CharacterState::kSlip:
-		m_FallAnimationData->UpdateGlobalMatrices(
+		fall_animation_data_->UpdateGlobalMatrices(
 			50 + state_elapsed_seconds / 0.00433333, root_transform, shape_matrices);
 		break;
 
 	case CharacterState::kDie:
-		m_FallAnimationData->UpdateGlobalMatrices(
+		fall_animation_data_->UpdateGlobalMatrices(
 			min(394, 50 + state_elapsed_seconds / 0.01433333), root_transform, shape_matrices);
 		break;
 
@@ -264,37 +266,37 @@ void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& s
 
 bool CharacterClass::OnCollided(time_t curr_time, int vx)
 {
-	if (m_TimeInvincibleEnd < curr_time && m_TimeSkillEnded < curr_time)
+	if (time_invincible_end_ < curr_time && time_skill_ended_ < curr_time)
 	{
-		m_Combo = 0;
+		combo_ = 0;
 
 
 		SetState(CharacterState::kHit, curr_time);
 		direction_ = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
 
 		// lost skill
-		if (m_Skill[0] == 0)
+		if (skill_[0] == 0)
 		{
 			SetState(CharacterState::kDie, curr_time);
-			m_HitVx = velocity_.x = vx / 2;
+			hit_vx_ = velocity_.x = vx / 2;
 
 			velocity_.y = 1500;
-			m_TimeInvincibleEnd = 1LL << 59;
+			time_invincible_end_ = 1LL << 59;
 			return false;
 		}
 		else
 		{
 			for (int i = 3; i >= 0; i--)
 			{
-				if (m_Skill[i])
+				if (skill_[i])
 				{
-					m_Skill[i] = 0;
+					skill_[i] = 0;
 					break;
 				}
 			}
-			m_HitVx = velocity_.x = vx / 3;
+			hit_vx_ = velocity_.x = vx / 3;
 			velocity_.y = 1500;
-			m_TimeInvincibleEnd = state_start_time_ + INVINCIBLE_TIME;
+			time_invincible_end_ = state_start_time_ + INVINCIBLE_TIME;
 			return true;
 		}
 	}
@@ -303,12 +305,12 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 
 float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
 {
-	return SATURATE(-0.3f, (m_TimeSkillAvailable - curr_time) / (float)SKILL_COOLTIME, 1.0f);
+	return SATURATE(-0.3f, (time_skill_available_ - curr_time) / (float)SKILL_COOLTIME, 1.0f);
 }
 
 void CharacterClass::LearnSkill(int skill_id)
 {
-	for (auto& skill : m_Skill)
+	for (auto& skill : skill_)
 	{
 		if (!skill) { skill = skill_id; return; }
 	}
@@ -316,8 +318,8 @@ void CharacterClass::LearnSkill(int skill_id)
 
 void CharacterClass::AddCombo(time_t curr_time)
 {
-	++m_Combo;
-	m_TimeComboEnd = curr_time + COMBO_DURATION;
+	++combo_;
+	time_combo_end_ = curr_time + COMBO_DURATION;
 }
 
 void CharacterClass::OnSkill(time_t curr_time,
@@ -325,19 +327,19 @@ void CharacterClass::OnSkill(time_t curr_time,
 {
 	const time_t state_elapsed_time = GetStateTime(curr_time);
 
-	switch (m_SkillUsed)
+	switch (skillUsed_)
 	{
 	case 0:
-		if (m_SkillState == 0 && state_elapsed_time >= 100)
+		if (skillState_ == 0 && state_elapsed_time >= 100)
 		{
 			skill_objs.emplace_back(new SkillObjectBasic(position_.x + DIR_WEIGHT(direction_, 185000), position_.y,
 				DIR_WEIGHT(direction_, 100), state_start_time_ + 100));
-			m_SkillState = 1;
+			skillState_ = 1;
 		}
 		break;
 
 	case 1:	
-		if (m_SkillState == 0 && state_elapsed_time >= 100)
+		if (skillState_ == 0 && state_elapsed_time >= 100)
 		{
 			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 4000, -4000, state_start_time_ + 100));
 			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 2000, -4000, state_start_time_ + 100));
@@ -345,25 +347,25 @@ void CharacterClass::OnSkill(time_t curr_time,
 			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -2000, -4000, state_start_time_ + 100));
 			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -4000, -4000, state_start_time_ + 100));
 
-			m_SkillState = 1;
+			skillState_ = 1;
 		}			
 		break;
 
 	case 2:
-		for (; m_SkillState < 4 && state_elapsed_time >= m_SkillState * 70 + 70; m_SkillState++)
+		for (; skillState_ < 4 && state_elapsed_time >= skillState_ * 70 + 70; skillState_++)
 		{
 			skill_objs.emplace_back(new SkillObjectBead(
 				position_.x, position_.y + 300000, DIR_WEIGHT(direction_, 1200),
-				(m_SkillState - 1) * 200, state_start_time_ + m_SkillState * 70 + 70));
+				(skillState_ - 1) * 200, state_start_time_ + skillState_ * 70 + 70));
 		}
 		break;
 
 	case 3:
-		if (m_SkillState == 0 && state_elapsed_time >= 50)
+		if (skillState_ == 0 && state_elapsed_time >= 50)
 		{
 			skill_objs.emplace_back(new SkillObjectLeg(
 				position_.x + DIR_WEIGHT(direction_, 300'000), state_start_time_ + 50));
-			m_SkillState = 1;
+			skillState_ = 1;
 		}
 		break;
 	}
@@ -375,47 +377,47 @@ void CharacterClass::OnSkill(time_t curr_time,
 bool CharacterClass::UseSkill(time_t curr_time,
 	vector<unique_ptr<class SkillObjectClass> >& skill_objs)
 {
-	if (curr_time < m_TimeSkillAvailable)
+	if (curr_time < time_skill_available_)
 	{
 		// TODO: message print
 		return false;
 	}
 
-	m_SkillUsed = 0;
+	skillUsed_ = 0;
 	for (int i = 3; i >= 0; i--)
 	{
-		if (m_Skill[i])
+		if (skill_[i])
 		{
-			m_SkillUsed = m_Skill[i];
+			skillUsed_ = skill_[i];
 			break;
 		}
 	}
 
-	m_SkillState = 0;
+	skillState_ = 0;
 	SetState(CharacterState::kSpell, curr_time);
 
-	switch (m_SkillUsed)
+	switch (skillUsed_)
 	{
 	case 0:
-		m_TimeSkillEnded = state_start_time_ + 300;
+		time_skill_ended_ = state_start_time_ + 300;
 		break;
 
 	case 1:
 		if (velocity_.y == 0 && jump_cnt == 0) velocity_.y = 3'600;
 
-		m_TimeSkillEnded = state_start_time_ + 300;
+		time_skill_ended_ = state_start_time_ + 300;
 		break;
 
 	case 2:
-		m_TimeSkillEnded = state_start_time_ + 300;
+		time_skill_ended_ = state_start_time_ + 300;
 		break;
 
 	case 3:
-		m_TimeSkillEnded = state_start_time_ + 300;
+		time_skill_ended_ = state_start_time_ + 300;
 		break;
 	}
 
-	m_TimeSkillAvailable = m_TimeSkillEnded + SKILL_COOLTIME;
+	time_skill_available_ = time_skill_ended_ + SKILL_COOLTIME;
 
 	return true;
 }

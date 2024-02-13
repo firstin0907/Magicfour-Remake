@@ -9,9 +9,6 @@
 #include "global.hh"
 #include "RigidbodyClass.hh"
 
-using namespace DirectX;
-using namespace std;
-
 enum class MonsterState
 {
 	kEmbryo, kNormal, kHit, kDie,
@@ -22,30 +19,37 @@ enum class MonsterState
 class MonsterClass : public RigidbodyClass<MonsterState>
 {
 private:
-	// It is used to determine the ID(m_Id) of newly create MonsterClass instance.
-	// The monster's id is set ++MonsterCount.
-	static int MonsterCount;
+	template<typename T>
+	using vector = std::vector<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
+private:
+	// It is used to determine the ID(id_) of newly create MonsterClass instance.
+	// The monster's id is set ++monster_count_.
+	static int monster_count_;
 
 protected:
 	// The unique ID this monster instance has.
 	// It is used for SKillObjectClass to identify which monsters have been hit already
 	// and prevent double-damage to the same monster,
 	// which is caused because skill object class can penetrate monster. 
-	const int m_Id;
+	const int id_;
 
 	// Health point of this monster instance.
 	// The monster whose hp is below then zero is to die.
-	int m_Hp, m_MaxHp;
+	int hp_, max_hp_;
 
-	// Previous HP. This decrease toward current hp(m_Hp)
+	// Previous HP. This decrease toward current hp(hp_)
 	// This is used to print white portion of monster hp bar. 
-	int m_prevHp;
+	int prev_hp_;
 
 	// Which species this mosnter instance is.
-	int m_Type;
+	int type_;
 
 	// Knock-back speed which is set if some skill objects hit this monster.
-	int m_HitVx, m_HitVy;
+	int hit_vx_, hit_vy_;
 
 
 public:
@@ -53,12 +57,12 @@ public:
 		int type, int hp, rect_t range);
 	~MonsterClass() = default;
 
-	inline int GetId() { return m_Id; }
+	inline int GetId() { return id_; }
 
-	inline int GetType() { return m_Type; }
+	inline int GetType() { return type_; }
 
-	inline float GetPrevHpRatio() { return m_prevHp / (float)m_MaxHp; }
-	inline float GetHpRatio() { return m_Hp / (float)m_MaxHp; }
+	inline float GetPrevHpRatio() { return prev_hp_ / (float)max_hp_; }
+	inline float GetHpRatio() { return hp_ / (float)max_hp_; }
 
 	virtual int GetVx() = 0;
 

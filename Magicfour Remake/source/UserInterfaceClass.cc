@@ -15,20 +15,20 @@ using namespace DirectX;
 UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 	ID3D11Device* device, int screenWidth, int screenHeight,
 	const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename)
-	: m_ScreenHeight(screenHeight), m_ScreenWidth(screenWidth)
+	: screenHeight_(screenHeight), screenWidth_(screenWidth)
 {
-	m_SkillGauge = make_unique<SkillGaugeClass>(device,
+	skillGauge_ = make_unique<SkillGaugeClass>(device,
 		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
 		L"data/texture/skill_gauge_white.png", -80 + 40, 180 + 16);
-	m_MonsterHpFrameTexture = make_unique<TextureClass>(device, monsterHpFrameFilename);
-	m_MonsterHpGaugeTexture[0] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_green.png");
-	m_MonsterHpGaugeTexture[1] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_yellow.png");
-	m_MonsterHpGaugeTexture[2] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_red.png");
-	m_MonsterHpGaugeTexture[3] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_white.png");
+	monsterHpFrameTexture_ = make_unique<TextureClass>(device, monsterHpFrameFilename);
+	monsterHpGaugeTexture_[0] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_green.png");
+	monsterHpGaugeTexture_[1] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_yellow.png");
+	monsterHpGaugeTexture_[2] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_red.png");
+	monsterHpGaugeTexture_[3] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_white.png");
 
 	InitializeBuffers(device);
 
-	m_ScoreTextFormat = direct2D->CreateTextFormat(L"Arial", 40,
+	scoreTextFormat_ = direct2D->CreateTextFormat(L"Arial", 40,
 		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
 
@@ -40,8 +40,8 @@ void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
 		XMFLOAT2 texture;
 	};
 
-	const float w = (float)m_MonsterHpFrameTexture->GetWidth();
-	const float h = (float)m_MonsterHpFrameTexture->GetHeight();
+	const float w = (float)monsterHpFrameTexture_->GetWidth();
+	const float h = (float)monsterHpFrameTexture_->GetHeight();
 
 	VertexType vertices[4] = {
 		{ XMFLOAT3(0, 0, 0.0f), XMFLOAT2(0.0f, 1.0f)},
@@ -68,7 +68,7 @@ void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now create the vertex buffer.
-	HRESULT result = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_vertexBuffer.GetAddressOf());
+	HRESULT result = device->CreateBuffer(&vertexBufferDesc, &vertexData, vertexBuffer_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create vertex buffer.");
 
 	// Set up the description of the static index buffer.
@@ -85,13 +85,13 @@ void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
 	indexData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, m_indexBuffer.GetAddressOf());
+	result = device->CreateBuffer(&indexBufferDesc, &indexData, indexBuffer_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create index buffer.");
 }
 
 void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* textureShader,
 	ID3D11DeviceContext* deviceContext, CharacterClass* character, MonsterVector& monsters,
-	const XMMATRIX& vpMatrix, const XMMATRIX& orthoMatrix, time_t curr_time)
+	const XMMATRIX& vp_matrix, const XMMATRIX& orthoMatrix, time_t curr_time)
 {
 	const XMMATRIX orthoInverseMatrix = XMMatrixInverse(nullptr, orthoMatrix);
 
@@ -100,13 +100,13 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 	{
 		// get Character coordinate in viewport coordinate system.
 		XMVECTOR t = { 0, 0, 0, 1 };
-		t = XMVector4Transform(t, character->GetLocalWorldMatrix() * vpMatrix);
+		t = XMVector4Transform(t, character->GetLocalWorldMatrix() * vp_matrix);
 		t = XMVector4Transform(t / t.m128_f32[3], orthoInverseMatrix);
 
-		m_SkillGauge->Render(deviceContext, skill_ratio);
+		skillGauge_->Render(deviceContext, skill_ratio);
 		textureShader->Render(deviceContext,
-			m_SkillGauge->GetIndexCount(), XMMatrixTranslationFromVector(t),
-			orthoMatrix, m_SkillGauge->GetTexture(skill_ratio));
+			skillGauge_->GetIndexCount(), XMMatrixTranslationFromVector(t),
+			orthoMatrix, skillGauge_->GetTexture(skill_ratio));
 	}
 
 	struct VertexType
@@ -119,10 +119,10 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 	unsigned int stride = sizeof(VertexType), offset = 0;
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
+	deviceContext->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), &stride, &offset);
 
 	// Set the index buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetIndexBuffer(indexBuffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -131,31 +131,31 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 	{
 		// Calculate the coordinate of monster, with repect to window(screen) coordinate system.
 		XMVECTOR t = { 0, 0, 0, 1 };
-		t = XMVector4Transform(t, monster->GetLocalWorldMatrix() * vpMatrix);
+		t = XMVector4Transform(t, monster->GetLocalWorldMatrix() * vp_matrix);
 		t = XMVector4Transform(t / t.m128_f32[3], orthoInverseMatrix);
 		
 		// Adjust the position where hp bar will be drawn.
-		t.m128_f32[0] -= m_MonsterHpFrameTexture->GetWidth() / 2.0f;
-		t.m128_f32[1] += m_MonsterHpFrameTexture->GetHeight();
+		t.m128_f32[0] -= monsterHpFrameTexture_->GetWidth() / 2.0f;
+		t.m128_f32[1] += monsterHpFrameTexture_->GetHeight();
 
 		const float hp_ratio = monster->GetHpRatio();
 		TextureClass* gauge_texture = nullptr;
 
-		if (hp_ratio > 0.5) gauge_texture = m_MonsterHpGaugeTexture[0].get();
-		else if (hp_ratio > 0.2) gauge_texture = m_MonsterHpGaugeTexture[1].get();
-		else gauge_texture = m_MonsterHpGaugeTexture[2].get();
+		if (hp_ratio > 0.5) gauge_texture = monsterHpGaugeTexture_[0].get();
+		else if (hp_ratio > 0.2) gauge_texture = monsterHpGaugeTexture_[1].get();
+		else gauge_texture = monsterHpGaugeTexture_[2].get();
 		
 		// Draw hp gauge according to hp of the monster.
 		textureShader->Render(deviceContext, 6,
 			XMMatrixScaling(monster->GetPrevHpRatio(), 1, 1)* XMMatrixTranslationFromVector(t),
-			orthoMatrix, m_MonsterHpGaugeTexture[3]->GetTexture()); // white portion
+			orthoMatrix, monsterHpGaugeTexture_[3]->GetTexture()); // white portion
 		textureShader->Render(deviceContext, 6,
 			XMMatrixScaling(hp_ratio, 1, 1)* XMMatrixTranslationFromVector(t),
 			orthoMatrix, gauge_texture->GetTexture()); // real hp portion
 
 		// Draw hp frame
 		textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),
-			orthoMatrix, m_MonsterHpFrameTexture->GetTexture());
+			orthoMatrix, monsterHpFrameTexture_->GetTexture());
 	}
 
 	// Direct2D rendering
@@ -163,8 +163,8 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 
 	// Draw Score
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
-	direct2D->RenderText(m_ScoreTextFormat.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
-		0, 30.0f, (float)(m_ScreenWidth - 30), 200.0f);
+	direct2D->RenderText(scoreTextFormat_.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
+		0, 30.0f, (float)(screenWidth_ - 30), 200.0f);
 
 	// Draw Combo
 	const int combo = character->GetCombo();
@@ -192,12 +192,12 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 		direct2D->RenderTextWithInstantFormat(
 			direct2D->CreateTextFormat(L"Arial", font_size_1,
 				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), std::to_wstring(combo).c_str(),
-			0, (float)(m_ScreenHeight / 2), (float)(m_ScreenWidth - 190 - font_offset), (float)(m_ScreenHeight / 2));
+			0, (float)(screenHeight_ / 2), (float)(screenWidth_ - 190 - font_offset), (float)(screenHeight_ / 2));
 
 		direct2D->RenderTextWithInstantFormat(
 			direct2D->CreateTextFormat(L"Arial", font_size_2,
 				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
-			0, (float)(m_ScreenHeight / 2), (float)(m_ScreenWidth - 30), (float)(m_ScreenHeight / 2));
+			0, (float)(screenHeight_ / 2), (float)(screenWidth_ - 30), (float)(screenHeight_ / 2));
 
 	}
 

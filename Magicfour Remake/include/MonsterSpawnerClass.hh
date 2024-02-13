@@ -4,18 +4,24 @@
 #include <utility>
 #include <memory>
 
-using namespace std;
 
 class MonsterSpawnerClass
 {
+private:
+	template<typename T>
+	using vector = std::vector<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
 public:
 	MonsterSpawnerClass();
 
 	void Frame(time_t curr_time, time_t delta_time,
-		vector<unique_ptr<class MonsterClass> >& m_Monsters);
+		vector<unique_ptr<class MonsterClass> >& monsters_);
 
 private:
-	int m_GameLevel;
-	vector<pair<time_t, int> > m_MonsterSpawnSchedule;
-	vector<pair<time_t, int> >::iterator m_ScheduleIterator;
+	int gameLevel_;
+	vector<std::pair<time_t, int> > monsterSpawnSchedule_;
+	vector<std::pair<time_t, int> >::iterator scheduleIterator_;
 };

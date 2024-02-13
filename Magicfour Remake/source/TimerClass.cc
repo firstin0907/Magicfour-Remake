@@ -6,15 +6,15 @@
 TimerClass::TimerClass()
 {
     // Get the cycles per second speed for this system.
-    QueryPerformanceFrequency((LARGE_INTEGER*)&m_frequency);
-    if (m_frequency == 0) throw GAME_EXCEPTION(
+    QueryPerformanceFrequency((LARGE_INTEGER*)&frequency_);
+    if (frequency_ == 0) throw GAME_EXCEPTION(
         L"Failed to get performance frequency, needed to initialize TimerClass.");
 
-    m_frameTime = 0;
+    frameTime_ = 0;
 
     // Get the initial start time.
-    QueryPerformanceCounter((LARGE_INTEGER*)&m_startTicks);
-    m_currTime = 0;
+    QueryPerformanceCounter((LARGE_INTEGER*)&startTicks_);
+    currTime_ = 0;
 }
 
 TimerClass::~TimerClass()
@@ -24,15 +24,15 @@ TimerClass::~TimerClass()
 
 void TimerClass::Frame()
 {
-    m_prevTime = m_currTime;
+    prevTime_ = currTime_;
 
     // Query the current time.
-    QueryPerformanceCounter((LARGE_INTEGER*)&m_currTime);
+    QueryPerformanceCounter((LARGE_INTEGER*)&currTime_);
 
-    m_currTime = (m_currTime - m_startTicks) * 1000 / m_frequency;
+    currTime_ = (currTime_ - startTicks_) * 1000 / frequency_;
 
     // Calculate the difference in time since the last time we queried for the current time.
-    m_frameTime = m_currTime - m_prevTime;
+    frameTime_ = currTime_ - prevTime_;
 
     return;
 }

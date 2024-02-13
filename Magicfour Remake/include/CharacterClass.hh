@@ -32,7 +32,7 @@ public:
 		);
 	
 	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);
-	inline time_t GetTimeInvincibleEnd() { return m_TimeInvincibleEnd; }
+	inline time_t GetTimeInvincibleEnd() { return time_invincible_end_; }
 
 	template <int index>
 	int GetSkill();
@@ -48,14 +48,14 @@ public:
 	inline unsigned long long GetTotalScore(time_t curr_time)
 	{
 		if (state_ == CharacterState::kDie)
-			return m_Score * 1'000 + state_start_time_;
-		else return m_Score * 1'000 + curr_time;
+			return score_ * 1'000 + state_start_time_;
+		else return score_ * 1'000 + curr_time;
 	}
-	inline int GetCombo() { return m_Combo; }
+	inline int GetCombo() { return combo_; }
 	inline time_t GetComboDurableTime(time_t curr_time)
-	{ return (m_TimeComboEnd > curr_time) ? (m_TimeComboEnd - curr_time) : 0; }
+	{ return (time_combo_end_ > curr_time) ? (time_combo_end_ - curr_time) : 0; }
 
-	inline void AddScore() { ++m_Score; }
+	inline void AddScore() { ++score_; }
 	void AddCombo(time_t curr_time);
 
 private:
@@ -67,34 +67,34 @@ private:
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
 
 private:
-	int m_HitVx;
+	int hit_vx_;
 
 	int jump_cnt;
 
-	int m_Skill[4] = { 0 };
+	int skill_[4] = { 0 };
 	
-	int m_SkillState; // be used in OnSkill(...) method.
-	int m_SkillUsed; // ID of skill which is being used.
+	int skillState_; // be used in OnSkill(...) method.
+	int skillUsed_; // ID of skill which is being used.
 
-	int m_Score, m_Combo;
+	int score_, combo_;
 
-	time_t m_TimeComboEnd;
-	time_t m_TimeInvincibleEnd;
-	time_t m_TimeSkillAvailable;
-	time_t m_TimeSkillEnded;
+	time_t time_combo_end_;
+	time_t time_invincible_end_;
+	time_t time_skill_available_;
+	time_t time_skill_ended_;
 
-	unique_ptr<class AnimatedObjectClass> m_JumpAnimationData;
-	unique_ptr<class AnimatedObjectClass> m_FallAnimationData;
-	unique_ptr<class AnimatedObjectClass> m_WalkAnimationData;
-	unique_ptr<class AnimatedObjectClass> m_RunAnimationData;
-	unique_ptr<class AnimatedObjectClass> m_SkillAnimationData;
+	unique_ptr<class AnimatedObjectClass> jump_animation_data_;
+	unique_ptr<class AnimatedObjectClass> fall_animation_data_;
+	unique_ptr<class AnimatedObjectClass> walk_animation_data_;
+	unique_ptr<class AnimatedObjectClass> run_animation_data_;
+	unique_ptr<class AnimatedObjectClass> skill_animation_data_;
 };
 
 template<int index>
 inline int CharacterClass::GetSkill()
 {
 	static_assert(0 <= index && index <= 3);
-	return m_Skill[index];
+	return skill_[index];
 }
 
 

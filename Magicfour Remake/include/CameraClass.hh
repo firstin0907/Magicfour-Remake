@@ -1,10 +1,12 @@
 #pragma once
 
 #include <directxmath.h>
-using namespace DirectX;
 
 class CameraClass
 {
+	using XMMATRIX = DirectX::XMMATRIX;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+
 public:
 	CameraClass();
 	CameraClass(const CameraClass&) = delete;
@@ -20,7 +22,7 @@ public:
 	void GetViewMatrix(XMMATRIX&);
 
 private:
-	float m_positionX, m_positionY, m_positionZ;
-	float m_rotationX, m_rotationY, m_rotationZ;
-	XMMATRIX m_viewMatrix;
+	float positionX_, positionY_, positionZ_;
+	float rotationX_, rotationY_, rotationZ_;
+	XMMATRIX viewMatrix_;
 };

@@ -1,9 +1,12 @@
 #pragma once
 #include <directxmath.h>
-using namespace DirectX;
 
 class LightClass
 {
+private:
+    using XMFLOAT3 = DirectX::XMFLOAT3;
+    using XMFLOAT4 = DirectX::XMFLOAT4;
+
 public:
     LightClass();
     LightClass(const LightClass&);
@@ -24,10 +27,10 @@ public:
     XMFLOAT4 GetPosition();
 
 private:
-    XMFLOAT4 m_ambientColor;
-    XMFLOAT4 m_diffuseColor;
-    XMFLOAT3 m_direction;
-    XMFLOAT4 m_specularColor;
-    float m_specularPower;
-    XMFLOAT4 m_position;
+    XMFLOAT4 ambientColor_;
+    XMFLOAT4 diffuseColor_;
+    XMFLOAT3 direction_;
+    XMFLOAT4 specularColor_;
+    float specularPower_;
+    XMFLOAT4 position_;
 };

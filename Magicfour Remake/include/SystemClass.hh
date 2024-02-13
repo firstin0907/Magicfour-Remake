@@ -25,12 +25,12 @@ private:
 	void ShutdownWindows();
 
 private:
-	LPCWSTR m_applicationName;
-	HINSTANCE m_hinstance;
-	HWND m_hwnd;
+	LPCWSTR applicationName_;
+	HINSTANCE hinstance_;
+	HWND hwnd_;
 
-	unique_ptr<class InputClass> m_Input;
-	unique_ptr<class ApplicationClass> m_Application;
+	unique_ptr<class InputClass> input_;
+	unique_ptr<class ApplicationClass> application_;
 };
 
 

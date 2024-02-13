@@ -44,13 +44,13 @@ private:
 		const wchar_t* grayFilename, const wchar_t* whiteFilename);
 
 private:
-	ComPtr<ID3D11Buffer> m_vertexBuffer, m_indexBuffer;
-	int m_vertexCount, m_indexCount;
-	int m_screenWidth, m_screenHeight;
-	int m_bitmapWidth, m_bitmapHeight;
-	int m_renderX, m_renderY, m_prevPosX, m_prevPosY;
-	int m_prevHeight;
+	ComPtr<ID3D11Buffer> vertexBuffer_, indexBuffer_;
+	int vertexCount_, indexCount_;
+	int screenWidth_, screenHeight_;
+	int bitmapWidth_, bitmapHeight_;
+	int renderX_, renderY_, prevPosX_, prevPosY_;
+	int prevHeight_;
 
-	std::unique_ptr<class TextureClass> m_TextureGray;
-	std::unique_ptr<class TextureClass> m_TextureWhite;
+	std::unique_ptr<class TextureClass> textureGray_;
+	std::unique_ptr<class TextureClass> textureWhite_;
 };

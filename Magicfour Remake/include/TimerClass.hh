@@ -10,17 +10,17 @@ public:
 	~TimerClass();
 
 	void Frame();
-	inline INT64 GetElapsedTime() { return m_frameTime; }
-	inline INT64 GetTime() { return m_currTime; };
+	inline INT64 GetElapsedTime() { return frameTime_; }
+	inline INT64 GetTime() { return currTime_; };
 
 private:
-	INT64 m_frequency;
+	INT64 frequency_;
 
-	INT64 m_startTicks;
+	INT64 startTicks_;
 
-	INT64 m_prevTime;
-	INT64 m_currTime;
+	INT64 prevTime_;
+	INT64 currTime_;
 
-	INT64 m_frameTime;
+	INT64 frameTime_;
 
 };

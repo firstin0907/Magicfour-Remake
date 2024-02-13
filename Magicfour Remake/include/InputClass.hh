@@ -28,15 +28,15 @@ private:
 
 
 private:
-    IDirectInput8* m_directInput;
-    IDirectInputDevice8* m_keyboard;
-    IDirectInputDevice8* m_mouse;
+    IDirectInput8* directInput_;
+    IDirectInputDevice8* keyboard_;
+    IDirectInputDevice8* mouse_;
 
-    unsigned char m_keyboardState[2][256];
+    unsigned char keyboardState_[2][256];
     unsigned char* m_keyboardState_curr;
     unsigned char* m_keyboardState_prev;
-    DIMOUSESTATE m_mouseState;
+    DIMOUSESTATE mouseState_;
 
-    int m_screenWidth, m_screenHeight, m_mouseX, m_mouseY;
+    int screenWidth_, screenHeight_, mouseX_, mouseY_;
 
 };

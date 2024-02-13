@@ -4,12 +4,14 @@
 #include "../include/GroundClass.hh"
 #include "../include/RandomClass.hh"
 
+using namespace std;
+
 MonsterDuck::MonsterDuck(direction_t direction, time_t created_time)
 	: MonsterClass(
 		Point2d(DIR_WEIGHT(direction_, SPAWN_RIGHT_X), GROUND_Y),
 		direction, 1, 70, {-70000, 0, 70000, 300000})
 {
-	m_NextJumpTime = created_time + 5000;
+	nextJumpTime_ = created_time + 5000;
 	SetState(MonsterState::kEmbryo, created_time);
 }
 
@@ -105,13 +107,13 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 		{
 			const time_t avg_time = (curr_time - time_delta / 2) - state_start_time_;
 
-			position_.x += (m_HitVx * (knock_back_time - avg_time) / knock_back_time) * time_delta;
+			position_.x += (hit_vx_ * (knock_back_time - avg_time) / knock_back_time) * time_delta;
 
 			const int start_y = position_.y;
-			const int target_y = position_.y + (m_HitVy * (knock_back_time - avg_time) / knock_back_time
+			const int target_y = position_.y + (hit_vy_ * (knock_back_time - avg_time) / knock_back_time
 				- GRAVITY * avg_time) * time_delta;
 
-			position_.y += (m_HitVy * (knock_back_time - avg_time) / knock_back_time) * time_delta;
+			position_.y += (hit_vy_ * (knock_back_time - avg_time) / knock_back_time) * time_delta;
 			position_.y -= (GRAVITY * avg_time) * time_delta;
 
 			if (position_.x > RIGHT_X) position_.x = RIGHT_X;
@@ -136,10 +138,10 @@ bool MonsterDuck::Frame(time_t curr_time, time_t time_delta)
 	switch (state_)
 	{
 	case MonsterState::kNormal:
-		if (m_NextJumpTime < curr_time)
+		if (nextJumpTime_ < curr_time)
 		{
 			SetState(MonsterState::kDuckJumpReady, curr_time);
-			m_NextJumpTime = state_start_time_ + RandomClass::rand(2000, 7000);
+			nextJumpTime_ = state_start_time_ + RandomClass::rand(2000, 7000);
 		}
 		break;
 
@@ -147,7 +149,7 @@ bool MonsterDuck::Frame(time_t curr_time, time_t time_delta)
 		if (curr_time - state_start_time_ >= 1000)
 			SetState(MonsterState::kNormal, state_start_time_ + 1000);
 		
-		m_NextJumpTime = state_start_time_ + RandomClass::rand(2000, 7000);
+		nextJumpTime_ = state_start_time_ + RandomClass::rand(2000, 7000);
 
 		break;
 
@@ -218,8 +220,8 @@ void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
 	{
 		const time_t avg_time = (curr_time - time_delta / 2) - state_start_time_;
 
-		position_.x += (m_HitVx * (knock_back_time - avg_time) / knock_back_time) * time_delta;
-		position_.y += (m_HitVy * (knock_back_time - avg_time) / knock_back_time) * time_delta;
+		position_.x += (hit_vx_ * (knock_back_time - avg_time) / knock_back_time) * time_delta;
+		position_.y += (hit_vy_ * (knock_back_time - avg_time) / knock_back_time) * time_delta;
 		position_.y -= (GRAVITY * avg_time) * time_delta;
 
 		if (position_.x > RIGHT_X) position_.x = RIGHT_X;
@@ -265,8 +267,8 @@ MonsterBird::MonsterBird(direction_t direction, time_t created_time)
 		), direction, 2, 55, { -105000, 0, 105000, 140000 })
 {
 	SetState(MonsterState::kEmbryo, created_time);
-	m_NextMoveTime = created_time + RandomClass::rand(1000, 4000);
-	m_TargetYPosition = position_.y;
+	nextMoveTime_ = created_time + RandomClass::rand(1000, 4000);
+	targetYPosition_ = position_.y;
 }
 
 void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
@@ -276,13 +278,13 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 	constexpr int knock_back_time = 1'000;
 
 	// set targetYPosition
-	if (curr_time >= m_NextMoveTime)
+	if (curr_time >= nextMoveTime_)
 	{
-		m_TargetYPosition = min(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000;
+		targetYPosition_ = min(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000;
 
-		if (m_TargetYPosition != position_.y) SetState(MonsterState::kBirdMove, m_NextMoveTime);
+		if (targetYPosition_ != position_.y) SetState(MonsterState::kBirdMove, nextMoveTime_);
 
-		m_NextMoveTime += RandomClass::rand(3000, 10000);
+		nextMoveTime_ += RandomClass::rand(3000, 10000);
 	}
 
 
@@ -295,22 +297,22 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 		break;
 
 	case MonsterState::kBirdMove:
-		if (m_TargetYPosition < position_.y)
+		if (targetYPosition_ < position_.y)
 		{
 			position_.y -= (int)time_delta * Y_SPEED;
-			if (m_TargetYPosition >= position_.y)
+			if (targetYPosition_ >= position_.y)
 			{
-				SetState(MonsterState::kNormal, curr_time - (m_TargetYPosition - position_.y) / Y_SPEED);
-				position_.y = m_TargetYPosition;
+				SetState(MonsterState::kNormal, curr_time - (targetYPosition_ - position_.y) / Y_SPEED);
+				position_.y = targetYPosition_;
 			}
 		}
 		else
 		{
 			position_.y += (int)time_delta * Y_SPEED;
-			if (m_TargetYPosition <= position_.y)
+			if (targetYPosition_ <= position_.y)
 			{
-				SetState(MonsterState::kNormal, curr_time - (position_.y - m_TargetYPosition) / Y_SPEED);
-				position_.y = m_TargetYPosition;
+				SetState(MonsterState::kNormal, curr_time - (position_.y - targetYPosition_) / Y_SPEED);
+				position_.y = targetYPosition_;
 			}
 		}
 
@@ -336,13 +338,13 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 	{
 		const time_t avg_time = (curr_time - time_delta / 2) - state_start_time_;
 
-		position_.x += (m_HitVx * (knock_back_time - avg_time) / knock_back_time) * time_delta;
+		position_.x += (hit_vx_ * (knock_back_time - avg_time) / knock_back_time) * time_delta;
 
 		const int start_y = position_.y;
-		const int target_y = position_.y + (m_HitVy * (knock_back_time - avg_time) / knock_back_time
+		const int target_y = position_.y + (hit_vy_ * (knock_back_time - avg_time) / knock_back_time
 			- GRAVITY * avg_time) * time_delta;
 
-		position_.y += (m_HitVy * (knock_back_time - avg_time) / knock_back_time) * time_delta;
+		position_.y += (hit_vy_ * (knock_back_time - avg_time) / knock_back_time) * time_delta;
 		position_.y -= (GRAVITY * avg_time) * time_delta;
 
 		if (position_.x > RIGHT_X) position_.x = RIGHT_X;
@@ -368,11 +370,11 @@ bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 
 		if (curr_time - state_start_time_ >= 1000)
 		{
-			m_TargetYPosition = min(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000;
+			targetYPosition_ = min(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000;
 
 			SetState(MonsterState::kBirdMove, state_start_time_ + 1000);
 
-			m_NextMoveTime = state_start_time_ + RandomClass::rand(3000, 10000);
+			nextMoveTime_ = state_start_time_ + RandomClass::rand(3000, 10000);
 		}
 		break;
 

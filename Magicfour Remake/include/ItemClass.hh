@@ -30,9 +30,9 @@ public:
 
 	XMMATRIX GetShapeMatrix(time_t curr_time);
 
-	inline int GetType() { return m_type; }
+	inline int GetType() { return type_; }
 
 private:
-	int m_type;
-	time_t m_createTime;
+	int type_;
+	time_t createTime_;
 };

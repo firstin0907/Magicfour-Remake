@@ -18,7 +18,7 @@ ModelClass::ModelClass(ID3D11Device* device,
 	const wchar_t* normal_filename,
 	const wchar_t* emissive_filename)
 {
-	// Load in the m_model data.
+	// Load in the model_ data.
 	LoadModel(modelFilename);
 
 	// Calculate the tangent and binormal vectors for the model.
@@ -27,7 +27,7 @@ ModelClass::ModelClass(ID3D11Device* device,
 	// Initialize the vertex and index buffers.
 	InitializeBuffers(device);
 
-	// Load the texture for this m_model.
+	// Load the texture for this model_.
 	LoadTextures(device, diffuse_filename, normal_filename, emissive_filename);
 }
 
@@ -39,7 +39,7 @@ ModelClass::~ModelClass()
 
 void ModelClass::Shutdown()
 {
-	// Release the m_model data.
+	// Release the model_ data.
 	ReleaseModel();
 }
 
@@ -55,25 +55,25 @@ void ModelClass::Render(ID3D11DeviceContext* deviceContext)
 
 int ModelClass::GetIndexCount()
 {
-	return m_indexCount;
+	return indexCount_;
 }
 
 ID3D11ShaderResourceView* ModelClass::GetDiffuseTexture()
 {
-	if (m_DiffuseTexture) return m_DiffuseTexture->GetTexture();
+	if (diffuseTexture_) return diffuseTexture_->GetTexture();
 	else return nullptr;
 }
 
 
 ID3D11ShaderResourceView* ModelClass::GetNormalTexture()
 {
-	if (m_NormalTexture) return m_NormalTexture->GetTexture();
+	if (normalTexture_) return normalTexture_->GetTexture();
 	else return nullptr;
 }
 
 ID3D11ShaderResourceView* ModelClass::GetEmissiveTexture()
 {
-	if (m_EmissiveTexture) return m_EmissiveTexture->GetTexture();
+	if (emissiveTexture_) return emissiveTexture_->GetTexture();
 	return nullptr;
 }
 
@@ -86,26 +86,26 @@ void ModelClass::InitializeBuffers(ID3D11Device* device)
 	HRESULT result;
 
 	// Create the vertex array.
-	vertices = new VertexType[m_vertexCount];
+	vertices = new VertexType[vertexCount_];
 
 	// Create the index array.
-	indices = new unsigned long[m_indexCount];
+	indices = new unsigned long[indexCount_];
 
 	// Load the vertex array and index array with data.
-	for (int i = 0; i < m_vertexCount; i++)
+	for (int i = 0; i < vertexCount_; i++)
 	{
-		vertices[i].position = XMFLOAT3(m_model[i].x, m_model[i].y, m_model[i].z);
-		vertices[i].texture = XMFLOAT2(m_model[i].tu, m_model[i].tv);
-		vertices[i].normal = XMFLOAT3(m_model[i].nx, m_model[i].ny, m_model[i].nz);
-		vertices[i].tangent = XMFLOAT3(m_model[i].tx, m_model[i].ty, m_model[i].tz);
-		vertices[i].binormal = XMFLOAT3(m_model[i].bx, m_model[i].by, m_model[i].bz);
+		vertices[i].position = XMFLOAT3(model_[i].x, model_[i].y, model_[i].z);
+		vertices[i].texture = XMFLOAT2(model_[i].tu, model_[i].tv);
+		vertices[i].normal = XMFLOAT3(model_[i].nx, model_[i].ny, model_[i].nz);
+		vertices[i].tangent = XMFLOAT3(model_[i].tx, model_[i].ty, model_[i].tz);
+		vertices[i].binormal = XMFLOAT3(model_[i].bx, model_[i].by, model_[i].bz);
 
 		indices[i] = i;
 	}
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertexCount_;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -117,12 +117,12 @@ void ModelClass::InitializeBuffers(ID3D11Device* device)
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_vertexBuffer.GetAddressOf());
+	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, vertexBuffer_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create vertex buffer.");
 
 	// Set up the description of the static index buffer.
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount_;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
@@ -134,7 +134,7 @@ void ModelClass::InitializeBuffers(ID3D11Device* device)
 	indexData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, m_indexBuffer.GetAddressOf());
+	result = device->CreateBuffer(&indexBufferDesc, &indexData, indexBuffer_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create index buffer.");
 
 	// Release the arrays now that the vertex and index buffers have been created and loaded.
@@ -157,10 +157,10 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	offset = 0;
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
+	deviceContext->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), &stride, &offset);
 
 	// Set the index buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetIndexBuffer(indexBuffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -173,27 +173,30 @@ void ModelClass::LoadTextures(ID3D11Device* device,
 	const wchar_t* diffuse_filename, const wchar_t* normal_filename, const wchar_t* emissive_filename)
 {
 	// Create and initialize the diffuse texture object.
-	m_DiffuseTexture = make_unique<TextureClass>(device, diffuse_filename);
+	diffuseTexture_ = make_unique<TextureClass>(device, diffuse_filename);
 
 	if (normal_filename)
 	{
 		// Create and initialize the diffuse texture object.
-		m_NormalTexture = make_unique<TextureClass>(device, normal_filename);
+		normalTexture_ = make_unique<TextureClass>(device, normal_filename);
 	}
-	else m_NormalTexture = nullptr;
+	else normalTexture_ = nullptr;
 
 
 	if (emissive_filename)
 	{
-		m_EmissiveTexture = make_unique<TextureClass>(device, emissive_filename);
+		emissiveTexture_ = make_unique<TextureClass>(device, emissive_filename);
 	}
-	else m_EmissiveTexture = make_unique<TextureClass>(device, L"data/texture/black.png");
+	else emissiveTexture_ = make_unique<TextureClass>(device, L"data/texture/black.png");
 }
 
 
 
 #include <vector>
 #include <map>
+
+using namespace std;
+
 void ModelClass::LoadModel(const char* filename)
 {
 	struct Vertex { float x, y, z; };
@@ -321,9 +324,9 @@ void ModelClass::LoadModel(const char* filename)
 
 			for (size_t i = 0; i < face_v.size() - 2; i++)
 			{
-				m_model.push_back(face_v[0]);
-				m_model.push_back(face_v[i + 1]);
-				m_model.push_back(face_v[i + 2]);
+				model_.push_back(face_v[0]);
+				model_.push_back(face_v[i + 1]);
+				model_.push_back(face_v[i + 2]);
 			}
 		}
 		else if (buffer == "mtllib")
@@ -339,39 +342,39 @@ void ModelClass::LoadModel(const char* filename)
 		{
 			iss >> buffer;
 			if (meterial.find(buffer) == meterial.end()) continue;
-			m_MaterialList.emplace_back(meterial[buffer], (int)m_model.size());
+			materialList_.emplace_back(meterial[buffer], (int)model_.size());
 		}
 	}
 
-	if (m_MaterialList.empty()) m_MaterialList.emplace_back(MaterialType{
+	if (materialList_.empty()) materialList_.emplace_back(MaterialType{
 			XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) }, 0);
 
-	m_indexCount = m_vertexCount = m_model.size();
+	indexCount_ = vertexCount_ = model_.size();
 }
 
 void ModelClass::CalculateModelVectors()
 {
 
 	VectorType tangent, binormal;
-	for (int i = 0; i < m_vertexCount; i += 3)
+	for (int i = 0; i < vertexCount_; i += 3)
 	{
 		TempVertexType vertex[3] =
 		{
-			{m_model[i + 0].x, m_model[i + 0].y, m_model[i + 0].z, m_model[i + 0].tu, m_model[i + 0].tv},
-			{m_model[i + 1].x, m_model[i + 1].y, m_model[i + 1].z, m_model[i + 1].tu, m_model[i + 1].tv},
-			{m_model[i + 2].x, m_model[i + 2].y, m_model[i + 2].z, m_model[i + 2].tu, m_model[i + 2].tv}
+			{model_[i + 0].x, model_[i + 0].y, model_[i + 0].z, model_[i + 0].tu, model_[i + 0].tv},
+			{model_[i + 1].x, model_[i + 1].y, model_[i + 1].z, model_[i + 1].tu, model_[i + 1].tv},
+			{model_[i + 2].x, model_[i + 2].y, model_[i + 2].z, model_[i + 2].tu, model_[i + 2].tv}
 		};
 
 		CalculateTangentBinormal(vertex[0], vertex[1], vertex[2], tangent, binormal);
 		for (int j = i; j < i + 3; j++)
 		{
-			m_model[j].tx = tangent.x;
-			m_model[j].ty = tangent.y;
-			m_model[j].tz = tangent.z;
+			model_[j].tx = tangent.x;
+			model_[j].ty = tangent.y;
+			model_[j].tz = tangent.z;
 
-			m_model[j].bx = binormal.x;
-			m_model[j].by = binormal.y;
-			m_model[j].bz = binormal.z;
+			model_[j].bx = binormal.x;
+			model_[j].by = binormal.y;
+			model_[j].bz = binormal.z;
 		}
 	}
 }

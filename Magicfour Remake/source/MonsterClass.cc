@@ -2,33 +2,33 @@
 
 #include "../include/global.hh"
 
-int MonsterClass::MonsterCount = 0;
+int MonsterClass::monster_count_ = 0;
 
 MonsterClass::MonsterClass(Point2d position, direction_t direction,
 	int type, int hp,  rect_t range)
 	: RigidbodyClass<MonsterState>(position, range, direction),
-	m_MaxHp(hp), m_Hp(hp), m_prevHp(hp), m_Id(++MonsterCount), m_Type(type)
+	max_hp_(hp), hp_(hp), prev_hp_(hp), id_(++monster_count_), type_(type)
 {
 	SetState(MonsterState::kEmbryo, 0);
-	m_HitVx = m_HitVy = 0;
+	hit_vx_ = hit_vy_ = 0;
 }
 
 bool MonsterClass::Frame(time_t curr_time, time_t time_delta)
 {
-	m_prevHp = (m_prevHp * 30 + m_Hp) / 31;
+	prev_hp_ = (prev_hp_ * 30 + hp_) / 31;
 	return true;
 }
 
 
 bool MonsterClass::Damage(const int amount, time_t damaged_time, int vx, int vy)
 {
-	m_Hp -= amount;
+	hp_ -= amount;
 
-	SetState((m_Hp > 0) ? MonsterState::kHit : MonsterState::kDie, damaged_time);
+	SetState((hp_ > 0) ? MonsterState::kHit : MonsterState::kDie, damaged_time);
 
-	m_HitVx = vx, m_HitVy = vy;
-	if (m_HitVx > 0) direction_ = LEFT_FORWARD;
-	else if (m_HitVx < 0) direction_ = RIGHT_FORWARD;
+	hit_vx_ = vx, hit_vy_ = vy;
+	if (hit_vx_ > 0) direction_ = LEFT_FORWARD;
+	else if (hit_vx_ < 0) direction_ = RIGHT_FORWARD;
 
-	return m_Hp > 0;
+	return hp_ > 0;
 }

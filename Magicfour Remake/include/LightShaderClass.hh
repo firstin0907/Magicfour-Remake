@@ -9,8 +9,6 @@
 
 #include <fstream>
 
-using namespace DirectX;
-
 class LightShaderClass : public ShaderClass
 {
 private:
@@ -29,8 +27,8 @@ private:
 
 	struct LightBufferType
 	{
-		XMFLOAT4 diffuseColor;
-		XMFLOAT3 lightDirection;
+		XMFLOAT4 diffuse_color;
+		XMFLOAT3 light_direction;
 		float padding;  // Added extra padding so structure is a multiple of 16 for CreateBuffer function requirements.
 	};
 
@@ -43,13 +41,13 @@ public:
 
 private:
 	void InitializeShader(ID3D11Device* device, HWND hwnd,
-		const WCHAR* vsFilename, const WCHAR* psFilename);
+		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
 	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
-	ComPtr<ID3D11SamplerState>	m_sampleState;
-	ComPtr<ID3D11Buffer>		m_matrixBuffer;
-	ComPtr<ID3D11Buffer>		m_lightBuffer;
+	ComPtr<ID3D11SamplerState>	sample_state_;
+	ComPtr<ID3D11Buffer>		matrix_buffer_;
+	ComPtr<ID3D11Buffer>		light_buffer_;
 };

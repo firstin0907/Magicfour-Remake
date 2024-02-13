@@ -5,6 +5,7 @@
 #include "../include/GroundClass.hh"
 
 using namespace std;
+using namespace DirectX;
 
 constexpr rect_t ITEM_RANGE = { -30000, -10000, 30000, 60000 };
 constexpr time_t ITEM_LIFETIME = 10'000;
@@ -13,7 +14,7 @@ ItemClass::ItemClass(time_t create_time, int x_pos, int y_pos, int type)
 	: RigidbodyClass<ItemState>(
 		Point2d {x_pos, y_pos}, rect_t(ITEM_RANGE),
 		LEFT_FORWARD, Vector2d(0, 1000)
-	), m_createTime(create_time), m_type(type)
+	), createTime_(create_time), type_(type)
 {
 	SetState(ItemState::kNormal, create_time);
 }
@@ -68,13 +69,13 @@ void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 
 bool ItemClass::Frame(time_t curr_time, time_t time_delta)
 {
-	return curr_time <= m_createTime + ITEM_LIFETIME && state_ == ItemState::kNormal;
+	return curr_time <= createTime_ + ITEM_LIFETIME && state_ == ItemState::kNormal;
 }
 
 XMMATRIX ItemClass::GetShapeMatrix(time_t curr_time)
 {
 	constexpr float box_size = 0.3f;
-	const time_t age = curr_time - m_createTime;
+	const time_t age = curr_time - createTime_;
 
 	return XMMatrixTranslation(0, sin(age * 0.001) * 30000 * SCOPE, 0) *
 		XMMatrixRotationY(age * 0.001f) * XMMatrixScaling(box_size, box_size * 1.2f, box_size);

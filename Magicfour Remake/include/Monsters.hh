@@ -7,10 +7,16 @@
 
 #include "global.hh"
 
-using namespace std;
-
 class MonsterDuck : public MonsterClass
 {
+private:
+	template<typename T>
+	using vector = std::vector<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
+
 public:
 	MonsterDuck(direction_t direction, time_t created_time);
 	~MonsterDuck() = default;
@@ -26,11 +32,19 @@ public:
 	virtual int GetVx();
 
 private:
-	time_t m_NextJumpTime;
+	time_t nextJumpTime_;
 };
 
 class MonsterOctopus : public MonsterClass
 {
+private:
+	template<typename T>
+	using vector = std::vector<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
+
 public: 
 	MonsterOctopus(direction_t direction, time_t created_time);
 	~MonsterOctopus() = default;
@@ -49,6 +63,14 @@ public:
 
 class MonsterBird : public MonsterClass
 {
+private:
+	template<typename T>
+	using vector = std::vector<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
+
 public:
 	MonsterBird(direction_t direction, time_t created_time);
 	~MonsterBird() = default;
@@ -64,7 +86,7 @@ public:
 	virtual int GetVx();
 
 public:
-	int m_TargetYPosition;
-	int m_NextMoveTime;
+	int targetYPosition_;
+	int nextMoveTime_;
 
 };

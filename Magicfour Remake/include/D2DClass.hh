@@ -32,9 +32,9 @@ public:
 		const wchar_t* contents, float left, float top, float right, float bottom);
 
 private:
-	HWND m_hwnd;
+	HWND hwnd_;
 
-	ComPtr<IDWriteFactory> m_dwFactory;
-	ComPtr<ID2D1RenderTarget> m_D2Rtg;
-	ComPtr<ID2D1SolidColorBrush> m_brush;
+	ComPtr<IDWriteFactory> dwFactory_;
+	ComPtr<ID2D1RenderTarget> d2Rtg_;
+	ComPtr<ID2D1SolidColorBrush> brush_;
 };

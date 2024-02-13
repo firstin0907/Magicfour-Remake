@@ -36,10 +36,10 @@ TextureClass::TextureClass(ID3D11Device* device, const wchar_t* filename)
 		break;
 	}
 
-	m_width = image.GetMetadata().width;
-	m_height = image.GetMetadata().height;
+	width_ = image.GetMetadata().width;
+	height_ = image.GetMetadata().height;
 
-	hResult = CreateShaderResourceView(device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), m_textureView.GetAddressOf());
+	hResult = CreateShaderResourceView(device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), textureView_.GetAddressOf());
 	if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to create Shader Resource View of " + std::wstring(filename));
 }
 
@@ -49,15 +49,15 @@ TextureClass::~TextureClass()
 
 ID3D11ShaderResourceView* TextureClass::GetTexture()
 {
-	return m_textureView.Get();
+	return textureView_.Get();
 }
 
 int TextureClass::GetWidth()
 {
-	return m_width;
+	return width_;
 }
 
 int TextureClass::GetHeight()
 {
-	return m_height;
+	return height_;
 }

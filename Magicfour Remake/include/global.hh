@@ -2,8 +2,6 @@
 
 #include <DirectXMath.h>
 
-using namespace DirectX;
-
 #ifndef DIRECTION_T
 #define DIRECTION_T
 enum direction_t
@@ -20,6 +18,8 @@ enum direction_t
 #define RECT_T
 struct rect_t
 {
+	using XMMATRIX = DirectX::XMMATRIX;
+
 	int x1, y1; // left top
 	int x2, y2; // right bottom
 
@@ -28,8 +28,8 @@ struct rect_t
 
 	XMMATRIX toMatrix() const
 	{
-		return XMMatrixScaling(get_w() / 2.0f * 0.00001f, get_h() / 2.0f * 0.00001f, 0.00001f) *
-			XMMatrixTranslation((x1 + get_w() / 2.0f) * 0.00001f, (y1 + get_h() / 2.0f) * 0.00001f, 0);
+		return DirectX::XMMatrixScaling(get_w() / 2.0f * 0.00001f, get_h() / 2.0f * 0.00001f, 0.00001f) *
+			DirectX::XMMatrixTranslation((x1 + get_w() / 2.0f) * 0.00001f, (y1 + get_h() / 2.0f) * 0.00001f, 0);
 	}
 
 	bool collide(const rect_t& rhs) const

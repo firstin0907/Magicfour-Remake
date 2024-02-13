@@ -10,7 +10,7 @@
 #define WIDE(x) WIDE2(x)
 #define WFILE WIDE(__FILE__)
 
-#include <stdio.h>
+using namespace DirectX;
 
 D3DClass::D3DClass(int screenWidth, int screenHeight,
 	bool vsync, HWND hwnd, bool fullscreen, float screenDepth, float screenNear)
@@ -68,11 +68,11 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	// 그래픽카드의 메모리 용량을 가져오기(MB 단위)
-	m_videoCardMemory = static_cast<int>(adapterDesc.DedicatedVideoMemory) / 1'024 / 1'024;
+	videoCardMemory_ = static_cast<int>(adapterDesc.DedicatedVideoMemory) / 1'024 / 1'024;
 
 	// 그래픽 카드의 이름 가져오기
 	size_t stringLenght;
-	int error = wcstombs_s(&stringLenght, m_videoCardDescription, 128, adapterDesc.Description, 128);
+	int error = wcstombs_s(&stringLenght, videoCardDescription_, 128, adapterDesc.Description, 128);
 	if (error != 0) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 
@@ -125,18 +125,18 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	// 스왑체인, Direct3D 장치, Direct3D 장치 컨텍스트 만들기
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE,
-		NULL, D3D11_CREATE_DEVICE_BGRA_SUPPORT, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, m_swapChain.GetAddressOf(),
-		m_device.GetAddressOf(), NULL, m_deviceContext.GetAddressOf());
+		NULL, D3D11_CREATE_DEVICE_BGRA_SUPPORT, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, swapChain_.GetAddressOf(),
+		device_.GetAddressOf(), NULL, deviceContext_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3D swap chain.", WFILE, __LINE__);
 
 	// 백버퍼의 포인터 받아오기
 	ID3D11Texture2D* backBufferPtr;
-	result = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
+	result = swapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
 	if (FAILED(result)) throw GameException(L"Failed to get buffer of swap chain.", WFILE, __LINE__);
 	
 
 	// 그 포인터로 렌더 타겟 뷰 생성
-	result = m_device->CreateRenderTargetView(backBufferPtr, NULL, m_renderTargetView.GetAddressOf());
+	result = device_->CreateRenderTargetView(backBufferPtr, NULL, renderTargetView_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create render target view.", WFILE, __LINE__);
 
 
@@ -160,8 +160,8 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	depthBufferDesc.MiscFlags = 0;
 
 	// 그 description으로 깊이 버퍼 텍스쳐 생성(화면에 그려지는 건 2D니까 2D로 생성)
-	result = m_device->CreateTexture2D(&depthBufferDesc, NULL, 
-		m_depthStencilBuffer.GetAddressOf());
+	result = device_->CreateTexture2D(&depthBufferDesc, NULL, 
+		depthStencilBuffer_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	// 깊이-스텐실 description 작성(어떤 깊이 테스트를 할지 정할 수 있게)
@@ -189,10 +189,10 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	// 깊이-스텐실 상태 생성
-	result = m_device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf());
+	result = device_->CreateDepthStencilState(&depthStencilDesc, depthStencilState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 	// 깊이-스텐실 상태 설정(디바이스가 아니라 컨텍스트)
-	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 1);
+	deviceContext_->OMSetDepthStencilState(depthStencilState_.Get(), 1);
 
 	// 깊이-스텐실 "뷰" description 초기화
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
@@ -201,13 +201,13 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
-	result = m_device->CreateDepthStencilView(m_depthStencilBuffer.Get(),
-		&depthStencilViewDesc, m_depthStencilView.GetAddressOf());
+	result = device_->CreateDepthStencilView(depthStencilBuffer_.Get(),
+		&depthStencilViewDesc, depthStencilView_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	// 지금껏 만든 깊이-스텐실 뷰를 출력 렌더링 파이프라인에 바인딩
-	m_deviceContext->OMSetRenderTargets(1,
-		m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+	deviceContext_->OMSetRenderTargets(1,
+		renderTargetView_.GetAddressOf(), depthStencilView_.Get());
 
 	// 래스터화기 상태(도형이 어떻게 픽셀로 그려지는지) e.g. 와이어프레임 or 앞뒷면
 	D3D11_RASTERIZER_DESC rasterDesc;
@@ -223,10 +223,10 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	rasterDesc.ScissorEnable = false;
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 
-	result = m_device->CreateRasterizerState(&rasterDesc, m_rasterState.GetAddressOf());
+	result = device_->CreateRasterizerState(&rasterDesc, rasterState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 	// 레스터 상태 설정
-	m_deviceContext->RSSetState(m_rasterState.Get());
+	deviceContext_->RSSetState(rasterState_.Get());
 
 	D3D11_VIEWPORT viewport;
 	// 뷰포트 설정(윈도우 전체 크기와 동일하게)
@@ -236,17 +236,17 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = viewport.TopLeftY = 0.0f;
 	// 뷰포트 생성
-	m_deviceContext->RSSetViewports(1, &viewport);
+	deviceContext_->RSSetViewports(1, &viewport);
 
 	// 투영 행렬(3D -> 2D) 설정 및 생성
 	float fieldOfView = 3.141592654f / 4.0f;
 	float screenAspect = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
-	m_projectionMatrix = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+	projectionMatrix_ = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 
-	m_worldMatrix = XMMatrixIdentity(); // 단위 행렬로 초기화
+	worldMatrix_ = XMMatrixIdentity(); // 단위 행렬로 초기화
 
 	// 직교 투영 행렬(UI 등 2D 요소 그리기)
-	m_orthoMatrix = XMMatrixOrthographicLH(
+	orthoMatrix_ = XMMatrixOrthographicLH(
 		static_cast<float>(screenWidth), static_cast<float>(screenHeight), -1, 1);
 
 
@@ -254,7 +254,7 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc = depthStencilDesc;
 	depthDisabledStencilDesc.DepthEnable = false;
 
-	result = m_device->CreateDepthStencilState(&depthDisabledStencilDesc, m_depthDisabledStencilState.GetAddressOf());
+	result = device_->CreateDepthStencilState(&depthDisabledStencilDesc, depthDisabledStencilState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	D3D11_BLEND_DESC blendStateDescription;
@@ -269,14 +269,14 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
 
 	// Create the blend state using the description.
-	result = m_device->CreateBlendState(&blendStateDescription,
-		m_alphaEnableBlendingState.GetAddressOf());
+	result = device_->CreateBlendState(&blendStateDescription,
+		alphaEnableBlendingState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	// 알파값 미적용
 	blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
-	result = m_device->CreateBlendState(&blendStateDescription,
-		m_alphaDisableBlendingState.GetAddressOf());
+	result = device_->CreateBlendState(&blendStateDescription,
+		alphaDisableBlendingState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -287,7 +287,7 @@ D3DClass::~D3DClass()
 {
 	// 스왑 체인은 끝나기 전에 반드시! 윈도우 모드로 바꾸기
 	// 그렇지 않으면 예외 발생
-	if (m_swapChain) m_swapChain->SetFullscreenState(false, NULL);
+	if (swapChain_) swapChain_->SetFullscreenState(false, NULL);
 }
 
 
@@ -296,10 +296,10 @@ void D3DClass::BeginScene(float red, float green, float blue, float alpha)
 	float color[4] = { red, green, blue, alpha };
 
 	// 백버퍼 내용 지움
-	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), color);
+	deviceContext_->ClearRenderTargetView(renderTargetView_.Get(), color);
 
 	// 깊이 버퍼 내용 지움
-	m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	deviceContext_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 }
 
@@ -309,70 +309,70 @@ void D3DClass::EndScene()
 	if (m_vsync_enabled)
 	{
 		// 새로 고침 비율 고정
-		m_swapChain->Present(1, 0);
+		swapChain_->Present(1, 0);
 	}
 	else
 	{
 		// 가능한 빠르게!
-		m_swapChain->Present(0, 0);
+		swapChain_->Present(0, 0);
 	}
 }
 
 IDXGISwapChain* D3DClass::GetSwapChain()
 {
-	return m_swapChain.Get();
+	return swapChain_.Get();
 }
 
 ID3D11Device* D3DClass::GetDevice()
 {
-	return m_device.Get();
+	return device_.Get();
 }
 
 ID3D11DeviceContext* D3DClass::GetDeviceContext()
 {
-	return m_deviceContext.Get();
+	return deviceContext_.Get();
 }
 
 void D3DClass::GetProjectionMatrix(XMMATRIX& projectionMatrix)
 {
-	projectionMatrix = m_projectionMatrix;
+	projectionMatrix = projectionMatrix_;
 }
 
-void D3DClass::GetWorldMatrix(XMMATRIX& worldMatrix)
+void D3DClass::GetWorldMatrix(XMMATRIX& world)
 {
-	worldMatrix = m_worldMatrix;
+	world = worldMatrix_;
 }
 
 void D3DClass::GetOrthoMatrix(XMMATRIX& orthoMatrix)
 {
-	orthoMatrix = m_orthoMatrix;
+	orthoMatrix = orthoMatrix_;
 }
 
 void D3DClass::GetVideoCardInfo(char* cardName, int& memory)
 {
-	strcpy_s(cardName, 128, m_videoCardDescription);
-	memory = m_videoCardMemory;
+	strcpy_s(cardName, 128, videoCardDescription_);
+	memory = videoCardMemory_;
 }
 
 void D3DClass::TurnZBufferOn()
 {
-	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 1);
+	deviceContext_->OMSetDepthStencilState(depthStencilState_.Get(), 1);
 }
 
 
 void D3DClass::TurnZBufferOff()
 {
-	m_deviceContext->OMSetDepthStencilState(m_depthDisabledStencilState.Get(), 1);
+	deviceContext_->OMSetDepthStencilState(depthDisabledStencilState_.Get(), 1);
 }
 
 void D3DClass::EnableAlphaBlending()
 {
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_deviceContext->OMSetBlendState(m_alphaEnableBlendingState.Get(), blendFactor, 0xffffffff);
+	deviceContext_->OMSetBlendState(alphaEnableBlendingState_.Get(), blendFactor, 0xffffffff);
 }
 
 void D3DClass::DisableAlphaBlending()
 {
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_deviceContext->OMSetBlendState(m_alphaDisableBlendingState.Get(), blendFactor, 0xffffffff);
+	deviceContext_->OMSetBlendState(alphaDisableBlendingState_.Get(), blendFactor, 0xffffffff);
 }

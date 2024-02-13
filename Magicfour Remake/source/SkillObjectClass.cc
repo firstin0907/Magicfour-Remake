@@ -13,14 +13,14 @@ SkillObjectClass::SkillObjectClass(int pos_x, int pos_y,
 bool SkillObjectClass::OnCollided(
 	MonsterClass* monster, time_t collided_time)
 {
-	auto entry = m_hitMonsters.find(monster->GetId());
+	auto entry = hitMonsters_.find(monster->GetId());
 
 	// If that monster is hit with this instance first time in lastest 1000ms,
 	// this collision is valid.
-	if (entry == m_hitMonsters.end() || collided_time - entry->second >= 1000 )
+	if (entry == hitMonsters_.end() || collided_time - entry->second >= 1000 )
 	{
 		// Add entry
-		m_hitMonsters[monster->GetId()] = collided_time;
+		hitMonsters_[monster->GetId()] = collided_time;
 		return true;
 	}
 	return false;

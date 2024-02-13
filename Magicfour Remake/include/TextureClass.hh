@@ -29,7 +29,7 @@ public:
     int GetHeight();
 
 private:
-    ComPtr<ID3D11ShaderResourceView> m_textureView; // texture 접근용
-    int m_width, m_height;
+    ComPtr<ID3D11ShaderResourceView> textureView_; // texture 접근용
+    int width_, height_;
 };
 
