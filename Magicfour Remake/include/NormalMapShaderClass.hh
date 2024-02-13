@@ -21,6 +21,7 @@ private:
 	struct MatrixBufferType
 	{
 		XMMATRIX mvp;
+		XMMATRIX worldMatrix;
 		XMMATRIX world_tr_inv;
 	};
 

@@ -106,45 +106,28 @@ void StoneShaderClass::InitializeShader(
 
 	m_sampleState = CreateSamplerState(device);
 
-
 	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
+	D3D11_BUFFER_DESC constantBufferDesc;
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantBufferDesc.MiscFlags = 0;
+	constantBufferDesc.StructureByteStride = 0;
 
+	constantBufferDesc.ByteWidth = sizeof(MatrixBufferType);
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	result = device->CreateBuffer(&matrixBufferDesc, NULL, m_matrixBuffer.GetAddressOf());
+	result = device->CreateBuffer(&constantBufferDesc, NULL, m_matrixBuffer.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create matrix buffer");
 
-	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
-	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
-	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightBufferDesc.ByteWidth = sizeof(LightBufferType);
-	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	lightBufferDesc.MiscFlags = 0;
-	lightBufferDesc.StructureByteStride = 0;
-
+	constantBufferDesc.ByteWidth = sizeof(CameraBufferType);
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	result = device->CreateBuffer(&lightBufferDesc, NULL, m_lightBuffer.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create light buffer");
-
-
-	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
-	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
-	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cameraBufferDesc.ByteWidth = sizeof(LightBufferType);
-	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cameraBufferDesc.MiscFlags = 0;
-	cameraBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	result = device->CreateBuffer(&cameraBufferDesc, NULL, m_cameraBuffer.GetAddressOf());
+	result = device->CreateBuffer(&constantBufferDesc, NULL, m_cameraBuffer.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create camera buffer");
+
+	constantBufferDesc.ByteWidth = sizeof(LightBufferType);
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	result = device->CreateBuffer(&constantBufferDesc, NULL, m_lightBuffer.GetAddressOf());
+	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create light buffer");
 }
 
 
@@ -163,13 +146,13 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	result = deviceContext->Map(m_matrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock matrix buffer to set shader parameter.");
 
-
 	// Get a pointer to the data in the constant buffer.
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
 
 	// Copy the matrices into the constant buffer.
 	// Transpose the matrices to prepare them for the shader.
 	dataPtr->mvp = XMMatrixTranspose(worldMatrix * vpMatrix);
+	dataPtr->worldMatrix = XMMatrixTranspose(worldMatrix);
 	dataPtr->world_tr_inv = XMMatrixInverse(nullptr, worldMatrix);
 
 	// Unlock the constant buffer.

@@ -3,7 +3,7 @@ Texture2D normalTexture : register(t1);
 Texture2D emissiveTexture : register(t2);
 SamplerState SampleType : register(s0);
 
-cbuffer LightBuffer
+cbuffer LightBuffer : register(b0)
 {
     float4 diffuseColor;
     float3 lightDirection;
@@ -14,7 +14,7 @@ cbuffer LightBuffer
     float4 specularWeight;
 };
 
-cbuffer CameraBuffer
+cbuffer CameraBuffer : register(b1)
 {
     float3 cameraPosition;
     float padding2;
@@ -23,6 +23,7 @@ cbuffer CameraBuffer
 struct PixelInputType
 {
     float4 position : SV_POSITION;
+    float4 surfacePos: POSITION;
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
@@ -36,7 +37,7 @@ float4 psMain(PixelInputType input) : SV_TARGET
     float3 bumpNormal;
     float3 lightDir;
     float4 color;
-    float shininess = 1.0;
+    float shininess = 50.0;
 
     // Sample the pixel color from the color texture at this location.
     textureColor = diffuseTexture.Sample(SampleType, input.tex);
@@ -59,12 +60,11 @@ float4 psMain(PixelInputType input) : SV_TARGET
 
     // specular
     float4 white = {1, 1, 1, 1};
-    float3 viewDir = normalize(cameraPosition - input.position);
-    float3 halfDir = normalize(viewDir - lightDir);
+    float3 viewDir = normalize(cameraPosition - input.surfacePos);
+    float3 halfDir = normalize(viewDir + lightDir);
 
-    float spec =  pow(saturate(dot(halfDir, bumpNormal)), shininess);
+    float spec = pow(saturate(dot(halfDir, bumpNormal)), shininess);
     float4 specular = spec * white * specularWeight;
-
-
+    
     return ambient + diffuse + specular + emissiveColor;
 }

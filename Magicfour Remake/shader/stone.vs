@@ -9,6 +9,7 @@
 cbuffer MatrixBuffer
 {
     matrix mvpMatrix;
+    matrix worldMatrix;
     matrix worldTrInvMatrix;
 };
 
@@ -25,6 +26,7 @@ struct VertexInputType
 struct PixelInputType
 {
     float4 position : SV_POSITION;
+    float4 surfacePos: POSITION;
     float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
 };
@@ -42,6 +44,7 @@ PixelInputType vsMain(VertexInputType input)
 
 	// Calculate the position of the vertex against the world, view, and projection matrices.
     output.position = mul(input.position, mvpMatrix);
+    output.surfacePos = mul(input.position, worldMatrix);
 
 	// Calculate the normal vector against the world matrix only.
     output.normal = mul(input.normal, (float3x3)worldTrInvMatrix);
