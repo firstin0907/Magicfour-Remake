@@ -27,6 +27,8 @@
 #include "../include/ItemClass.hh"
 #include "../include/RandomClass.hh"
 
+using namespace std;
+
 constexpr float CAMERA_Z_POSITION = -20.0f;
 constexpr int CAMERA_X_LIMIT = 1'500'000;
 
@@ -169,6 +171,7 @@ bool ApplicationClass::Frame(InputClass* input)
 		for (auto& monster : monsters_)
 		{
 			if (monster->GetState() == MonsterState::kDie) continue;
+			if (monster->GetState() == MonsterState::kEmbryo) continue;
 
 			if (skill_obj->GetGlobalRange().collide(monster->GetGlobalRange()))
 			{

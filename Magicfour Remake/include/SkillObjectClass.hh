@@ -8,8 +8,6 @@
 #include "global.hh"
 #include "RigidbodyClass.hh"
 
-using namespace std;
-
 enum class SkillObjectState
 {
 	kNormal, kDie,
@@ -20,6 +18,12 @@ enum class SkillObjectState
 class SkillObjectClass : public RigidbodyClass<SkillObjectState>
 {
 public:
+	template<typename T>
+	using vector = std::vector<T>;
+
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
+
 	SkillObjectClass(int pos_x, int pos_y, rect_t range, int vx, int vy);
 
 	// Move instance as time goes by.
@@ -41,5 +45,5 @@ protected:
 	// Monster who has been collided with this SkillObjectClass instance.
 	// Key = id of monster instance.
 	// Value = the time when collided with that monster.
-	map<int, time_t>					hitMonsters_;
+	std::map<int, time_t> hitMonsters_;
 };

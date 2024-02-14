@@ -10,6 +10,7 @@
 #include "../include/GroundClass.hh"
 
 using namespace DirectX;
+using namespace std;
 
 constexpr int SKILL_COOLTIME = 1'500;
 constexpr int COMBO_DURATION = 5'000;

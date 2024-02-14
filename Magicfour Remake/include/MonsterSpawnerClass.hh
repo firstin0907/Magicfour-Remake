@@ -21,7 +21,7 @@ public:
 		vector<unique_ptr<class MonsterClass> >& monsters_);
 
 private:
-	int gameLevel_;
-	vector<std::pair<time_t, int> > monsterSpawnSchedule_;
-	vector<std::pair<time_t, int> >::iterator scheduleIterator_;
+	int game_level_;
+	vector<std::pair<time_t, int> > monster_spawn_schedule_;
+	vector<std::pair<time_t, int> >::iterator schedule_iterator_;
 };
