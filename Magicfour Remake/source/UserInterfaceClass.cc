@@ -28,8 +28,12 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 
 	InitializeBuffers(device);
 
-	scoreTextFormat_ = direct2D->CreateTextFormat(L"Arial", 40,
+	score_text_format_ = direct2D->CreateTextFormat(L"Arial", 40,
 		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	pause_text_format_ = direct2D->CreateTextFormat(L"Cambria", 35,
+		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	pause_description_format_ = direct2D->CreateTextFormat(L"Cambria", 20,
+		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
 
 void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
@@ -91,7 +95,7 @@ void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
 
 void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* textureShader,
 	ID3D11DeviceContext* deviceContext, CharacterClass* character, MonsterVector& monsters,
-	const XMMATRIX& vp_matrix, const XMMATRIX& orthoMatrix, time_t curr_time)
+	const XMMATRIX& vp_matrix, const XMMATRIX& orthoMatrix, time_t curr_time, bool on_paused)
 {
 	const XMMATRIX orthoInverseMatrix = XMMatrixInverse(nullptr, orthoMatrix);
 
@@ -163,7 +167,7 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 
 	// Draw Score
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
-	direct2D->RenderText(scoreTextFormat_.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
+	direct2D->RenderText(score_text_format_.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
 		0, 30.0f, (float)(screenWidth_ - 30), 200.0f);
 
 	// Draw Combo
@@ -200,6 +204,16 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 			0, (float)(screenHeight_ / 2), (float)(screenWidth_ - 30), (float)(screenHeight_ / 2));
 
 	}
+
+	if (on_paused)
+	{
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed));
+		direct2D->RenderText(pause_text_format_.Get(), L"<< Paused >>",
+			0, 30, screenWidth_, 70);
+		direct2D->RenderText(pause_description_format_.Get(), L"To resume, press R key.",
+			0, 70, screenWidth_, 100);
+	}
+
 
 	direct2D->EndDraw();
 

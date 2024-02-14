@@ -7,20 +7,31 @@ class TimerClass
 public:
 	TimerClass();
 	TimerClass(TimerClass&) = delete;
-	~TimerClass();
+	~TimerClass() = default;
 
 	void Frame();
-	inline INT64 GetElapsedTime() { return frameTime_; }
-	inline INT64 GetTime() { return currTime_; };
+	void Pause();
+	void Resume();
+
+	inline INT64 GetElapsedTime()
+	{
+		return (curr_ticks_ - start_ticks_) * 1'000 / frequency_ -
+			(prev_ticks_ - start_ticks_) * 1'000 / frequency_;
+	}
+
+	inline INT64 GetTime()
+	{
+		return (curr_ticks_ - start_ticks_) * 1'000 / frequency_;
+	};
 
 private:
 	INT64 frequency_;
 
-	INT64 startTicks_;
+	INT64 start_ticks_;
 
-	INT64 prevTime_;
-	INT64 currTime_;
+	INT64 prev_ticks_;
+	INT64 curr_ticks_;
 
-	INT64 frameTime_;
+	bool is_paused_, wait_to_resume_;
 
 };

@@ -2,7 +2,6 @@
 
 #include "../include/GameException.hh"
 
-
 TimerClass::TimerClass()
 {
     // Get the cycles per second speed for this system.
@@ -10,29 +9,45 @@ TimerClass::TimerClass()
     if (frequency_ == 0) throw GAME_EXCEPTION(
         L"Failed to get performance frequency, needed to initialize TimerClass.");
 
-    frameTime_ = 0;
-
     // Get the initial start time.
-    QueryPerformanceCounter((LARGE_INTEGER*)&startTicks_);
-    currTime_ = 0;
-}
+    QueryPerformanceCounter((LARGE_INTEGER*)&start_ticks_);
+    prev_ticks_ = curr_ticks_ = 0;
 
-TimerClass::~TimerClass()
-{
-
+    is_paused_ = wait_to_resume_ = false;
 }
 
 void TimerClass::Frame()
 {
-    prevTime_ = currTime_;
+    if (!is_paused_)
+    {
+        prev_ticks_ = curr_ticks_;
 
-    // Query the current time.
-    QueryPerformanceCounter((LARGE_INTEGER*)&currTime_);
+        // Query the current time.
+        QueryPerformanceCounter((LARGE_INTEGER*)&curr_ticks_);
+    }
+    else if (wait_to_resume_)
+    {
+        // Query the current time.
+        QueryPerformanceCounter((LARGE_INTEGER*)&curr_ticks_);
 
-    currTime_ = (currTime_ - startTicks_) * 1000 / frequency_;
+        start_ticks_ += curr_ticks_ - prev_ticks_;
+        prev_ticks_ = curr_ticks_;
 
-    // Calculate the difference in time since the last time we queried for the current time.
-    frameTime_ = currTime_ - prevTime_;
-
+        wait_to_resume_ = is_paused_ = false;
+    }
     return;
+}
+
+void TimerClass::Pause()
+{
+    if (!is_paused_)
+    {
+        prev_ticks_ = curr_ticks_;
+        is_paused_ = true;
+    }
+}
+
+void TimerClass::Resume()
+{
+    wait_to_resume_ = true;
 }

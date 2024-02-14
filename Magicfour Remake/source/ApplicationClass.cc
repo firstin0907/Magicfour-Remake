@@ -61,16 +61,16 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		L"data/texture/background.jpg");
 
 	// Create and initialize the light shader object.
-	lightShader_ = make_unique<LightShaderClass>(direct3D_->GetDevice(), hwnd);
+	light_shader_ = make_unique<LightShaderClass>(direct3D_->GetDevice(), hwnd);
 
 	// Create and initialize the light object.
 	light_ = make_unique<LightClass>();
 	light_->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light_->SetDirection(0.0f, 0.0f, 1.0f);
 
-	stoneShader_ = make_unique<StoneShaderClass>(direct3D_->GetDevice(), hwnd);
-	textureShader_ = make_unique<TextureShaderClass>(direct3D_->GetDevice(), hwnd);
-	normalMapShader_ = make_unique<NormalMapShaderClass>(direct3D_->GetDevice(), hwnd);
+	stone_shader_ = make_unique<StoneShaderClass>(direct3D_->GetDevice(), hwnd);
+	texture_shader_ = make_unique<TextureShaderClass>(direct3D_->GetDevice(), hwnd);
+	normalMap_shader_ = make_unique<NormalMapShaderClass>(direct3D_->GetDevice(), hwnd);
 
 	// Set model of skill object to be rendered.
 	SkillObjectBead::initialize(new ModelClass(direct3D_->GetDevice(),
@@ -112,11 +112,11 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	ground_.emplace_back(new GroundClass({ -20000, -20000, 20000, 20000 }));
 	ground_.emplace_back(new GroundClass({ SPAWN_LEFT_X, GROUND_Y - 300000, SPAWN_RIGHT_X, GROUND_Y }));
 
-	monsterSpawner_ = make_unique<MonsterSpawnerClass>();
+	monster_spawner_ = make_unique<MonsterSpawnerClass>();
 
-	timerClass_ = make_unique<TimerClass>();
+	timer_ = make_unique<TimerClass>();
 
-	userInterface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
+	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
 		direct3D_->GetDevice(), screenWidth, screenHeight,
 		L"data/texture/user_interface/monster_hp_frame.png", L"data/texture/user_interface/monster_hp_gauge.png");
 
@@ -128,14 +128,42 @@ ApplicationClass::~ApplicationClass()
 
 bool ApplicationClass::Frame(InputClass* input)
 {
-	static time_t character_death_time = 1LL << 60;
-
 	// Check if the user pressed escape and wants to exit the application.
 	if (input->IsKeyPressed(DIK_ESCAPE)) return false;
+	if (input->IsKeyDown(DIK_P))
+	{
+		timer_->Pause();
+		game_state_ = GameState::kGamePause;
+		Render(timer_->GetTime());
+	}
+	else if (input->IsKeyDown(DIK_R))
+	{
+		timer_->Resume();
+		game_state_ = GameState::kGameRun;
+	}
 
-	timerClass_->Frame();
-	time_t curr_time = timerClass_->GetTime();
-	time_t delta_time = timerClass_->GetElapsedTime();
+	timer_->Frame();
+
+	const time_t curr_time = timer_->GetTime();
+	switch (game_state_)
+	{
+	case GameState::kGameRun:
+		GameFrame(input);
+		Render(curr_time);
+		return true;
+
+	case GameState::kGamePause:
+		return true;
+	}
+}
+
+
+void ApplicationClass::GameFrame(InputClass* input)
+{
+	static time_t character_death_time = 1LL << 60;
+
+	time_t curr_time = timer_->GetTime();
+	time_t delta_time = timer_->GetElapsedTime();
 
 	const int GAME_OVER_SLOW = 4;
 	if (character_death_time <= curr_time)
@@ -143,7 +171,7 @@ bool ApplicationClass::Frame(InputClass* input)
 		delta_time = curr_time / GAME_OVER_SLOW - (curr_time - delta_time) / GAME_OVER_SLOW;
 		curr_time = character_death_time + (curr_time - character_death_time) / GAME_OVER_SLOW;
 	}
-	else monsterSpawner_->Frame(curr_time, delta_time, monsters_);
+	else monster_spawner_->Frame(curr_time, delta_time, monsters_);
 
 	character_->Frame(delta_time, curr_time, input, skillObjectList_, ground_);
 
@@ -254,11 +282,8 @@ bool ApplicationClass::Frame(InputClass* input)
 			items_.pop_back();
 		}
 	}
-
-	// Render the graphics scene.
-	Render(curr_time);
-	return true;
 }
+
 
 void ApplicationClass::Render(time_t curr_time)
 {
@@ -280,7 +305,7 @@ void ApplicationClass::Render(time_t curr_time)
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	planeModel_->Render(direct3D_->GetDeviceContext());
-	lightShader_->Render(direct3D_->GetDeviceContext(), 
+	light_shader_->Render(direct3D_->GetDeviceContext(), 
 		model_->GetIndexCount(),
 		XMMatrixScaling(192.0f, 153.6f, 1)
 		* XMMatrixTranslation(0, 0, 100.0f),
@@ -290,7 +315,7 @@ void ApplicationClass::Render(time_t curr_time)
 	model_->Render(direct3D_->GetDeviceContext());
 
 #if 1
-	lightShader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+	light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
 		character_->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 		light_->GetDirection(), light_->GetDiffuseColor());
 #endif
@@ -302,7 +327,7 @@ void ApplicationClass::Render(time_t curr_time)
 	if (curr_time <= character_->GetTimeInvincibleEnd()) char_texture = rainbowTexture_->GetTexture();
 	
 	for(auto &box : char_model_matrices) {
-		lightShader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+		light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
 			box * character_->GetLocalWorldMatrix(), vp_matrix, char_texture,
 			light_->GetDirection(), light_->GetDiffuseColor());
 	}
@@ -328,28 +353,28 @@ void ApplicationClass::Render(time_t curr_time)
 	
 	if (character_->GetSkill<0>())
 	{
-		stoneShader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
 			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<0>()],
 			camera_->GetPosition());
 	}
 	if (character_->GetSkill<1>())
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		stoneShader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
 			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<1>()],
 			camera_->GetPosition());
 	}
 	if (character_->GetSkill<2>())
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		stoneShader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
 			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<2>()],
 			camera_->GetPosition());
 	}
 	if (character_->GetSkill<3>())
 	{
 		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		stoneShader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
 			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<3>()],
 			camera_->GetPosition());
 	}
@@ -358,7 +383,7 @@ void ApplicationClass::Render(time_t curr_time)
 	// Draw Items
 	for (auto& item : items_)
 	{
-		stoneShader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
 			item->GetShapeMatrix(curr_time) * item->GetLocalWorldMatrix(), vp_matrix,
 			light_->GetDirection(), skill_color[item->GetType()], camera_->GetPosition());
 	}
@@ -369,7 +394,7 @@ void ApplicationClass::Render(time_t curr_time)
 	{
 		/*
 		model_->Render(direct3D_->GetDeviceContext());
-		result = lightShader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+		result = light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
 			skill_obj->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			light_->GetDirection(), light_->GetDiffuseColor());*/
 		
@@ -378,13 +403,13 @@ void ApplicationClass::Render(time_t curr_time)
 
 		if (obj_model->GetNormalTexture())
 		{
-			normalMapShader_->Render(direct3D_->GetDeviceContext(), obj_model,
+			normalMap_shader_->Render(direct3D_->GetDeviceContext(), obj_model,
 				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
 				light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 		}
 		else
 		{			
-			lightShader_->Render(direct3D_->GetDeviceContext(), obj_model->GetIndexCount(),
+			light_shader_->Render(direct3D_->GetDeviceContext(), obj_model->GetIndexCount(),
 				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
 				light_->GetDirection(), light_->GetDiffuseColor());
 		}
@@ -394,20 +419,20 @@ void ApplicationClass::Render(time_t curr_time)
 	model_->Render(direct3D_->GetDeviceContext());
 	for (auto& monster : monsters_)
 	{
-		normalMapShader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+		normalMap_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
 			monster->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			model_->GetNormalTexture(), model_->GetEmissiveTexture(), light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 	}
 
 	for (auto& ground : ground_)
 	{
-		lightShader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+		light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
 			ground->GetRange().toMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			light_->GetDirection(), light_->GetDiffuseColor());
 	}
 
 	gemModel_->Render(direct3D_->GetDeviceContext());
-	normalMapShader_->Render(direct3D_->GetDeviceContext(), gemModel_->GetIndexCount(),
+	normalMap_shader_->Render(direct3D_->GetDeviceContext(), gemModel_->GetIndexCount(),
 		XMMatrixScaling(5, 5, 5) * XMMatrixTranslation(0, 0, 0), vp_matrix, gemModel_->GetDiffuseTexture(),
 		gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture(), light_->GetDirection(),
 		light_->GetDiffuseColor(), camera_->GetPosition());
@@ -415,8 +440,8 @@ void ApplicationClass::Render(time_t curr_time)
 	// Turn off the Z buffer to begin all 2D rendering.
 	direct3D_->TurnZBufferOff();
 
-	userInterface_->Render(direct2D_.get(), textureShader_.get(), direct3D_->GetDeviceContext(),
-		character_.get(), monsters_, vp_matrix, orthoMatrix, curr_time);
+	user_interface_->Render(direct2D_.get(), texture_shader_.get(), direct3D_->GetDeviceContext(),
+		character_.get(), monsters_, vp_matrix, orthoMatrix, curr_time, game_state_ == GameState::kGamePause);
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	direct3D_->TurnZBufferOn();
