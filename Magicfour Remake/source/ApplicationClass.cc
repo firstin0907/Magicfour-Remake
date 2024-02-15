@@ -26,6 +26,7 @@
 #include "../include/UserInterfaceClass.hh"
 #include "../include/ItemClass.hh"
 #include "../include/RandomClass.hh"
+#include "../include/GameException.hh"
 
 using namespace std;
 
@@ -153,7 +154,16 @@ bool ApplicationClass::Frame(InputClass* input)
 		return true;
 
 	case GameState::kGamePause:
+		Render(curr_time);
 		return true;
+
+	case GameState::kGameOver:
+		GameFrame(input);
+		Render(curr_time);
+		return true;
+
+	default:
+		throw GAME_EXCEPTION(L"Unknown GameState");
 	}
 }
 
@@ -220,7 +230,11 @@ void ApplicationClass::GameFrame(InputClass* input)
 		if (character_->GetGlobalRange().collide(monster->GetGlobalRange()))
 		{
 			bool result = character_->OnCollided(curr_time, monster->GetVx());
-			if (!result) character_death_time = curr_time;
+			if (!result)
+			{
+				character_death_time = curr_time;
+				game_state_ = GameState::kGameOver;
+			}
 		}
 	}
 
@@ -439,9 +453,41 @@ void ApplicationClass::Render(time_t curr_time)
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	direct3D_->TurnZBufferOff();
+	
+	user_interface_->Render(direct2D_.get(), texture_shader_.get(),
+		direct3D_->GetDeviceContext(),
+		character_.get(), vp_matrix, orthoMatrix, curr_time);
+		
+	user_interface_->Begin2dDraw(direct2D_.get());
 
-	user_interface_->Render(direct2D_.get(), texture_shader_.get(), direct3D_->GetDeviceContext(),
-		character_.get(), monsters_, vp_matrix, orthoMatrix, curr_time, game_state_ == GameState::kGamePause);
+	const XMMATRIX ortho_inv = XMMatrixInverse(nullptr, orthoMatrix);
+	for (auto& monster : monsters_)
+	{
+		float monster_screen_x, monster_screen_y;
+		user_interface_->CalculateScreenPos(monster->GetLocalWorldMatrix() * vp_matrix,
+			ortho_inv, monster_screen_x, monster_screen_y);
+
+		user_interface_->DrawMonsterHp(direct2D_.get(), monster_screen_x,
+			monster_screen_y - 23,
+			monster->GetHpRatio(), monster->GetPrevHpRatio());
+	}
+
+	
+	user_interface_->DrawScoreAndCombo(direct2D_.get(),
+		character_.get(), curr_time);
+	switch (game_state_)
+	{
+	case GameState::kGamePause:
+		user_interface_->DrawPauseMark(direct2D_.get());
+		break;
+	case GameState::kGameOver:
+		user_interface_->DrawGameoverScreen(direct2D_.get(),
+			character_->GetStateTime(curr_time));
+		break;
+	}
+
+	user_interface_->End2dDraw(direct2D_.get());
+
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	direct3D_->TurnZBufferOn();

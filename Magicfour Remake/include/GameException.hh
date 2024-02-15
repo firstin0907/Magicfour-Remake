@@ -41,6 +41,13 @@ inline GameException filenotfound_error(
 	return GameException(error_message, source_name, line_no);
 }
 
+inline GameException filenotfound_error(
+	const wchar_t* filename, const wchar_t* source_name = L"", const int line_no = 0)
+{
+	std::wstring error_message = L"File not found : " + std::wstring(filename);
+	return GameException(error_message, source_name, line_no);
+}
+
 inline GameException fileformat_error(
 	const char* filename, const wchar_t* source_name = L"", const int line_no = 0)
 {

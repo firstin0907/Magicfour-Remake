@@ -9,24 +9,19 @@
 #include "../include/CharacterClass.hh"
 #include "../include/D2DClass.hh"
 
+#include "../include/BitmapClass.hh"
+
 using namespace std;
 using namespace DirectX;
 
 UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 	ID3D11Device* device, int screenWidth, int screenHeight,
 	const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename)
-	: screenHeight_(screenHeight), screenWidth_(screenWidth)
+	: screen_height_(screenHeight), screen_width_(screenWidth)
 {
 	skillGauge_ = make_unique<SkillGaugeClass>(device,
 		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
 		L"data/texture/skill_gauge_white.png", -80 + 40, 180 + 16);
-	monsterHpFrameTexture_ = make_unique<TextureClass>(device, monsterHpFrameFilename);
-	monsterHpGaugeTexture_[0] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_green.png");
-	monsterHpGaugeTexture_[1] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_yellow.png");
-	monsterHpGaugeTexture_[2] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_red.png");
-	monsterHpGaugeTexture_[3] = make_unique<TextureClass>(device, L"data/texture/user_interface/hp_gauge_white.png");
-
-	InitializeBuffers(device);
 
 	score_text_format_ = direct2D->CreateTextFormat(L"Arial", 40,
 		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
@@ -34,68 +29,22 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 	pause_description_format_ = direct2D->CreateTextFormat(L"Cambria", 20,
 		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	gameover_text_format_ = direct2D->CreateTextFormat(L"Cambria", 70,
+		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	
+	monster_hp_gauge_bitmap_ = make_unique<BitmapClass>(
+		direct2D, L"data/texture/user_interface/monster_hp_frame.png"
+	);
 }
 
-void UserInterfaceClass::InitializeBuffers(ID3D11Device* device)
+UserInterfaceClass::~UserInterfaceClass()
 {
-	struct VertexType
-	{
-		XMFLOAT3 position;
-		XMFLOAT2 texture;
-	};
-
-	const float w = (float)monsterHpFrameTexture_->GetWidth();
-	const float h = (float)monsterHpFrameTexture_->GetHeight();
-
-	VertexType vertices[4] = {
-		{ XMFLOAT3(0, 0, 0.0f), XMFLOAT2(0.0f, 1.0f)},
-		{ XMFLOAT3(0, h, 0.0f), XMFLOAT2(0.0f, 0.0f)},
-		{ XMFLOAT3(w, h, 0.0f), XMFLOAT2(1.0f, 0.0f)},
-		{ XMFLOAT3(w, 0, 0.0f), XMFLOAT2(1.0f, 1.0f)}
-	};
-	unsigned long indices[6] = { 0, 1, 2, 0, 2, 3 };
-
-	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexData, indexData;
-
-	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * 4;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the vertex data.
-	vertexData.pSysMem = vertices;
-	vertexData.SysMemPitch = 0;
-	vertexData.SysMemSlicePitch = 0;
-
-	// Now create the vertex buffer.
-	HRESULT result = device->CreateBuffer(&vertexBufferDesc, &vertexData, vertexBuffer_.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create vertex buffer.");
-
-	// Set up the description of the static index buffer.
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * 6;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the index data.
-	indexData.pSysMem = indices;
-	indexData.SysMemPitch = 0;
-	indexData.SysMemSlicePitch = 0;
-
-	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, indexBuffer_.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create index buffer.");
 }
 
 void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* textureShader,
-	ID3D11DeviceContext* deviceContext, CharacterClass* character, MonsterVector& monsters,
-	const XMMATRIX& vp_matrix, const XMMATRIX& orthoMatrix, time_t curr_time, bool on_paused)
+	ID3D11DeviceContext* deviceContext, CharacterClass* character,
+	const XMMATRIX& vp_matrix, const XMMATRIX& orthoMatrix, time_t curr_time)
 {
 	const XMMATRIX orthoInverseMatrix = XMMatrixInverse(nullptr, orthoMatrix);
 
@@ -112,63 +61,62 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 			skillGauge_->GetIndexCount(), XMMatrixTranslationFromVector(t),
 			orthoMatrix, skillGauge_->GetTexture(skill_ratio));
 	}
+}
 
-	struct VertexType
+void UserInterfaceClass::CalculateScreenPos(const XMMATRIX& mvp_matrix,
+	const XMMATRIX& ortho_inv, float& x, float& y)
+{
+	XMVECTOR point = { 0, 0, 0, 1 };
+	point =	XMVector4Transform(point, mvp_matrix);
+	point /= point.m128_f32[3];
+	point.m128_f32[2] = 0;
+	point = XMVector4Transform(point, ortho_inv);
+	
+	x = point.m128_f32[0] + screen_width_ / 2.0f;
+	y = screen_height_ / 2.0f - point.m128_f32[1];
+}
+
+void UserInterfaceClass::DrawMonsterHp(D2DClass* direct2D,
+	int center_x, int top, float hp_ratio, float hp_white_ratio)
+{
+	const float left = center_x - monster_hp_gauge_bitmap_->GetWidth() / 2;
+	const float right = left + monster_hp_gauge_bitmap_->GetWidth();
+	const float bottom = top + monster_hp_gauge_bitmap_->GetHeight();
+
+	// Draw White Portion
+	if (hp_white_ratio >= 0.0f)
 	{
-		XMFLOAT3 position;
-		XMFLOAT2 texture;
-	};
-
-	// Set vertex buffer stride and offset.
-	unsigned int stride = sizeof(VertexType), offset = 0;
-
-	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetVertexBuffers(0, 1, vertexBuffer_.GetAddressOf(), &stride, &offset);
-
-	// Set the index buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetIndexBuffer(indexBuffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	for (auto& monster : monsters)
-	{
-		// Calculate the coordinate of monster, with repect to window(screen) coordinate system.
-		XMVECTOR t = { 0, 0, 0, 1 };
-		t = XMVector4Transform(t, monster->GetLocalWorldMatrix() * vp_matrix);
-		t = XMVector4Transform(t / t.m128_f32[3], orthoInverseMatrix);
-		
-		// Adjust the position where hp bar will be drawn.
-		t.m128_f32[0] -= monsterHpFrameTexture_->GetWidth() / 2.0f;
-		t.m128_f32[1] += monsterHpFrameTexture_->GetHeight();
-
-		const float hp_ratio = monster->GetHpRatio();
-		TextureClass* gauge_texture = nullptr;
-
-		if (hp_ratio > 0.5) gauge_texture = monsterHpGaugeTexture_[0].get();
-		else if (hp_ratio > 0.2) gauge_texture = monsterHpGaugeTexture_[1].get();
-		else gauge_texture = monsterHpGaugeTexture_[2].get();
-		
-		// Draw hp gauge according to hp of the monster.
-		textureShader->Render(deviceContext, 6,
-			XMMatrixScaling(monster->GetPrevHpRatio(), 1, 1)* XMMatrixTranslationFromVector(t),
-			orthoMatrix, monsterHpGaugeTexture_[3]->GetTexture()); // white portion
-		textureShader->Render(deviceContext, 6,
-			XMMatrixScaling(hp_ratio, 1, 1)* XMMatrixTranslationFromVector(t),
-			orthoMatrix, gauge_texture->GetTexture()); // real hp portion
-
-		// Draw hp frame
-		textureShader->Render(deviceContext, 6, XMMatrixTranslationFromVector(t),
-			orthoMatrix, monsterHpFrameTexture_->GetTexture());
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White));
+		direct2D->RenderRect(left, (float)top,
+			left + monster_hp_gauge_bitmap_->GetWidth() * hp_white_ratio,
+			bottom);
 	}
 
-	// Direct2D rendering
-	direct2D->BeginDraw();
+	// Draw Real HP Portion
+	if (hp_ratio >= 0.0f)
+	{
+		if (hp_ratio >= 0.5f)
+			direct2D->SetBrushColor(D2D1::ColorF(0.18f, 1.0f, 0.05f, 1.0f));
+		else if (hp_ratio >= 0.2f)
+			direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Yellow));
+		else
+			direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Red));
 
+		direct2D->RenderRect(left, (float)top,
+			left + monster_hp_gauge_bitmap_->GetWidth() * hp_ratio,
+			bottom);
+	}
+
+	// Draw HP Frame
+	direct2D->RenderBitmap(monster_hp_gauge_bitmap_.get(), left, (float)top);
+}
+
+void UserInterfaceClass::DrawScoreAndCombo(D2DClass* direct2D, CharacterClass* character, time_t curr_time)
+{
 	// Draw Score
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
 	direct2D->RenderText(score_text_format_.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
-		0, 30.0f, (float)(screenWidth_ - 30), 200.0f);
+		0, 30.0f, (float)(screen_width_ - 30), 200.0f);
 
 	// Draw Combo
 	const int combo = character->GetCombo();
@@ -196,25 +144,42 @@ void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* te
 		direct2D->RenderTextWithInstantFormat(
 			direct2D->CreateTextFormat(L"Arial", font_size_1,
 				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), std::to_wstring(combo).c_str(),
-			0, (float)(screenHeight_ / 2), (float)(screenWidth_ - 190 - font_offset), (float)(screenHeight_ / 2));
+			0, (float)(screen_height_ / 2), (float)(screen_width_ - 190 - font_offset), (float)(screen_height_ / 2));
 
 		direct2D->RenderTextWithInstantFormat(
 			direct2D->CreateTextFormat(L"Arial", font_size_2,
 				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
-			0, (float)(screenHeight_ / 2), (float)(screenWidth_ - 30), (float)(screenHeight_ / 2));
-
+			0, (float)(screen_height_ / 2), (float)(screen_width_ - 30), (float)(screen_height_ / 2));
 	}
+}
 
-	if (on_paused)
-	{
-		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed));
-		direct2D->RenderText(pause_text_format_.Get(), L"<< Paused >>",
-			0, 30, screenWidth_, 70);
-		direct2D->RenderText(pause_description_format_.Get(), L"To resume, press R key.",
-			0, 70, screenWidth_, 100);
-	}
+void UserInterfaceClass::DrawPauseMark(class D2DClass* direct2D)
+{
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed));
+	direct2D->RenderText(pause_text_format_.Get(), L"<< Paused >>",
+		0, 30.0f, (float)screen_width_, 70.0f);
+	direct2D->RenderText(pause_description_format_.Get(), L"To resume, press R key.",
+		0, 70.0f, (float)screen_width_, 100.0f);
+}
 
+void UserInterfaceClass::DrawGameoverScreen(D2DClass* direct2D, time_t gameover_elapsed_time)
+{
+	const float blackout_alpha = SATURATE(0.0f, (gameover_elapsed_time - 2000) / 3000.0f, 1.0f);
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, blackout_alpha));
+	direct2D->RenderRect(0, 0, screen_width_, screen_height_);
 
+	const float text_alpha = SATURATE(0.0f, (gameover_elapsed_time - 5000) / 3000.0f, 1.0f);
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, text_alpha));
+	direct2D->RenderText(gameover_text_format_.Get(), L"GAME OVER",
+		0, 0, screen_width_, screen_height_);
+}
+
+void UserInterfaceClass::Begin2dDraw(D2DClass* direct2D)
+{
+	direct2D->BeginDraw();
+}
+
+void UserInterfaceClass::End2dDraw(D2DClass* direct2D)
+{
 	direct2D->EndDraw();
-
 }

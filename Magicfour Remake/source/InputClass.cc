@@ -19,8 +19,8 @@ InputClass::InputClass(HINSTANCE hinstance,
 
     HRESULT result;
 
-    screenWidth_ = screenWidth;
-    screenHeight_ = screenHeight;
+    screen_width_ = screenWidth;
+    screen_height_ = screenHeight;
 
     mouseX_ = mouseY_ = 0;
 
@@ -143,8 +143,8 @@ void InputClass::ProcessInput()
     if (mouseX_ < 0) mouseX_ = 0;
     if (mouseY_ < 0) mouseY_ = 0;
 
-    if (mouseX_ > screenWidth_) mouseX_ = screenWidth_;
-    if (mouseY_ > screenHeight_) mouseY_ = screenHeight_;
+    if (mouseX_ > screen_width_) mouseX_ = screen_width_;
+    if (mouseY_ > screen_height_) mouseY_ = screen_height_;
 }
 
 bool InputClass::IsEscapePressed()

@@ -46,7 +46,7 @@ private:
 private:
 	ComPtr<ID3D11Buffer> vertexBuffer_, indexBuffer_;
 	int vertexCount_, indexCount_;
-	int screenWidth_, screenHeight_;
+	int screen_width_, screen_height_;
 	int bitmapWidth_, bitmapHeight_;
 	int renderX_, renderY_, prevPosX_, prevPosY_;
 	int prevHeight_;

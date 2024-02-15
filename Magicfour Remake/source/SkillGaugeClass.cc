@@ -8,8 +8,8 @@ SkillGaugeClass::SkillGaugeClass(ID3D11Device* device,
 	int screenWidth, int screenHeight, const wchar_t* textureFilenameGray,
 	const wchar_t* textureFilenameWhite, int renderX, int renderY)
 {
-	screenWidth_ = screenWidth;
-	screenHeight_ = screenHeight;
+	screen_width_ = screenWidth;
+	screen_height_ = screenHeight;
 
 	renderX_ = renderX;
 	renderY_ = renderY;

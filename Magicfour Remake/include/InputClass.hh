@@ -37,6 +37,6 @@ private:
     unsigned char* m_keyboardState_prev;
     DIMOUSESTATE mouseState_;
 
-    int screenWidth_, screenHeight_, mouseX_, mouseY_;
+    int screen_width_, screen_height_, mouseX_, mouseY_;
 
 };

@@ -96,6 +96,9 @@
     <ClCompile Include="source\D2DClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="source\BitmapClass.cc">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\InputClass.hh">
@@ -186,6 +189,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\RigidbodyClass.hh">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BitmapClass.hh">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
