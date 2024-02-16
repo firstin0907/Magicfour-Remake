@@ -8,7 +8,7 @@ using namespace std;
 
 MonsterDuck::MonsterDuck(direction_t direction, time_t created_time)
 	: MonsterClass(
-		Point2d(DIR_WEIGHT(direction_, SPAWN_RIGHT_X), GROUND_Y),
+		Point2d(DIR_WEIGHT(direction_, kSpawnRightX), kGroundY),
 		direction, 1, 70, {-70000, 0, 70000, 300000})
 {
 	next_jump_time_ = created_time + 5000;
@@ -29,7 +29,7 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 
 	case MonsterState::kEmbryo:
 		position_.x += DIR_WEIGHT(direction_, spd * time_delta);
-		if (LEFT_X <= position_.x && position_.x <= RIGHT_X) SetState(MonsterState::kNormal, curr_time);
+		if (kFieldLeftX <= position_.x && position_.x <= kFieldRightX) SetState(MonsterState::kNormal, curr_time);
 		break;
 
 	case MonsterState::kDuckJump:
@@ -37,22 +37,22 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 		// MOVE first
 		position_.x += DIR_WEIGHT(direction_, spd * time_delta);
 
-		if (position_.x >= RIGHT_X)
+		if (position_.x >= kFieldRightX)
 		{
-			position_.x = 2 * RIGHT_X - position_.x;
+			position_.x = 2 * kFieldRightX - position_.x;
 			direction_ = LEFT_FORWARD;
 		}
 
-		if (position_.x <= -RIGHT_X)
+		if (position_.x <= -kFieldRightX)
 		{
-			position_.x = -2 * RIGHT_X - position_.x;
+			position_.x = -2 * kFieldRightX - position_.x;
 			direction_ = RIGHT_FORWARD;
 		}
 
 	case MonsterState::kDuckJumpReady:
 		{
 			const int before_vy = velocity_.y;
-			const int after_vy = velocity_.y - GRAVITY * time_delta;
+			const int after_vy = velocity_.y - kGravity * time_delta;
 
 			velocity_.y = after_vy;
 
@@ -62,7 +62,7 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 			}
 			else if (before_vy >= 0) // up and down
 			{
-				const int max_y = position_.y + before_vy / 2 * before_vy / GRAVITY;
+				const int max_y = position_.y + before_vy / 2 * before_vy / kGravity;
 				const int target = position_.y + (before_vy + after_vy) / 2 * time_delta;
 				position_.y = target;
 
@@ -111,13 +111,13 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 
 			const int start_y = position_.y;
 			const int target_y = position_.y + (hit_vy_ * (kKnockBackTime - avg_time) / kKnockBackTime
-				- GRAVITY * avg_time) * time_delta;
+				- kGravity * avg_time) * time_delta;
 
 			position_.y += (hit_vy_ * (kKnockBackTime - avg_time) / kKnockBackTime) * time_delta;
-			position_.y -= (GRAVITY * avg_time) * time_delta;
+			position_.y -= (kGravity * avg_time) * time_delta;
 
-			if (position_.x > RIGHT_X) position_.x = RIGHT_X;
-			else if (position_.x < LEFT_X) position_.x = LEFT_X;
+			if (position_.x > kFieldRightX) position_.x = kFieldRightX;
+			else if (position_.x < kFieldLeftX) position_.x = kFieldLeftX;
 
 			position_.y = target_y;
 			for (auto& ground_obj : ground)
@@ -177,7 +177,7 @@ int MonsterDuck::GetVx()
 
 MonsterOctopus::MonsterOctopus(direction_t direction, time_t created_time)
 	: MonsterClass(
-		Point2d(DIRECTION_T(direction, SPAWN_RIGHT_X), GROUND_Y),
+		Point2d(DIRECTION_T(direction, kSpawnRightX), kGroundY),
 		direction, 3, 100, { -200000, 0, 200000, 300000 })
 {
 	SetState(MonsterState::kEmbryo, created_time);
@@ -196,21 +196,21 @@ void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
 	{
 	case MonsterState::kEmbryo:
 		position_.x += spd * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
-		if (LEFT_X <= position_.x && position_.x <= RIGHT_X) SetState(MonsterState::kNormal, curr_time);
+		if (kFieldLeftX <= position_.x && position_.x <= kFieldRightX) SetState(MonsterState::kNormal, curr_time);
 		break;
 
 	case MonsterState::kNormal:
 		position_.x += spd * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
 
-		if (position_.x >= RIGHT_X)
+		if (position_.x >= kFieldRightX)
 		{
-			position_.x = 2 * RIGHT_X - position_.x;
+			position_.x = 2 * kFieldRightX - position_.x;
 			direction_ = LEFT_FORWARD;
 		}
 
-		if (position_.x <= -RIGHT_X)
+		if (position_.x <= -kFieldRightX)
 		{
-			position_.x = -2 * RIGHT_X - position_.x;
+			position_.x = -2 * kFieldRightX - position_.x;
 			direction_ = RIGHT_FORWARD;
 		}
 		break;
@@ -222,12 +222,12 @@ void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
 
 		position_.x += (hit_vx_ * (kKnockBackTime - avg_time) / kKnockBackTime) * time_delta;
 		position_.y += (hit_vy_ * (kKnockBackTime - avg_time) / kKnockBackTime) * time_delta;
-		position_.y -= (GRAVITY * avg_time) * time_delta;
+		position_.y -= (kGravity * avg_time) * time_delta;
 
-		if (position_.x > RIGHT_X) position_.x = RIGHT_X;
-		else if (position_.x < LEFT_X) position_.x = LEFT_X;
+		if (position_.x > kFieldRightX) position_.x = kFieldRightX;
+		else if (position_.x < kFieldLeftX) position_.x = kFieldLeftX;
 
-		if (position_.y < GROUND_Y) position_.y = GROUND_Y;
+		if (position_.y < kGroundY) position_.y = kGroundY;
 
 		break;
 	}
@@ -262,7 +262,7 @@ int MonsterOctopus::GetVx()
 MonsterBird::MonsterBird(direction_t direction, time_t created_time)
 	: MonsterClass(
 		Point2d(
-			DIR_WEIGHT(direction, SPAWN_RIGHT_X),
+			DIR_WEIGHT(direction, kSpawnRightX),
 			max(7, RandomClass::rand(-2, 8)) * 150'000 + 200'000
 		), direction, 2, 55, { -105000, 0, 105000, 140000 })
 {
@@ -293,7 +293,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 
 	case MonsterState::kEmbryo:
 		position_.x += X_SPEED * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
-		if (LEFT_X <= position_.x && position_.x <= RIGHT_X) SetState(MonsterState::kNormal, curr_time);
+		if (kFieldLeftX <= position_.x && position_.x <= kFieldRightX) SetState(MonsterState::kNormal, curr_time);
 		break;
 
 	case MonsterState::kBirdMove:
@@ -320,15 +320,15 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 	case MonsterState::kNormal:
 		position_.x += X_SPEED * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
 
-		if (position_.x >= RIGHT_X)
+		if (position_.x >= kFieldRightX)
 		{
-			position_.x = 2 * RIGHT_X - position_.x;
+			position_.x = 2 * kFieldRightX - position_.x;
 			direction_ = LEFT_FORWARD;
 		}
 
-		if (position_.x <= -RIGHT_X)
+		if (position_.x <= -kFieldRightX)
 		{
-			position_.x = -2 * RIGHT_X - position_.x;
+			position_.x = -2 * kFieldRightX - position_.x;
 			direction_ = RIGHT_FORWARD;
 		}
 		break;
@@ -342,13 +342,13 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 
 		const int start_y = position_.y;
 		const int target_y = position_.y + (hit_vy_ * (kKnockBackTime - avg_time) / kKnockBackTime
-			- GRAVITY * avg_time) * time_delta;
+			- kGravity * avg_time) * time_delta;
 
 		position_.y += (hit_vy_ * (kKnockBackTime - avg_time) / kKnockBackTime) * time_delta;
-		position_.y -= (GRAVITY * avg_time) * time_delta;
+		position_.y -= (kGravity * avg_time) * time_delta;
 
-		if (position_.x > RIGHT_X) position_.x = RIGHT_X;
-		else if (position_.x < LEFT_X) position_.x = LEFT_X;
+		if (position_.x > kFieldRightX) position_.x = kFieldRightX;
+		else if (position_.x < kFieldLeftX) position_.x = kFieldLeftX;
 
 		position_.y = target_y;
 		for (auto& ground_obj : ground)
@@ -393,7 +393,7 @@ int MonsterBird::GetVx()
 
 MonsterStop::MonsterStop(time_t created_time)
 	: MonsterClass(
-		Point2d(RandomClass::rand(LEFT_X, RIGHT_X), 1'000'000),
+		Point2d(RandomClass::rand(kFieldLeftX, kFieldRightX), 1'000'000),
 		LEFT_FORWARD, 4, 100, { -50000, 0, 50000, 400000 })
 {
 	SetState(MonsterState::kStopEmbryo, created_time);
@@ -410,10 +410,10 @@ void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
 		time_delta = min(GetStateTime(curr_time), time_delta);
 
 		const int start_y = position_.y;
-		const int target_y = position_.y + (velocity_.y - GRAVITY * time_delta / 2) * time_delta;
+		const int target_y = position_.y + (velocity_.y - kGravity * time_delta / 2) * time_delta;
 
 		position_.y = target_y;
-		velocity_.y -= GRAVITY * time_delta;
+		velocity_.y -= kGravity * time_delta;
 
 		for (auto& ground_obj : ground)
 		{
@@ -438,13 +438,13 @@ void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
 
 		const int start_y = position_.y;
 		const int target_y = position_.y + (hit_vy_ * (kKnockBackTime - avg_time) / kKnockBackTime
-			- GRAVITY * avg_time) * time_delta;
+			- kGravity * avg_time) * time_delta;
 
 		position_.y += (hit_vy_ * (kKnockBackTime - avg_time) / kKnockBackTime) * time_delta;
-		position_.y -= (GRAVITY * avg_time) * time_delta;
+		position_.y -= (kGravity * avg_time) * time_delta;
 
-		if (position_.x > RIGHT_X) position_.x = RIGHT_X;
-		else if (position_.x < LEFT_X) position_.x = LEFT_X;
+		if (position_.x > kFieldRightX) position_.x = kFieldRightX;
+		else if (position_.x < kFieldLeftX) position_.x = kFieldLeftX;
 
 		position_.y = target_y;
 		for (auto& ground_obj : ground)

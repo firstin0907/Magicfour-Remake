@@ -84,7 +84,7 @@ bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
 {
 	return XMMatrixRotationY(XM_PI / 2)
-		* XMMatrixRotationZ(XM_PI - angle_) * XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
+		* XMMatrixRotationZ(XM_PI - angle_) * XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
 void SkillObjectSpear::initialize(ModelClass* model)
@@ -154,7 +154,7 @@ XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
 {
 	return 
 		XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
-		* XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
+		* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
 void SkillObjectBead::initialize(class ModelClass* model)
@@ -168,7 +168,7 @@ ModelClass* SkillObjectBead::GetModel()
 }
 
 SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
-	: SkillObjectClass(pos_x, GROUND_Y, rect_t{ -50000, -1200000, 50000, 0 },
+	: SkillObjectClass(pos_x, kGroundY, rect_t{ -50000, -1200000, 50000, 0 },
 		0, 0)
 {
 	SetState(SkillObjectState::kNormal, created_time);
@@ -207,7 +207,7 @@ bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta)
 
 XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
 {
-	return XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0.0f);
+	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
 

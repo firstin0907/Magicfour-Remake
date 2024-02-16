@@ -111,7 +111,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	ground_.emplace_back(new GroundClass({ -1800000, 100000, -200000, 160000 }));
 	ground_.emplace_back(new GroundClass({ -300000, -100000, 1300000, -40000 }));
 	ground_.emplace_back(new GroundClass({ -20000, -20000, 20000, 20000 }));
-	ground_.emplace_back(new GroundClass({ SPAWN_LEFT_X, GROUND_Y - 300000, SPAWN_RIGHT_X, GROUND_Y }));
+	ground_.emplace_back(new GroundClass({ kSpawnLeftX, kGroundY - 300000, kSpawnRightX, kGroundY }));
 
 	monster_spawner_ = make_unique<MonsterSpawnerClass>();
 
@@ -183,8 +183,8 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 	character_->Frame(delta_time, curr_time, input, skillObjectList_, ground_);
 
-	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * SCOPE;
-	const float camera_y = max(0, character_->GetPosition().y) * SCOPE;
+	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * kScope;
+	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
 	camera_->SetPosition(camera_x, camera_y, CAMERA_Z_POSITION);
 
 
@@ -445,7 +445,12 @@ void ApplicationClass::Render(time_t curr_time)
 
 	gemModel_->Render(direct3D_->GetDeviceContext());
 	normalMap_shader_->Render(direct3D_->GetDeviceContext(), gemModel_->GetIndexCount(),
-		XMMatrixScaling(5, 5, 5) * XMMatrixTranslation(0, 0, 0), vp_matrix, gemModel_->GetDiffuseTexture(),
+		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f), vp_matrix, gemModel_->GetDiffuseTexture(),
+		gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture(), light_->GetDirection(),
+		light_->GetDiffuseColor(), camera_->GetPosition());
+
+	normalMap_shader_->Render(direct3D_->GetDeviceContext(), gemModel_->GetIndexCount(),
+		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000) * kScope, 0.0f), vp_matrix, gemModel_->GetDiffuseTexture(),
 		gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture(), light_->GetDirection(),
 		light_->GetDiffuseColor(), camera_->GetPosition());
 

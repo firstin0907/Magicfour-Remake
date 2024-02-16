@@ -12,10 +12,10 @@
 using namespace DirectX;
 using namespace std;
 
-constexpr int SKILL_COOLTIME = 1'500;
-constexpr int COMBO_DURATION = 5'000;
-constexpr int INVINCIBLE_TIME = 5'000;
-constexpr int WALK_SPD = 700, RUN_SPD = 1300;
+constexpr int kSkillCooltime = 800;
+constexpr int kComboDuration = 5'000;
+constexpr int kInvincibleDuration = 5'000;
+constexpr int kWalkSpd = 700, kRunSpd = 1300;
 
 CharacterClass::CharacterClass(int pos_x, int pos_y)
 	: RigidbodyClass(
@@ -102,8 +102,8 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	else
 	{
 		const int start_y = position_.y;
-		const int target_y = position_.y + time_delta * (velocity_.y - (GRAVITY / 2) * time_delta);
-		velocity_.y -= GRAVITY * (int)time_delta;
+		const int target_y = position_.y + time_delta * (velocity_.y - (kGravity / 2) * time_delta);
+		velocity_.y -= kGravity * (int)time_delta;
 
 		position_.y = target_y;
 		for (auto& ground_obj : ground)
@@ -125,8 +125,8 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	case CharacterState::kJump:
 		if(is_walk)
 		{
-			position_.x += DIR_WEIGHT(direction_, WALK_SPD) * (int)time_delta;
-			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
+			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
 		}
 
 		if (GetStateTime(curr_time) >= 1000) SetState(CharacterState::kNormal, curr_time);
@@ -136,8 +136,8 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	case CharacterState::kRunJump:
 		if (is_walk)
 		{
-			position_.x += DIR_WEIGHT(direction_, RUN_SPD) * (int)time_delta;
-			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, kRunSpd) * (int)time_delta;
+			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
 		}
 
 		if (jump_cnt == 0)
@@ -151,8 +151,8 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		if (is_walk)
 		{
 			SetState(CharacterState::kWalk, curr_time);
-			position_.x += DIR_WEIGHT(direction_, WALK_SPD) * (int)time_delta;
-			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
+			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
 		}
 		break;
 
@@ -160,8 +160,8 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		if (!is_walk) SetState(CharacterState::kStop, curr_time);
 		else
 		{
-			position_.x += DIR_WEIGHT(direction_, WALK_SPD) * (int)time_delta;
-			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
+			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
 		}
 		break;
 
@@ -169,8 +169,8 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		if (!is_walk) SetState(CharacterState::kStop, curr_time);
 		else
 		{
-			position_.x += DIR_WEIGHT(direction_, RUN_SPD) * (int)time_delta;
-			position_.x = SATURATE(LEFT_X, position_.x, RIGHT_X);
+			position_.x += DIR_WEIGHT(direction_, kRunSpd) * (int)time_delta;
+			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
 		}
 		break;
 
@@ -202,7 +202,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		
 		if (GetStateTime(curr_time) < 1000)
 		{
-			position_.x = SATURATE(LEFT_X, position_.x + (int)time_delta * velocity_.x, RIGHT_X);
+			position_.x = SATURATE(kFieldLeftX, position_.x + (int)time_delta * velocity_.x, kFieldRightX);
 		}
 
 		break;
@@ -297,7 +297,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 			}
 			hit_vx_ = velocity_.x = vx / 3;
 			velocity_.y = 1500;
-			time_invincible_end_ = state_start_time_ + INVINCIBLE_TIME;
+			time_invincible_end_ = state_start_time_ + kInvincibleDuration;
 			return true;
 		}
 	}
@@ -306,7 +306,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 
 float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
 {
-	return SATURATE(-0.3f, (time_skill_available_ - (long long)curr_time) / (float)SKILL_COOLTIME, 1.0f);
+	return SATURATE(-0.3f, (time_skill_available_ - (long long)curr_time) / (float)kSkillCooltime, 1.0f);
 }
 
 void CharacterClass::LearnSkill(int skill_id)
@@ -320,7 +320,7 @@ void CharacterClass::LearnSkill(int skill_id)
 void CharacterClass::AddCombo(time_t curr_time)
 {
 	++combo_;
-	time_combo_end_ = curr_time + COMBO_DURATION;
+	time_combo_end_ = curr_time + kComboDuration;
 }
 
 void CharacterClass::OnSkill(time_t curr_time,
@@ -418,7 +418,7 @@ bool CharacterClass::UseSkill(time_t curr_time,
 		break;
 	}
 
-	time_skill_available_ = time_skill_ended_ + SKILL_COOLTIME;
+	time_skill_available_ = time_skill_ended_ + kSkillCooltime;
 
 	return true;
 }

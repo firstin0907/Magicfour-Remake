@@ -22,12 +22,12 @@ ItemClass::ItemClass(time_t create_time, int x_pos, int y_pos, int type)
 void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 	const GroundVector& ground)
 {
-	const int before_vy = velocity_.y, after_vy = velocity_.y - GRAVITY * time_delta;
+	const int before_vy = velocity_.y, after_vy = velocity_.y - kGravity * time_delta;
 
 	if (after_vy >= 0) position_.y += (before_vy + after_vy) / 2 * time_delta;	
 	else if (before_vy > 0)
 	{
-		const int max_y = position_.y + before_vy / 2 * before_vy / GRAVITY - ITEM_RANGE.y1;
+		const int max_y = position_.y + before_vy / 2 * before_vy / kGravity - ITEM_RANGE.y1;
 		const int target = position_.y + (before_vy + after_vy) / 2 * time_delta - ITEM_RANGE.y1;
 
 		position_.y = target;
@@ -77,6 +77,6 @@ XMMATRIX ItemClass::GetShapeMatrix(time_t curr_time)
 	constexpr float box_size = 0.3f;
 	const time_t age = curr_time - createTime_;
 
-	return XMMatrixTranslation(0, sin(age * 0.001) * 30000 * SCOPE, 0) *
+	return XMMatrixTranslation(0, sin(age * 0.001) * 30000 * kScope, 0) *
 		XMMatrixRotationY(age * 0.001f) * XMMatrixScaling(box_size, box_size * 1.2f, box_size);
 }

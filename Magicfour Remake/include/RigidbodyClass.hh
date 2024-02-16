@@ -24,7 +24,7 @@ public:
 
 	inline XMMATRIX GetLocalWorldMatrix()
 	{
-		return DirectX::XMMatrixTranslation(position_.x * SCOPE, position_.y * SCOPE, 0);
+		return DirectX::XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0);
 	}
 
 	inline rect_t GetGlobalRange()

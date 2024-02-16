@@ -28,7 +28,7 @@ struct rect_t
 
 	XMMATRIX toMatrix() const
 	{
-		return DirectX::XMMatrixScaling(get_w() / 2.0f * 0.00001f, get_h() / 2.0f * 0.00001f, 0.00001f) *
+		return DirectX::XMMatrixScaling(get_w() / 2.0f * 0.00001f, get_h() / 2.0f * 0.00001f, 1.0f) *
 			DirectX::XMMatrixTranslation((x1 + get_w() / 2.0f) * 0.00001f, (y1 + get_h() / 2.0f) * 0.00001f, 0);
 	}
 
@@ -46,16 +46,16 @@ struct rect_t
 };
 #endif
 
-constexpr int GROUND_Y = -600'000;
+constexpr int kGroundY = -600'000;
 
-constexpr int RIGHT_X = 2'500'000;
-constexpr int LEFT_X = -2'500'000;
+constexpr int kFieldRightX = 2'500'000;
+constexpr int kFieldLeftX = -2'500'000;
 
-constexpr int SPAWN_RIGHT_X = RIGHT_X + 1'000'000;
-constexpr int SPAWN_LEFT_X = LEFT_X - 1'000'000;
+constexpr int kSpawnRightX = kFieldRightX + 1'000'000;
+constexpr int kSpawnLeftX = kFieldLeftX - 1'000'000;
 
-constexpr float SCOPE = 0.00001f;
-constexpr int GRAVITY = 10;
+constexpr float kScope = 0.00001f;
+constexpr int kGravity = 10;
 
 #include <algorithm>
 
