@@ -27,16 +27,16 @@ void MonsterSpawnerClass::Frame(time_t curr_time, time_t delta_time,
 		switch (schedule_iterator_->second)
 		{
 		case 0:
-			monsters_.emplace_back(new MonsterOctopus(direction, schedule_iterator_->second));
+			monsters_.emplace_back(new MonsterOctopus(direction, schedule_iterator_->first));
 			break;
 		case 1:
-			monsters_.emplace_back(new MonsterDuck(direction, schedule_iterator_->second));
+			monsters_.emplace_back(new MonsterDuck(direction, schedule_iterator_->first));
 			break;
 		case 2:
-			monsters_.emplace_back(new MonsterBird(direction, schedule_iterator_->second));
+			monsters_.emplace_back(new MonsterBird(direction, schedule_iterator_->first));
 			break;
 		case 3:
-			monsters_.emplace_back(new MonsterStop(schedule_iterator_->second));
+			monsters_.emplace_back(new MonsterStop(schedule_iterator_->first));
 			break;
 		}
 	}

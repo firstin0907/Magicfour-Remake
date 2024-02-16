@@ -14,7 +14,7 @@ enum class MonsterState
 	kEmbryo, kNormal, kHit, kDie,
 	kDuckJump, kDuckJumpReady,
 	kBirdMove,
-	kStopOnGround
+	kStopEmbryo, kStopOnGround
 };
 
 class MonsterClass : public RigidbodyClass<MonsterState>

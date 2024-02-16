@@ -396,7 +396,7 @@ MonsterStop::MonsterStop(time_t created_time)
 		Point2d(RandomClass::rand(LEFT_X, RIGHT_X), 1'000'000),
 		LEFT_FORWARD, 4, 100, { -50000, 0, 50000, 400000 })
 {
-	SetState(MonsterState::kNormal, created_time);
+	SetState(MonsterState::kStopEmbryo, created_time);
 }
 
 void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
@@ -407,6 +407,8 @@ void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
 	{
 	case MonsterState::kNormal:
 	{
+		time_delta = min(GetStateTime(curr_time), time_delta);
+
 		const int start_y = position_.y;
 		const int target_y = position_.y + (velocity_.y - GRAVITY * time_delta / 2) * time_delta;
 
@@ -461,6 +463,10 @@ bool MonsterStop::Frame(time_t curr_time, time_t time_delta)
 
 	switch (state_)
 	{
+	case MonsterState::kStopEmbryo:
+		SetStateIfTimeOver(MonsterState::kNormal, curr_time, 700);
+		break;
+
 	case MonsterState::kHit:
 		SetStateIfTimeOver(MonsterState::kNormal, curr_time, 1'000);
 		break;

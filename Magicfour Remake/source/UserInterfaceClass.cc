@@ -56,6 +56,27 @@ void UserInterfaceClass::CalculateScreenPos(const XMMATRIX& mvp_matrix,
 	y = screen_height_ / 2.0f - point.m128_f32[1];
 }
 
+void UserInterfaceClass::DrawWarningVerticalRect(D2DClass* direct2D,
+	float center_x, float width, float progress)
+{
+	if (progress < 0.3f)
+	{
+		width *= progress / 0.3f;
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Red, 0.3f));
+	}
+	else if (progress < 0.5f)
+	{
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Red, progress));
+	}
+	else
+	{
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Red, 0.5f));
+	}
+
+	direct2D->RenderRect(center_x - width / 2, 0,
+		center_x + width / 2, (float)screen_height_);
+}
+
 void UserInterfaceClass::DrawMonsterHp(D2DClass* direct2D,
 	int center_x, int top, float hp_ratio, float hp_white_ratio)
 {

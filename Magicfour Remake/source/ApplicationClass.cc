@@ -461,8 +461,18 @@ void ApplicationClass::Render(time_t curr_time)
 		user_interface_->CalculateScreenPos(monster->GetLocalWorldMatrix() * vp_matrix,
 			ortho_inv, screen_x, screen_y);
 
-		user_interface_->DrawMonsterHp(direct2D_.get(), screen_x, screen_y - 23,
-			monster->GetHpRatio(), monster->GetPrevHpRatio());
+
+		if (monster->GetState() == MonsterState::kStopEmbryo)
+		{
+			user_interface_->DrawWarningVerticalRect(direct2D_.get(), screen_x, 50, monster->GetStateTime(curr_time) / 700.0f);
+		}
+		else
+		{
+			user_interface_->DrawMonsterHp(direct2D_.get(), screen_x, screen_y - 23,
+				monster->GetHpRatio(), monster->GetPrevHpRatio());
+		}
+
+
 	}
 
 	user_interface_->CalculateScreenPos(character_->GetLocalWorldMatrix() * vp_matrix,

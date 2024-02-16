@@ -30,6 +30,9 @@ public:
 	void CalculateScreenPos(const XMMATRIX& mvp_matrix,
 		const XMMATRIX& ortho_inv, float& x, float& y);
 
+	void DrawWarningVerticalRect(
+		D2DClass* direct2D, float center_x, float width, float progress);
+
 	void DrawMonsterHp(class D2DClass* direct2D,
 		int center_x, int top, float hp_ratio, float hp_white_ratio);
 	void DrawScoreAndCombo(class D2DClass* direct2D,
