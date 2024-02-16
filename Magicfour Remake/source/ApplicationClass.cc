@@ -22,13 +22,13 @@
 #include "../include/TimerClass.hh"
 #include "../include/TextureShaderClass.hh"
 #include "../include/TextureClass.hh"
-#include "../include/SkillGaugeClass.hh"
 #include "../include/UserInterfaceClass.hh"
 #include "../include/ItemClass.hh"
 #include "../include/RandomClass.hh"
 #include "../include/GameException.hh"
 
 using namespace std;
+using namespace DirectX;
 
 constexpr float CAMERA_Z_POSITION = -20.0f;
 constexpr int CAMERA_X_LIMIT = 1'500'000;
@@ -118,9 +118,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	timer_ = make_unique<TimerClass>();
 
 	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
-		direct3D_->GetDevice(), screenWidth, screenHeight,
-		L"data/texture/user_interface/monster_hp_frame.png", L"data/texture/user_interface/monster_hp_gauge.png");
-
+		direct3D_->GetDevice(), screenWidth, screenHeight);
 }
 
 ApplicationClass::~ApplicationClass()

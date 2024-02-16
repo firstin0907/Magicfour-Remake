@@ -5,7 +5,6 @@
 #include "../include/MonsterClass.hh"
 #include "../include/GameException.hh"
 #include "../include/TextureShaderClass.hh"
-#include "../include/SkillGaugeClass.hh"
 #include "../include/CharacterClass.hh"
 #include "../include/D2DClass.hh"
 
@@ -15,8 +14,7 @@ using namespace std;
 using namespace DirectX;
 
 UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
-	ID3D11Device* device, int screenWidth, int screenHeight,
-	const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename)
+	ID3D11Device* device, int screenWidth, int screenHeight)
 	: screen_height_(screenHeight), screen_width_(screenWidth)
 {
 	score_text_format_ = direct2D->CreateTextFormat(L"Arial", 40,

@@ -21,8 +21,8 @@ private:
 	using XMMATRIX = DirectX::XMMATRIX;
 
 public:
-	UserInterfaceClass(class D2DClass* direct2D, ID3D11Device* device, int screenWidth, int screenHeight,
-		const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename);
+	UserInterfaceClass(class D2DClass* direct2D, ID3D11Device* device,
+		int screenWidth, int screenHeight);
 	~UserInterfaceClass();
 
 	void Render();

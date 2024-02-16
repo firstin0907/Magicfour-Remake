@@ -78,9 +78,6 @@
     <ClCompile Include="source\TimerClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="source\SkillGaugeClass.cc">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="source\TextureShaderClass.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -171,9 +168,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\TextureShaderClass.hh">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\SkillGaugeClass.hh">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="include\UserInterfaceClass.hh">

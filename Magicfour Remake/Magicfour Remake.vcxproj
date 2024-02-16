@@ -134,7 +134,6 @@
     <ClCompile Include="source\D2DClass.cc" />
     <ClCompile Include="source\ItemClass.cc" />
     <ClCompile Include="source\ShaderClass.cc" />
-    <ClCompile Include="source\SkillGaugeClass.cc" />
     <ClCompile Include="source\CameraClass.cc" />
     <ClCompile Include="source\CharacterClass.cc" />
     <ClCompile Include="source\D3DClass.cc" />
@@ -164,7 +163,6 @@
     <ClInclude Include="include\ItemClass.hh" />
     <ClInclude Include="include\RigidbodyClass.hh" />
     <ClInclude Include="include\ShaderClass.hh" />
-    <ClInclude Include="include\SkillGaugeClass.hh" />
     <ClInclude Include="include\CameraClass.hh" />
     <ClInclude Include="include\CharacterClass.hh" />
     <ClInclude Include="include\GroundClass.hh" />
