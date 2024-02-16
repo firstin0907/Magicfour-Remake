@@ -453,28 +453,28 @@ void ApplicationClass::Render(time_t curr_time)
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	direct3D_->TurnZBufferOff();
-	
-	user_interface_->Render(direct2D_.get(), texture_shader_.get(),
-		direct3D_->GetDeviceContext(),
-		character_.get(), vp_matrix, orthoMatrix, curr_time);
 		
 	user_interface_->Begin2dDraw(direct2D_.get());
 
 	const XMMATRIX ortho_inv = XMMatrixInverse(nullptr, orthoMatrix);
+	float screen_x, screen_y;
 	for (auto& monster : monsters_)
 	{
-		float monster_screen_x, monster_screen_y;
 		user_interface_->CalculateScreenPos(monster->GetLocalWorldMatrix() * vp_matrix,
-			ortho_inv, monster_screen_x, monster_screen_y);
+			ortho_inv, screen_x, screen_y);
 
-		user_interface_->DrawMonsterHp(direct2D_.get(), monster_screen_x,
-			monster_screen_y - 23,
+		user_interface_->DrawMonsterHp(direct2D_.get(), screen_x, screen_y - 23,
 			monster->GetHpRatio(), monster->GetPrevHpRatio());
 	}
 
-	
+	user_interface_->CalculateScreenPos(character_->GetLocalWorldMatrix() * vp_matrix,
+		ortho_inv, screen_x, screen_y);
+	user_interface_->DrawSkillGauge(direct2D_.get(), screen_x, screen_y,
+		character_->GetCooltimeGaugeRatio(curr_time));
 	user_interface_->DrawScoreAndCombo(direct2D_.get(),
 		character_.get(), curr_time);
+
+
 	switch (game_state_)
 	{
 	case GameState::kGamePause:

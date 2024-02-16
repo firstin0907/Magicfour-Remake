@@ -306,7 +306,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 
 float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
 {
-	return SATURATE(-0.3f, (time_skill_available_ - curr_time) / (float)SKILL_COOLTIME, 1.0f);
+	return SATURATE(-0.3f, (time_skill_available_ - (long long)curr_time) / (float)SKILL_COOLTIME, 1.0f);
 }
 
 void CharacterClass::LearnSkill(int skill_id)

@@ -19,10 +19,6 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 	const wchar_t* monsterHpFrameFilename, const wchar_t* monsterHpGaugeFilename)
 	: screen_height_(screenHeight), screen_width_(screenWidth)
 {
-	skillGauge_ = make_unique<SkillGaugeClass>(device,
-		screenWidth, screenHeight, L"data/texture/skill_gauge_gray.png",
-		L"data/texture/skill_gauge_white.png", -80 + 40, 180 + 16);
-
 	score_text_format_ = direct2D->CreateTextFormat(L"Arial", 40,
 		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 	pause_text_format_ = direct2D->CreateTextFormat(L"Cambria", 35,
@@ -32,9 +28,12 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 
 	gameover_text_format_ = direct2D->CreateTextFormat(L"Cambria", 70,
 		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-	
+
 	monster_hp_gauge_bitmap_ = make_unique<BitmapClass>(
 		direct2D, L"data/texture/user_interface/monster_hp_frame.png"
+	);
+	skill_gauge_gray_bitmap_ = make_unique<BitmapClass>(
+		direct2D, L"data/texture/user_interface/skill_gauge_gray.png"
 	);
 }
 
@@ -42,25 +41,8 @@ UserInterfaceClass::~UserInterfaceClass()
 {
 }
 
-void UserInterfaceClass::Render(class D2DClass* direct2D, TextureShaderClass* textureShader,
-	ID3D11DeviceContext* deviceContext, CharacterClass* character,
-	const XMMATRIX& vp_matrix, const XMMATRIX& orthoMatrix, time_t curr_time)
+void UserInterfaceClass::Render()
 {
-	const XMMATRIX orthoInverseMatrix = XMMatrixInverse(nullptr, orthoMatrix);
-
-	float skill_ratio = character->GetCooltimeGaugeRatio(curr_time);
-	if (skill_ratio > -0.03f)
-	{
-		// get Character coordinate in viewport coordinate system.
-		XMVECTOR t = { 0, 0, 0, 1 };
-		t = XMVector4Transform(t, character->GetLocalWorldMatrix() * vp_matrix);
-		t = XMVector4Transform(t / t.m128_f32[3], orthoInverseMatrix);
-
-		skillGauge_->Render(deviceContext, skill_ratio);
-		textureShader->Render(deviceContext,
-			skillGauge_->GetIndexCount(), XMMatrixTranslationFromVector(t),
-			orthoMatrix, skillGauge_->GetTexture(skill_ratio));
-	}
 }
 
 void UserInterfaceClass::CalculateScreenPos(const XMMATRIX& mvp_matrix,
@@ -111,7 +93,8 @@ void UserInterfaceClass::DrawMonsterHp(D2DClass* direct2D,
 	direct2D->RenderBitmap(monster_hp_gauge_bitmap_.get(), left, (float)top);
 }
 
-void UserInterfaceClass::DrawScoreAndCombo(D2DClass* direct2D, CharacterClass* character, time_t curr_time)
+void UserInterfaceClass::DrawScoreAndCombo(D2DClass* direct2D,
+	CharacterClass* character, time_t curr_time)
 {
 	// Draw Score
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
@@ -150,6 +133,37 @@ void UserInterfaceClass::DrawScoreAndCombo(D2DClass* direct2D, CharacterClass* c
 			direct2D->CreateTextFormat(L"Arial", font_size_2,
 				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
 			0, (float)(screen_height_ / 2), (float)(screen_width_ - 30), (float)(screen_height_ / 2));
+	}
+}
+
+void UserInterfaceClass::DrawSkillGauge(D2DClass* direct2D,
+	float char_screen_x, float char_screen_y, float skill_charge_ratio)
+{
+	if (skill_charge_ratio < -0.1f) return;
+
+	const float left = char_screen_x - 40;
+	const float top  = char_screen_y - 196;
+
+	const float right = left + skill_gauge_gray_bitmap_->GetWidth();
+	const float bottom = top + skill_gauge_gray_bitmap_->GetHeight();
+
+	if (skill_charge_ratio > 0.0f)
+	{
+		const float height = skill_gauge_gray_bitmap_->GetHeight() * skill_charge_ratio;
+
+		auto dest = D2D1::RectF(left, bottom - height, right, bottom);
+		auto source = D2D1::RectF(0,
+			skill_gauge_gray_bitmap_->GetHeight() - height,
+			right, skill_gauge_gray_bitmap_->GetHeight());
+
+		direct2D->RenderBitmap(skill_gauge_gray_bitmap_.get(), dest, source);
+	}
+	else
+	{
+		const float alpha = 1.0 - skill_charge_ratio / -0.1f;
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, alpha));
+		
+		direct2D->RenderRect(left, top, right, bottom);
 	}
 }
 
