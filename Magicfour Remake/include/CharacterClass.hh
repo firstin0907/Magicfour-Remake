@@ -42,6 +42,7 @@ public:
 	bool OnCollided(time_t curr_time, int vx);
 
 	float GetCooltimeGaugeRatio(time_t curr_time);
+	float GetInvincibleGaugeRatio(time_t curr_time);
 
 	void LearnSkill(int skill_id);
 

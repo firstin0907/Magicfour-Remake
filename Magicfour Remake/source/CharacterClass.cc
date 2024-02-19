@@ -309,6 +309,11 @@ float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
 	return SATURATE(-0.3f, (time_skill_available_ - (long long)curr_time) / (float)kSkillCooltime, 1.0f);
 }
 
+float CharacterClass::GetInvincibleGaugeRatio(time_t curr_time)
+{
+	return SATURATE(-0.3f, (time_invincible_end_ - (long long)curr_time) / (float)kInvincibleDuration, 1.0f);
+}
+
 void CharacterClass::LearnSkill(int skill_id)
 {
 	for (auto& skill : skill_)

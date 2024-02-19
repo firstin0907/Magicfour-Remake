@@ -40,6 +40,9 @@ public:
 	void DrawSkillGauge(D2DClass* direct2D,
 		float char_screen_x, float char_screen_y,
 		float skill_charge_ratio);
+	void DrawInvincibleGauge(D2DClass* direct2D,
+		float char_screen_x, float char_screen_y,
+		float invincible_ratio);
 
 
 	void DrawPauseMark(class D2DClass* direct2D);
@@ -54,6 +57,7 @@ private:
 
 	unique_ptr<class BitmapClass> monster_hp_gauge_bitmap_;
 	unique_ptr<class BitmapClass> skill_gauge_gray_bitmap_;
+	unique_ptr<class BitmapClass> invincible_gauge_bitmap_;
 
 	ComPtr<struct IDWriteTextFormat> score_text_format_;
 	ComPtr<struct IDWriteTextFormat> pause_text_format_;

@@ -33,6 +33,9 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 	skill_gauge_gray_bitmap_ = make_unique<BitmapClass>(
 		direct2D, L"data/texture/user_interface/skill_gauge_gray.png"
 	);
+	invincible_gauge_bitmap_ = make_unique<BitmapClass>(
+		direct2D, L"data/texture/user_interface/skill_gauge_rainbow.png"
+	);
 }
 
 UserInterfaceClass::~UserInterfaceClass()
@@ -161,7 +164,7 @@ void UserInterfaceClass::DrawSkillGauge(D2DClass* direct2D,
 	if (skill_charge_ratio < -0.1f) return;
 
 	const float left = char_screen_x - 40;
-	const float top  = char_screen_y - 196;
+	const float top = char_screen_y - 196;
 
 	const float right = left + skill_gauge_gray_bitmap_->GetWidth();
 	const float bottom = top + skill_gauge_gray_bitmap_->GetHeight();
@@ -181,7 +184,37 @@ void UserInterfaceClass::DrawSkillGauge(D2DClass* direct2D,
 	{
 		const float alpha = 1.0 - skill_charge_ratio / -0.1f;
 		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, alpha));
-		
+
+		direct2D->RenderRect(left, top, right, bottom);
+	}
+}
+void UserInterfaceClass::DrawInvincibleGauge(D2DClass* direct2D,
+	float char_screen_x, float char_screen_y, float invincible_ratio)
+{
+	if (invincible_ratio < -0.1f) return;
+
+	const float left = char_screen_x + 40;
+	const float top = char_screen_y - 196;
+
+	const float right = left + invincible_gauge_bitmap_->GetWidth();
+	const float bottom = top + invincible_gauge_bitmap_->GetHeight();
+
+	if (invincible_ratio > 0.0f)
+	{
+		const float height = invincible_gauge_bitmap_->GetHeight() * invincible_ratio;
+
+		auto dest = D2D1::RectF(left, bottom - height, right, bottom);
+		auto source = D2D1::RectF(0,
+			invincible_gauge_bitmap_->GetHeight() - height,
+			right, invincible_gauge_bitmap_->GetHeight());
+
+		direct2D->RenderBitmap(invincible_gauge_bitmap_.get(), dest, source);
+	}
+	else
+	{
+		const float alpha = 1.0 - invincible_ratio / -0.1f;
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, alpha));
+
 		direct2D->RenderRect(left, top, right, bottom);
 	}
 }

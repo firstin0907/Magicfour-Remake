@@ -484,6 +484,8 @@ void ApplicationClass::Render(time_t curr_time)
 		ortho_inv, screen_x, screen_y);
 	user_interface_->DrawSkillGauge(direct2D_.get(), screen_x, screen_y,
 		character_->GetCooltimeGaugeRatio(curr_time));
+	user_interface_->DrawInvincibleGauge(direct2D_.get(), screen_x, screen_y,
+		character_->GetInvincibleGaugeRatio(curr_time));
 	user_interface_->DrawScoreAndCombo(direct2D_.get(),
 		character_.get(), curr_time);
 
