@@ -148,6 +148,7 @@
     <ClCompile Include="source\RandomClass.cc" />
     <ClCompile Include="source\SkillObjectClass.cc" />
     <ClCompile Include="source\SkillObjects.cc" />
+    <ClCompile Include="source\SoundClass.cc" />
     <ClCompile Include="source\StoneShaderClass.cc" />
     <ClCompile Include="source\SystemClass.cc" />
     <ClCompile Include="source\TextureClass.cc" />
@@ -180,6 +181,7 @@
     <ClInclude Include="include\RandomClass.hh" />
     <ClInclude Include="include\SkillObjectClass.hh" />
     <ClInclude Include="include\SkillObjects.hh" />
+    <ClInclude Include="include\SoundClass.hh" />
     <ClInclude Include="include\StoneShaderClass.hh" />
     <ClInclude Include="include\SystemClass.hh" />
     <ClInclude Include="include\TextureClass.hh" />

@@ -44,6 +44,8 @@ private:
 
 	unique_ptr<class D3DClass>			direct3D_;
 	unique_ptr<class D2DClass>			direct2D_;
+	unique_ptr<class SoundClass>		sound_;
+
 	unique_ptr<class CameraClass>		camera_;
 
 	unique_ptr<class ModelClass>		model_;

@@ -26,6 +26,7 @@
 #include "../include/ItemClass.hh"
 #include "../include/RandomClass.hh"
 #include "../include/GameException.hh"
+#include "../include/SoundClass.hh"
 
 using namespace std;
 using namespace DirectX;
@@ -40,6 +41,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	direct3D_ = make_unique<D3DClass>(screenWidth, screenHeight,
 		VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	direct2D_ = make_unique<D2DClass>(direct3D_->GetSwapChain(), hwnd);
+	sound_ = make_unique<SoundClass>();
 
 	camera_ = make_unique<CameraClass>();
 	camera_->SetPosition(0.0f, 0.0f, CAMERA_Z_POSITION);
