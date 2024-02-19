@@ -342,11 +342,13 @@ void CharacterClass::OnSkill(time_t curr_time,
 	case 1:	
 		if (skillState_ == 0 && state_elapsed_time >= 100)
 		{
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 4000, -4000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 6000, -2000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 4000, -3000, state_start_time_ + 100));
 			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 2000, -4000, state_start_time_ + 100));
 			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 0, -4000, state_start_time_ + 100));
 			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -2000, -4000, state_start_time_ + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -4000, -4000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -4000, -3000, state_start_time_ + 100));
+			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -6000, -2000, state_start_time_ + 100));
 
 			skillState_ = 1;
 		}			
