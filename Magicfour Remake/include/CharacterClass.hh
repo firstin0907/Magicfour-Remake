@@ -28,8 +28,8 @@ public:
 
 	bool Frame(time_t time_delta, time_t curr_time, class InputClass* input,
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs,
-		const vector<unique_ptr<class GroundClass> >& ground
-		);
+		const vector<unique_ptr<class GroundClass> >& ground,
+		class SoundClass* sound);
 	
 	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);
 	inline time_t GetTimeInvincibleEnd() { return time_invincible_end_; }
@@ -37,8 +37,8 @@ public:
 	template <int index>
 	int GetSkill();
 
-	// If character have been killed because of this collision,
-	// this function returns false. Otherwise, returns true.
+	// If character have been actually damanged because of this collision,
+	// this function returns true. Otherwise, it returns false.
 	bool OnCollided(time_t curr_time, int vx);
 
 	float GetCooltimeGaugeRatio(time_t curr_time);
@@ -65,7 +65,8 @@ private:
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
 
 	bool UseSkill(time_t curr_time,
-		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
+		vector<unique_ptr<class SkillObjectClass> >& skill_objs,
+		class SoundClass* sound);
 
 private:
 	int hit_vx_;

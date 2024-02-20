@@ -2,6 +2,7 @@
 #include "../third-party/Audio.h"
 
 using namespace DirectX;
+using namespace std;
 
 #pragma comment(lib, "third-party/DirectXTK.lib")
 
@@ -14,21 +15,34 @@ SoundClass::SoundClass()
 
 	aud_engine_ = std::make_unique<AudioEngine>(eflags);
 
-	explode_ = std::make_unique<SoundEffect>(aud_engine_.get(),
-		L"data/sound/media_Explo1.wav");
-	ambient_ = std::make_unique<SoundEffect>(aud_engine_.get(),
-		L"data/sound/background.wav");
+	backgrounds_.emplace_back(new SoundEffect(aud_engine_.get(),
+		L"data/sound/background.wav"));
+
+	effects_.emplace_back(new SoundEffect(aud_engine_.get(),
+		L"data/sound/character_damage.wav"));
+	effects_.emplace_back(new SoundEffect(aud_engine_.get(),
+		L"data/sound/spell1.wav"));
+	effects_.emplace_back(new SoundEffect(aud_engine_.get(),
+		L"data/sound/spell2.wav"));
 	
-	night_loop_ = ambient_->CreateInstance();
-	night_loop_->Play(true);
-
-	explode_->Play();
+	background_loop_ = backgrounds_[0]->CreateInstance();
+	background_loop_->Play(true);
 }
 
-
-void SoundClass::Update()
+void SoundClass::PlayBackground(BackgroundSound background_music)
 {
+	background_loop_ = backgrounds_[
+		static_cast<unsigned int>(background_music)
+	]->CreateInstance();
+
+	background_loop_->Play();
 }
+
+void SoundClass::PlayEffect(EffectSound effect)
+{
+	effects_[static_cast<unsigned int>(effect)]->Play();
+}
+
 
 SoundClass::~SoundClass()
 {

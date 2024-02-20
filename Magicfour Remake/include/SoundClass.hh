@@ -2,24 +2,40 @@
 
 #include "../third-party/Audio.h"
 
+#include <vector>
 #include <memory>
+
+enum class BackgroundSound : unsigned int
+{
+	kSoundOnGameBackground
+};
+
+enum class EffectSound : unsigned int
+{
+	kSoundCharacterDamage,
+	kSoundSpell1,
+	kSoundSpell2,
+};
 
 class SoundClass
 {
-public:
-	SoundClass();
-	void test()
-	{
-		explode_->Play();
-	}
-	void Update();
-	~SoundClass();
 
 private:
-	std::unique_ptr<DirectX::AudioEngine> aud_engine_;
+	template<typename T>
+	using unique_ptr = std::unique_ptr<T>;
 
-	std::unique_ptr<DirectX::SoundEffect> ambient_;
-	std::unique_ptr<DirectX::SoundEffect> explode_;
+public:
+	SoundClass();
+	~SoundClass();
 
-	std::unique_ptr<DirectX::SoundEffectInstance> night_loop_;
+	void PlayBackground(BackgroundSound background_music);
+	void PlayEffect(EffectSound effect);
+
+private:
+	unique_ptr<DirectX::AudioEngine> aud_engine_;
+
+	std::vector<unique_ptr<DirectX::SoundEffect> > backgrounds_;
+	std::vector<unique_ptr<DirectX::SoundEffect> > effects_;
+
+	unique_ptr<DirectX::SoundEffectInstance> background_loop_;
 };

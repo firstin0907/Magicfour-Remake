@@ -121,6 +121,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 
 	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
 		direct3D_->GetDevice(), screenWidth, screenHeight);
+
+	sound_->PlayBackground(BackgroundSound::kSoundOnGameBackground);
+
 }
 
 ApplicationClass::~ApplicationClass()
@@ -183,7 +186,8 @@ void ApplicationClass::GameFrame(InputClass* input)
 	}
 	else monster_spawner_->Frame(curr_time, delta_time, monsters_);
 
-	character_->Frame(delta_time, curr_time, input, skillObjectList_, ground_);
+	character_->Frame(delta_time, curr_time, input,
+		skillObjectList_, ground_, sound_.get());
 
 	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * kScope;
 	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
@@ -230,10 +234,15 @@ void ApplicationClass::GameFrame(InputClass* input)
 		if (character_->GetGlobalRange().collide(monster->GetGlobalRange()))
 		{
 			bool result = character_->OnCollided(curr_time, monster->GetVx());
-			if (!result)
+
+			if (result)
 			{
-				character_death_time = curr_time;
-				game_state_ = GameState::kGameOver;
+				sound_->PlayEffect(EffectSound::kSoundCharacterDamage);
+				if (character_->GetState() == CharacterState::kDie)
+				{
+					character_death_time = curr_time;
+					game_state_ = GameState::kGameOver;
+				}
 			}
 		}
 	}

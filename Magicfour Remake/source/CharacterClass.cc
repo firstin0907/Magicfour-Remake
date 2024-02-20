@@ -8,6 +8,7 @@
 #include "../include/AnimatedObjectClass.hh"
 #include "../include/SkillObjects.hh"
 #include "../include/GroundClass.hh"
+#include "../include/SoundClass.hh"
 
 using namespace DirectX;
 using namespace std;
@@ -41,7 +42,8 @@ CharacterClass::CharacterClass(int pos_x, int pos_y)
 
 bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* input,
 	vector<unique_ptr<class SkillObjectClass> >& skill_objs,
-	const vector<unique_ptr<class GroundClass> >& ground)
+	const vector<unique_ptr<class GroundClass> >& ground,
+	SoundClass* sound)
 {
 	bool is_walk = false;
 
@@ -68,7 +70,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 
 			is_walk = !is_walk;
 		}
-		if (input->IsKeyDown(DIK_Z)) UseSkill(curr_time, skill_objs);
+		if (input->IsKeyDown(DIK_Z)) UseSkill(curr_time, skill_objs, sound);
 	}
 
 
@@ -271,7 +273,6 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 	{
 		combo_ = 0;
 
-
 		SetState(CharacterState::kHit, curr_time);
 		direction_ = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
 
@@ -283,7 +284,6 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 
 			velocity_.y = 1500;
 			time_invincible_end_ = 1LL << 59;
-			return false;
 		}
 		else
 		{
@@ -298,10 +298,10 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 			hit_vx_ = velocity_.x = vx / 3;
 			velocity_.y = 1500;
 			time_invincible_end_ = state_start_time_ + kInvincibleDuration;
-			return true;
 		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
@@ -383,7 +383,8 @@ void CharacterClass::OnSkill(time_t curr_time,
 }
 
 bool CharacterClass::UseSkill(time_t curr_time,
-	vector<unique_ptr<class SkillObjectClass> >& skill_objs)
+	vector<unique_ptr<class SkillObjectClass> >& skill_objs,
+	SoundClass* sound)
 {
 	if (curr_time < time_skill_available_)
 	{
@@ -408,20 +409,24 @@ bool CharacterClass::UseSkill(time_t curr_time,
 	{
 	case 0:
 		time_skill_ended_ = state_start_time_ + 300;
+		sound->PlayEffect(EffectSound::kSoundSpell1);
 		break;
 
 	case 1:
 		if (velocity_.y == 0 && jump_cnt == 0) velocity_.y = 3'600;
 
 		time_skill_ended_ = state_start_time_ + 300;
+		sound->PlayEffect(EffectSound::kSoundSpell1);
 		break;
 
 	case 2:
 		time_skill_ended_ = state_start_time_ + 300;
+		sound->PlayEffect(EffectSound::kSoundSpell2);
 		break;
 
 	case 3:
 		time_skill_ended_ = state_start_time_ + 300;
+		sound->PlayEffect(EffectSound::kSoundSpell2);
 		break;
 	}
 
