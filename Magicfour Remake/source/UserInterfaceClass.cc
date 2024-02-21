@@ -14,10 +14,13 @@ using namespace std;
 using namespace DirectX;
 
 UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
-	ID3D11Device* device, int screenWidth, int screenHeight)
-	: screen_height_(screenHeight), screen_width_(screenWidth)
+	ID3D11Device* device, int screen_width, int screen_height)
+	: screen_height_(screen_height), screen_width_(screen_width),
+	f_screen_height_((float)screen_height), f_screen_width_((float)screen_width)
 {
 	score_text_format_ = direct2D->CreateTextFormat(L"Arial", 40,
+		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	fps_text_format_ = direct2D->CreateTextFormat(L"Arial", 20,
 		DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 	pause_text_format_ = direct2D->CreateTextFormat(L"Cambria", 35,
 		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
@@ -182,7 +185,7 @@ void UserInterfaceClass::DrawSkillGauge(D2DClass* direct2D,
 	}
 	else
 	{
-		const float alpha = 1.0 - skill_charge_ratio / -0.1f;
+		const float alpha = 1.0f - skill_charge_ratio / -0.1f;
 		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, alpha));
 
 		direct2D->RenderRect(left, top, right, bottom);
@@ -212,7 +215,7 @@ void UserInterfaceClass::DrawInvincibleGauge(D2DClass* direct2D,
 	}
 	else
 	{
-		const float alpha = 1.0 - invincible_ratio / -0.1f;
+		const float alpha = 1.0f - invincible_ratio / -0.1f;
 		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, alpha));
 
 		direct2D->RenderRect(left, top, right, bottom);
@@ -223,21 +226,38 @@ void UserInterfaceClass::DrawPauseMark(class D2DClass* direct2D)
 {
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed));
 	direct2D->RenderText(pause_text_format_.Get(), L"<< Paused >>",
-		0, 30.0f, (float)screen_width_, 70.0f);
+		0, 30.0f, f_screen_width_, 70.0f);
 	direct2D->RenderText(pause_description_format_.Get(), L"To resume, press R key.",
-		0, 70.0f, (float)screen_width_, 100.0f);
+		0, 70.0f, f_screen_width_, 100.0f);
 }
 
 void UserInterfaceClass::DrawGameoverScreen(D2DClass* direct2D, time_t gameover_elapsed_time)
 {
 	const float blackout_alpha = SATURATE(0.0f, (gameover_elapsed_time - 2000) / 3000.0f, 1.0f);
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, blackout_alpha));
-	direct2D->RenderRect(0, 0, screen_width_, screen_height_);
+	direct2D->RenderRect(0, 0, f_screen_width_, f_screen_height_);
 
 	const float text_alpha = SATURATE(0.0f, (gameover_elapsed_time - 5000) / 3000.0f, 1.0f);
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, text_alpha));
 	direct2D->RenderText(gameover_text_format_.Get(), L"GAME OVER",
-		0, 0, screen_width_, screen_height_);
+		0, 0, f_screen_width_, f_screen_height_);
+}
+
+void UserInterfaceClass::DrawFps(D2DClass* direct2D,
+	time_t actual_curr_time, time_t actual_time_delta)
+{
+	static int prev_frame_cnt = 0, frame_cnt = 0;
+	if ((actual_curr_time - actual_time_delta) / 1000 < actual_curr_time / 1000)
+	{
+		prev_frame_cnt = frame_cnt;
+		frame_cnt = 0;
+	}
+	frame_cnt++;
+
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
+	direct2D->RenderText(fps_text_format_.Get(),
+		(L"fps: " + std::to_wstring(prev_frame_cnt)).c_str(),
+		0, 10.0f, (float)(screen_width_ - 30), 45.0f);
 }
 
 void UserInterfaceClass::Begin2dDraw(D2DClass* direct2D)

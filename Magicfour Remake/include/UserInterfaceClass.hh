@@ -21,8 +21,8 @@ private:
 	using XMMATRIX = DirectX::XMMATRIX;
 
 public:
-	UserInterfaceClass(class D2DClass* direct2D, ID3D11Device* device,
-		int screenWidth, int screenHeight);
+	UserInterfaceClass(class D2DClass* direct2D,
+		ID3D11Device* device, int screen_width, int screen_height);
 	~UserInterfaceClass();
 
 	void Render();
@@ -43,6 +43,8 @@ public:
 	void DrawInvincibleGauge(D2DClass* direct2D,
 		float char_screen_x, float char_screen_y,
 		float invincible_ratio);
+	void DrawFps(D2DClass* direct2D,
+		time_t actual_curr_time, time_t actual_time_delta);
 
 
 	void DrawPauseMark(class D2DClass* direct2D);
@@ -54,12 +56,14 @@ public:
 
 private:
 	int screen_width_, screen_height_;
+	float f_screen_width_, f_screen_height_;
 
 	unique_ptr<class BitmapClass> monster_hp_gauge_bitmap_;
 	unique_ptr<class BitmapClass> skill_gauge_gray_bitmap_;
 	unique_ptr<class BitmapClass> invincible_gauge_bitmap_;
 
 	ComPtr<struct IDWriteTextFormat> score_text_format_;
+	ComPtr<struct IDWriteTextFormat> fps_text_format_;
 	ComPtr<struct IDWriteTextFormat> pause_text_format_;
 	ComPtr<struct IDWriteTextFormat> pause_description_format_;
 	ComPtr<struct IDWriteTextFormat> gameover_text_format_;

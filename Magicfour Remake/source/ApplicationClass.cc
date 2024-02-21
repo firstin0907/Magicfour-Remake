@@ -138,7 +138,6 @@ bool ApplicationClass::Frame(InputClass* input)
 	{
 		timer_->Pause();
 		game_state_ = GameState::kGamePause;
-		Render(timer_->GetTime());
 	}
 	else if (input->IsKeyDown(DIK_R))
 	{
@@ -153,16 +152,16 @@ bool ApplicationClass::Frame(InputClass* input)
 	{
 	case GameState::kGameRun:
 		GameFrame(input);
-		Render(curr_time);
+		Render();
 		return true;
 
 	case GameState::kGamePause:
-		Render(curr_time);
+		Render();
 		return true;
 
 	case GameState::kGameOver:
 		GameFrame(input);
-		Render(curr_time);
+		Render();
 		return true;
 
 	default:
@@ -307,10 +306,10 @@ void ApplicationClass::GameFrame(InputClass* input)
 	}
 }
 
-
-void ApplicationClass::Render(time_t curr_time)
+void ApplicationClass::Render()
 {
-	XMMATRIX world_matrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMMATRIX viewMatrix, projectionMatrix, orthoMatrix;
+	time_t curr_time = timer_->GetTime();
 
 	// Clear the buffers to begin the scene.
 	direct3D_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
@@ -319,7 +318,6 @@ void ApplicationClass::Render(time_t curr_time)
 	camera_->Render();
 
 	// Get the world, view, and projection matrices from the camera and d3d objects.
-	direct3D_->GetWorldMatrix(world_matrix);
 	camera_->GetViewMatrix(viewMatrix);
 	direct3D_->GetProjectionMatrix(projectionMatrix);
 	direct3D_->GetOrthoMatrix(orthoMatrix);
@@ -499,6 +497,8 @@ void ApplicationClass::Render(time_t curr_time)
 		character_->GetInvincibleGaugeRatio(curr_time));
 	user_interface_->DrawScoreAndCombo(direct2D_.get(),
 		character_.get(), curr_time);
+	user_interface_->DrawFps(direct2D_.get(),
+		timer_->GetActualTime(), timer_->GetActualElapsedTime());
 
 
 	switch (game_state_)

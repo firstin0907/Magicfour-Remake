@@ -37,7 +37,7 @@ public:
 
 private:
 	void GameFrame(class InputClass* input);
-	void Render(time_t curr_time);
+	void Render();
 
 private:
 	GameState game_state_;
