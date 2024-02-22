@@ -11,6 +11,16 @@ public:
 		int x, y;
 		Point2d() : x(0), y(0) {};
 		Point2d(int x, int y) : x(x), y(y) {};
+
+		Point2d operator+(const Point2d& rhs) { return Point2d(x + rhs.x, y + rhs.y); }
+		Point2d operator-(const Point2d& rhs) { return Point2d(x - rhs.x, y - rhs.y); }
+		Point2d operator*(int scalar) { return Point2d(x * scalar, y * scalar); }
+		Point2d operator/(int scalar) { return Point2d(x / scalar, y / scalar); }
+
+		Point2d& operator+=(const Point2d& rhs)
+		{
+			x += rhs.x, y += rhs.y; return *this;
+		}
 	};
 	using Vector2d = Point2d;
 
@@ -18,9 +28,9 @@ public:
 
 public:
 	RigidbodyClass(Point2d position, rect_t range,
-		direction_t direction, Vector2d velocity = {0, 0})
+		direction_t direction, Vector2d velocity = {0, 0}, Vector2d accel = {0, -kGravity})
 		: position_(position), range_(range),
-		direction_(direction), velocity_(velocity) {};
+		direction_(direction), velocity_(velocity), accel_(accel) {};
 
 	inline XMMATRIX GetLocalWorldMatrix()
 	{
@@ -38,10 +48,9 @@ public:
 	}
 
 	// Returns position_ field.
-	inline Point2d GetPosition()
-	{
-		return position_;
-	}
+	inline Point2d GetPosition() { return position_; }
+	inline Point2d GetVelocity() { return velocity_; }
+	inline Point2d GetAccel() { return accel_; }
 
 	inline STATE_TYPE GetState()
 	{
@@ -75,9 +84,18 @@ public:
 		return curr_time - state_start_time_;
 	}
 
+	// Returns which position this instance locates after 'time_delta' milliseconds goes by
+	// based on current position and velocity.
+	inline Point2d GetPositionAfterMove(time_t time_delta)
+	{
+		return position_ + (velocity_ - accel_ * time_delta / 2) * time_delta;
+	}
+
 protected:
 	Point2d			position_;
 	Vector2d		velocity_;
+	Vector2d		accel_;
+
 	rect_t			range_;
 	direction_t		direction_;
 

@@ -5,7 +5,7 @@
 SkillObjectClass::SkillObjectClass(int pos_x, int pos_y,
 	rect_t range, int vx, int vy)
 	: RigidbodyClass<SkillObjectState>(
-		Point2d(pos_x, pos_y), rect_t(range), LEFT_FORWARD, Vector2d(vx, vy))
+		Point2d(pos_x, pos_y), rect_t(range), LEFT_FORWARD, Vector2d(vx, vy), Vector2d(0, 0))
 {
 	
 }

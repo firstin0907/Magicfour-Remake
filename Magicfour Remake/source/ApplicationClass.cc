@@ -104,9 +104,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	character_ = make_unique<CharacterClass>(0, 0);
 	
 	// Temporary
-	monsters_.emplace_back(new MonsterDuck(LEFT_FORWARD, 1000));
-	monsters_.emplace_back(new MonsterOctopus(RIGHT_FORWARD, 1000));
-	for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(RIGHT_FORWARD, 1000));
+	//monsters_.emplace_back(new MonsterDuck(LEFT_FORWARD, 1000));
+	//monsters_.emplace_back(new MonsterOctopus(RIGHT_FORWARD, 1000));
+	//for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(RIGHT_FORWARD, 1000));
 
 	// Set ground of field.
 	ground_.emplace_back(new GroundClass({ -100000, 400000, 300000, 460000 }));
@@ -279,7 +279,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 		if (!monsters_[i]->Frame(curr_time, delta_time))
 		{
 			// create item for 50% probablity.
-			if (RandomClass::rand(0, 100) < ITEM_DROP_PROBABILITY)
+			if (monsters_[i]->GetType() >= 0 && RandomClass::rand(0, 100) < ITEM_DROP_PROBABILITY)
 			{
 				items_.emplace_back(new ItemClass(curr_time, monsters_[i]->GetPosition().x,
 					monsters_[i]->GetPosition().y, monsters_[i]->GetType()));

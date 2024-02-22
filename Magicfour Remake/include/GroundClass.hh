@@ -30,6 +30,8 @@ public:
 		return range_;
 	}
 
+	//time_t GetCollisionTime(class RigidBodyClass* rigid);
+
 private:
 	rect_t range_;
 

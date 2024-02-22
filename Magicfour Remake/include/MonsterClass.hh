@@ -55,7 +55,7 @@ protected:
 
 public:
 	MonsterClass(Point2d position, direction_t direction,
-		int type, int hp, rect_t range);
+		int type, int hp, rect_t range, time_t created_time);
 	~MonsterClass() = default;
 
 	inline int GetId() { return id_; }

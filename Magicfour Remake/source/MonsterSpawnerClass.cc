@@ -24,7 +24,7 @@ void MonsterSpawnerClass::Frame(time_t curr_time, time_t delta_time,
 	{
 		direction_t direction = RandomClass::rand(2) ? LEFT_FORWARD : RIGHT_FORWARD;
 
-		switch (schedule_iterator_->second)
+		switch (schedule_iterator_->second = 1)
 		{
 		case 0:
 			monsters_.emplace_back(new MonsterOctopus(direction, schedule_iterator_->first));

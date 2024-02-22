@@ -30,9 +30,9 @@ void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
 	case SkillObjectState::kNormal:
 	{
 		// Movement acoording to the current velocity.
-		position_.x += (int)time_delta * velocity_.x;
-		int start_y = position_.y, target_y = position_.y + (int)time_delta * velocity_.y;
-		position_.y = target_y;
+		int start_y = position_.y;
+		position_ = GetPositionAfterMove(time_delta);
+		int target_y = position_.y;
 
 		for (auto& ground_obj : ground)
 		{
@@ -106,8 +106,9 @@ SkillObjectBead::SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t cr
 void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<unique_ptr<class GroundClass> >& ground)
 {
-	position_.x += (int)time_delta * velocity_.x;
-	position_.y += (int)time_delta * velocity_.y;
+	time_t state_time = GetStateTime(curr_time);
+
+	position_ = GetPositionAfterMove(min(state_time, time_delta));
 }
 
 bool SkillObjectBead::OnCollided(MonsterClass* monster, time_t collided_time)
