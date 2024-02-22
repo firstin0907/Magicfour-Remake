@@ -14,7 +14,7 @@ class ItemClass : public RigidbodyClass<ItemState>
 {
 private:
 	using XMMATRIX = DirectX::XMMATRIX;
-	using GroundVector = std::vector<std::unique_ptr<class GroundClass> >;
+	using GroundVector = std::vector<class GroundClass>;
 
 public:
 	enum state_t { STATE_NORMAL, STATE_DIE };

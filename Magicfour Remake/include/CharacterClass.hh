@@ -28,7 +28,7 @@ public:
 
 	bool Frame(time_t time_delta, time_t curr_time, class InputClass* input,
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs,
-		const vector<unique_ptr<class GroundClass> >& ground,
+		const vector<class GroundClass>& ground,
 		class SoundClass* sound);
 	
 	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);

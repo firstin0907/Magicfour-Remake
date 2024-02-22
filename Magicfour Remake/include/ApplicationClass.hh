@@ -41,6 +41,7 @@ private:
 
 private:
 	GameState game_state_;
+	time_t	state_start_time_;
 
 	unique_ptr<class D3DClass>			direct3D_;
 	unique_ptr<class D2DClass>			direct2D_;
@@ -67,7 +68,9 @@ private:
 	vector<unique_ptr<class SkillObjectClass> > skillObjectList_;
 	vector<unique_ptr<class MonsterClass> >	monsters_;
 	vector<unique_ptr<class ItemClass> >	items_;
-	vector<unique_ptr<class GroundClass> >	ground_;
+
+	unique_ptr<class FieldClass>			field_;
+
 
 	unique_ptr<class TimerClass>			timer_;
 	unique_ptr<class MonsterSpawnerClass>	monster_spawner_;

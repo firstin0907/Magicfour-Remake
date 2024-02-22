@@ -28,7 +28,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground) = 0;
+		const vector<class GroundClass>& ground) = 0;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);

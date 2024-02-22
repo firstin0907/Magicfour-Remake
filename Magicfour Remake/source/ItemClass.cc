@@ -33,7 +33,7 @@ void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 		position_.y = target;
 		for (auto& ground_obj : ground)
 		{
-			position_.y = max(position_.y, ground_obj->IsColiided(ITEM_RANGE.x1 + position_.x,
+			position_.y = max(position_.y, ground_obj.IsCollided(ITEM_RANGE.x1 + position_.x,
 					ITEM_RANGE.x2 + position_.x, max_y, position_.y));
 		}
 
@@ -52,7 +52,7 @@ void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 
 		for (auto& ground_obj : ground)
 		{
-			position_.y = max(position_.y, ground_obj->IsColiided(ITEM_RANGE.x1 + position_.x,
+			position_.y = max(position_.y, ground_obj.IsCollided(ITEM_RANGE.x1 + position_.x,
 				ITEM_RANGE.x2 + position_.x, max_y, position_.y));
 		}
 

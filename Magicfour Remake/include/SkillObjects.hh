@@ -9,7 +9,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -36,7 +36,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -61,7 +61,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -86,7 +86,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);

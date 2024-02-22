@@ -23,7 +23,7 @@ SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t 
 }
 
 void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass> >& ground)
+	const vector<class GroundClass>& ground)
 {
 	switch (state_)
 	{
@@ -37,7 +37,7 @@ void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
 		for (auto& ground_obj : ground)
 		{
 			position_.y = max(position_.y,
-				ground_obj->IsColiided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
+				ground_obj.IsCollided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
 		}
 
 		if (position_.y != target_y)
@@ -104,7 +104,7 @@ SkillObjectBead::SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t cr
 }
 
 void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass> >& ground)
+	const vector<class GroundClass>& ground)
 {
 	time_t state_time = GetStateTime(curr_time);
 
@@ -176,7 +176,7 @@ SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
 }
 
 void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass> >& ground)
+	const vector<class GroundClass>& ground)
 {
 	time_delta = min(time_delta, curr_time - state_start_time_);
 	position_.y += 2'000 * time_delta;
@@ -232,7 +232,7 @@ SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx, time_t created_
 }
 
 void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass> >& ground)
+	const vector<class GroundClass>& ground)
 {
 	
 }

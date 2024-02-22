@@ -18,7 +18,7 @@ MonsterDuck::MonsterDuck(direction_t direction, time_t created_time)
 }
 
 void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass> >& ground)
+	const vector<class GroundClass>& ground)
 {
 	constexpr int spd = 1'000;
 	constexpr int kKnockBackTime = 1'000;
@@ -71,7 +71,7 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 				for (auto& ground_obj : ground)
 				{
 					position_.y = max(position_.y,
-						ground_obj->IsColiided(GetGlobalRange().x1, GetGlobalRange().x2, max_y, position_.y));
+						ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, max_y, position_.y));
 				}
 
 				if (position_.y != target)
@@ -90,7 +90,7 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 
 				for (auto& ground_obj : ground)
 				{
-					position_.y = max(position_.y, ground_obj->IsColiided(GetGlobalRange().x1, GetGlobalRange().x2, max_y, position_.y));
+					position_.y = max(position_.y, ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, max_y, position_.y));
 
 				}
 
@@ -120,7 +120,7 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 			for (auto& ground_obj : ground)
 			{
 				position_.y = max(position_.y,
-					ground_obj->IsColiided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
+					ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
 			}
 
 			velocity_ += accel_ * time_delta;
@@ -182,7 +182,7 @@ MonsterOctopus::MonsterOctopus(direction_t direction, time_t created_time)
 }
 
 void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass> >& ground)
+	const vector<class GroundClass>& ground)
 {
 	constexpr int spd = 500;
 	constexpr int kKnockBackTime = 1'000;
@@ -269,7 +269,7 @@ MonsterBird::MonsterBird(direction_t direction, time_t created_time)
 }
 
 void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass>>& ground)
+	const vector<class GroundClass>& ground)
 {
 	constexpr int X_SPEED = 1500, Y_SPEED = 400;
 	constexpr int kKnockBackTime = 1'000;
@@ -351,7 +351,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 		for (auto& ground_obj : ground)
 		{
 			position_.y = max(position_.y,
-				ground_obj->IsColiided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
+				ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
 		}
 		break;
 	}
@@ -397,7 +397,7 @@ MonsterStop::MonsterStop(time_t created_time)
 }
 
 void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<unique_ptr<class GroundClass>>& ground)
+	const vector<class GroundClass>& ground)
 {
 	constexpr int kKnockBackTime = 1'000;
 	switch (state_)
@@ -415,7 +415,7 @@ void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
 		for (auto& ground_obj : ground)
 		{
 			position_.y = max(position_.y,				
-				ground_obj->IsColiided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
+				ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
 		}
 
 		if (position_.y > target_y)
@@ -447,7 +447,7 @@ void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
 		for (auto& ground_obj : ground)
 		{
 			position_.y = max(position_.y,
-				ground_obj->IsColiided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
+				ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
 		}
 		break;
 	}

@@ -42,7 +42,7 @@ CharacterClass::CharacterClass(int pos_x, int pos_y)
 
 bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* input,
 	vector<unique_ptr<class SkillObjectClass> >& skill_objs,
-	const vector<unique_ptr<class GroundClass> >& ground,
+	const vector<class GroundClass>& ground,
 	SoundClass* sound)
 {
 	bool is_walk = false;
@@ -111,7 +111,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		for (auto& ground_obj : ground)
 		{
 			position_.y = max(position_.y,
-				ground_obj->IsColiided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
+				ground_obj.IsCollided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
 		}
 
 		if (position_.y != target_y)

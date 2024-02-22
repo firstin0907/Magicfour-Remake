@@ -23,7 +23,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
@@ -50,7 +50,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
@@ -75,7 +75,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
@@ -104,7 +104,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<unique_ptr<class GroundClass> >& ground);
+		const vector<class GroundClass>& ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);

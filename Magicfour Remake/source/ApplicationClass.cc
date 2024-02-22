@@ -27,6 +27,7 @@
 #include "../include/RandomClass.hh"
 #include "../include/GameException.hh"
 #include "../include/SoundClass.hh"
+#include "../include/FieldClass.hh"
 
 using namespace std;
 using namespace DirectX;
@@ -109,21 +110,20 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	//for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(RIGHT_FORWARD, 1000));
 
 	// Set ground of field.
-	ground_.emplace_back(new GroundClass({ -100000, 400000, 300000, 460000 }));
-	ground_.emplace_back(new GroundClass({ -1800000, 100000, -200000, 160000 }));
-	ground_.emplace_back(new GroundClass({ -300000, -100000, 1300000, -40000 }));
-	ground_.emplace_back(new GroundClass({ -20000, -20000, 20000, 20000 }));
-	ground_.emplace_back(new GroundClass({ kSpawnLeftX, kGroundY - 300000, kSpawnRightX, kGroundY }));
-
+	field_ = make_unique<FieldClass>("data/field/field001.txt");
+	
 	monster_spawner_ = make_unique<MonsterSpawnerClass>();
 
 	timer_ = make_unique<TimerClass>();
+	timer_->Frame();
 
 	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
 		direct3D_->GetDevice(), screenWidth, screenHeight);
 
 	sound_->PlayBackground(BackgroundSound::kSoundOnGameBackground);
-
+	
+	game_state_ = GameState::kGameRun;
+	state_start_time_ = timer_->GetTime();
 }
 
 ApplicationClass::~ApplicationClass()
@@ -138,11 +138,14 @@ bool ApplicationClass::Frame(InputClass* input)
 	{
 		timer_->Pause();
 		game_state_ = GameState::kGamePause;
+		state_start_time_ = timer_->GetTime();
 	}
 	else if (input->IsKeyDown(DIK_R))
 	{
 		timer_->Resume();
 		game_state_ = GameState::kGameRun;
+		// state_start_time_ will be same,
+		// because curr_time of timer_ is preserved while the game paused.
 	}
 
 	timer_->Frame();
@@ -172,21 +175,19 @@ bool ApplicationClass::Frame(InputClass* input)
 
 void ApplicationClass::GameFrame(InputClass* input)
 {
-	static time_t character_death_time = 1LL << 60;
-
 	time_t curr_time = timer_->GetTime();
 	time_t delta_time = timer_->GetElapsedTime();
 
 	const int GAME_OVER_SLOW = 4;
-	if (character_death_time <= curr_time)
+	if (character_->GetState() == CharacterState::kDie)
 	{
 		delta_time = curr_time / GAME_OVER_SLOW - (curr_time - delta_time) / GAME_OVER_SLOW;
-		curr_time = character_death_time + (curr_time - character_death_time) / GAME_OVER_SLOW;
+		curr_time = state_start_time_ + character_->GetStateTime(curr_time) / GAME_OVER_SLOW;
 	}
 	else monster_spawner_->Frame(curr_time, delta_time, monsters_);
 
 	character_->Frame(delta_time, curr_time, input,
-		skillObjectList_, ground_, sound_.get());
+		skillObjectList_, field_->GetGrounds(), sound_.get());
 
 	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * kScope;
 	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
@@ -195,15 +196,15 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 	// Move skill object instances.
 	for (auto& skill_obj : skillObjectList_)
-		skill_obj->FrameMove(curr_time, delta_time, ground_);
+		skill_obj->FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 	// Move monsters.
 	for (auto& monster : monsters_)
-		monster->FrameMove(curr_time, delta_time, ground_);
+		monster->FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 	// Move items.
 	for (auto& item : items_)
-		item->FrameMove(curr_time, delta_time, ground_);
+		item->FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 
 	// Coliide check
@@ -239,8 +240,8 @@ void ApplicationClass::GameFrame(InputClass* input)
 				sound_->PlayEffect(EffectSound::kSoundCharacterDamage);
 				if (character_->GetState() == CharacterState::kDie)
 				{
-					character_death_time = curr_time;
 					game_state_ = GameState::kGameOver;
+					state_start_time_ = curr_time;
 				}
 			}
 		}
@@ -445,10 +446,10 @@ void ApplicationClass::Render()
 			model_->GetNormalTexture(), model_->GetEmissiveTexture(), light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 	}
 
-	for (auto& ground : ground_)
+	for (auto& ground : field_->GetGrounds())
 	{
 		light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
-			ground->GetRange().toMatrix(), vp_matrix, model_->GetDiffuseTexture(),
+			ground.GetRange().toMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			light_->GetDirection(), light_->GetDiffuseColor());
 	}
 
