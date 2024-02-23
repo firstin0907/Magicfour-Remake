@@ -100,6 +100,11 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg",
 		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"
 	));
+	SkillObjectShield::initialize(new ModelClass(direct3D_->GetDevice(),
+		"data/model/Shield/shield.obj",
+		L"data/model/Shield/Sheld_LPFF_Sheld_BaseColor.png",
+		L"data/model/Shield/Sheld_LPFF_Sheld_Normal.png"
+	));
 
 	// Create character instance.
 	character_ = make_unique<CharacterClass>(0, 0);

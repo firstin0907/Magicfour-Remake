@@ -376,6 +376,24 @@ void CharacterClass::OnSkill(time_t curr_time,
 			skillState_ = 1;
 		}
 		break;
+
+	case 4:
+		if (skillState_ == 0 && state_elapsed_time >= 0)
+		{
+			skill_objs.emplace_back(new SkillObjectShield(
+				position_.x, position_.y + 200000, -1600, 0,
+				state_start_time_));
+			skill_objs.emplace_back(new SkillObjectShield(
+				position_.x, position_.y + 200000, 1600, 0,
+				state_start_time_));
+			skill_objs.emplace_back(new SkillObjectShield(
+				position_.x, position_.y + 200000, 0, 1600,
+				state_start_time_));
+
+			skillState_ = 1;
+		}
+		break;
+
 	}
 
 	// When Skill Ended, return to normal state_.
@@ -425,6 +443,11 @@ bool CharacterClass::UseSkill(time_t curr_time,
 		break;
 
 	case 3:
+		time_skill_ended_ = state_start_time_ + 300;
+		sound->PlayEffect(EffectSound::kSoundSpell2);
+		break;
+
+	case 4:
 		time_skill_ended_ = state_start_time_ + 300;
 		sound->PlayEffect(EffectSound::kSoundSpell2);
 		break;

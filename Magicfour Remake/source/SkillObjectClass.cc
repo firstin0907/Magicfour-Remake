@@ -3,11 +3,11 @@
 #include "../include/MonsterClass.hh"
 
 SkillObjectClass::SkillObjectClass(int pos_x, int pos_y,
-	rect_t range, int vx, int vy)
+	rect_t range, int vx, int vy, time_t created_time)
 	: RigidbodyClass<SkillObjectState>(
 		Point2d(pos_x, pos_y), rect_t(range), LEFT_FORWARD, Vector2d(vx, vy), Vector2d(0, 0))
 {
-	
+	SetState(SkillObjectState::kNormal, created_time);	
 }
 
 bool SkillObjectClass::OnCollided(

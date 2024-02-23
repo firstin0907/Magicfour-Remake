@@ -24,7 +24,8 @@ public:
 	template<typename T>
 	using unique_ptr = std::unique_ptr<T>;
 
-	SkillObjectClass(int pos_x, int pos_y, rect_t range, int vx, int vy);
+	SkillObjectClass(int pos_x, int pos_y, rect_t range,
+		int vx, int vy, time_t created_time);
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,

@@ -13,12 +13,12 @@ unique_ptr<class ModelClass> SkillObjectSpear::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectBead::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectLeg::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectBasic::model_ = nullptr;
+unique_ptr<class ModelClass> SkillObjectShield::model_ = nullptr;
 
 SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t created_time)
 	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 },
-		vx, vy)
+		vx, vy, created_time)
 {
-	SetState(SkillObjectState::kNormal, created_time);
 	angle_ = (float)atan(vx / (double)vy);
 }
 
@@ -98,9 +98,10 @@ ModelClass* SkillObjectSpear::GetModel()
 }
 
 SkillObjectBead::SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t created_time)
-	: SkillObjectClass(pos_x, pos_y, rect_t{ -30000, -30000, 30000, 30000 }, vx, vy)
+	: SkillObjectClass(pos_x, pos_y,
+		rect_t{ -30000, -30000, 30000, 30000 }, vx, vy, created_time)
 {
-	SetState(SkillObjectState::kNormal, created_time);
+
 }
 
 void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta,
@@ -170,9 +171,8 @@ ModelClass* SkillObjectBead::GetModel()
 
 SkillObjectLeg::SkillObjectLeg(int pos_x, time_t created_time)
 	: SkillObjectClass(pos_x, kGroundY, rect_t{ -50000, -1200000, 50000, 0 },
-		0, 0)
+		0, 0, created_time)
 {
-	SetState(SkillObjectState::kNormal, created_time);
 }
 
 void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta,
@@ -226,9 +226,9 @@ ModelClass* SkillObjectLeg::GetModel()
 
 
 SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx, time_t created_time)
-	: SkillObjectClass(pos_x, pos_y, rect_t{ -60000, 80000, 60000, 380000 }, vx, 0)
+	: SkillObjectClass(pos_x, pos_y,
+		rect_t{ -60000, 80000, 60000, 380000 }, vx, 0, created_time)
 {
-	SetState(SkillObjectState::kNormal, created_time);
 }
 
 void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
@@ -261,6 +261,67 @@ void SkillObjectBasic::initialize(ModelClass* model)
 }
 
 ModelClass* SkillObjectBasic::GetModel()
+{
+	return model_.get();
+}
+
+
+SkillObjectShield::SkillObjectShield(int pos_x, int pos_y,
+	int vx, int vy, time_t created_time)
+	: SkillObjectClass(pos_x, pos_y,
+		(vx != 0) ? rect_t{-40000, -200000, 40000, 200000} :
+		rect_t{ -200000, -40000, 200000, 40000 }, vx, vy, created_time)
+{
+
+}
+
+
+void SkillObjectShield::FrameMove(time_t curr_time,
+	time_t time_delta, const vector<class GroundClass>& ground)
+{
+	curr_time = min(state_start_time_ + 200, curr_time);
+	time_delta = min(time_delta, curr_time - state_start_time_);
+
+	position_ = GetPositionAfterMove(time_delta);
+}
+
+bool SkillObjectShield::OnCollided(MonsterClass* monster, time_t collided_time)
+{
+	if (!SkillObjectClass::OnCollided(monster, collided_time)) return false;
+	monster->Damage(40, collided_time, velocity_.x / 2, velocity_.y / 2);
+	return true;
+}
+
+bool SkillObjectShield::Frame(time_t curr_time, time_t time_delta)
+{
+	constexpr time_t lifetime = 200;
+	return state_start_time_ + lifetime > curr_time;
+}
+
+XMMATRIX SkillObjectShield::GetGlobalShapeTransform(time_t curr_time)
+{
+	if (velocity_.x > 0)
+	{
+		return XMMatrixRotationZ(-XM_PI / 2) * XMMatrixScaling(0.7f, 0.7f, 0.7f)
+			* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	}
+	else if (velocity_.x == 0)
+	{
+		return XMMatrixScaling(0.7f, 0.7f, 0.7f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	}
+	else //(velocity_.x < 0)
+	{
+		return XMMatrixRotationZ(XM_PI / 2) * XMMatrixScaling(0.7f, 0.7f, 0.7f)
+			* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	}	
+}
+
+void SkillObjectShield::initialize(ModelClass* model)
+{
+	model_ = unique_ptr<ModelClass>(model);
+}
+
+ModelClass* SkillObjectShield::GetModel()
 {
 	return model_.get();
 }
