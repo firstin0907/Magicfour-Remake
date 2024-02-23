@@ -9,6 +9,7 @@
 #include "../include/SkillObjects.hh"
 #include "../include/GroundClass.hh"
 #include "../include/SoundClass.hh"
+#include "../include/RandomClass.hh"
 
 using namespace DirectX;
 using namespace std;
@@ -32,10 +33,10 @@ CharacterClass::CharacterClass(int pos_x, int pos_y)
 
 	SetState(CharacterState::kNormal, 0);
 
-	skill_[0] = 4;
-	skill_[1] = 3;
-	skill_[2] = 1;
-	skill_[3] = 2;
+	skill_[0] = { 1, 1 };
+	skill_[1] = { 3, 1 };
+	skill_[2] = { 2, 1 };
+	skill_[3] = { 4, 1 };
 
 	time_invincible_end_ = 0;
 }
@@ -78,9 +79,9 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	{
 		for (int i = 3; i >= 0; i--)
 		{
-			if (skill_[i])
+			if (skill_[i].skill_type)
 			{
-				skill_[i] = 0;
+				skill_[i].skill_type = 0;
 				break;
 			}
 		}
@@ -277,10 +278,10 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 		direction_ = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
 
 		// lost skill
-		if (skill_[0] == 0)
+		if (skill_[0].skill_type == 0)
 		{
 			SetState(CharacterState::kDie, curr_time);
-			hit_vx_ = velocity_.x = vx / 2;
+			velocity_.x = vx / 2;
 
 			velocity_.y = 1500;
 			time_invincible_end_ = 1LL << 59;
@@ -289,13 +290,13 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 		{
 			for (int i = 3; i >= 0; i--)
 			{
-				if (skill_[i])
+				if (skill_[i].skill_type)
 				{
-					skill_[i] = 0;
+					skill_[i].skill_type = 0;
 					break;
 				}
 			}
-			hit_vx_ = velocity_.x = vx / 3;
+			velocity_.x = vx / 3;
 			velocity_.y = 1500;
 			time_invincible_end_ = state_start_time_ + kInvincibleDuration;
 		}
@@ -318,7 +319,14 @@ void CharacterClass::LearnSkill(int skill_id)
 {
 	for (auto& skill : skill_)
 	{
-		if (!skill) { skill = skill_id; return; }
+		// If an empty skill slot exists,
+		if (skill.skill_type == 0)
+		{
+			// fill the skill with random power.
+			skill.skill_type = skill_id;
+			skill.skill_power = RandomClass::rand(1, 10);
+			return;
+		}
 	}
 }
 
@@ -333,64 +341,69 @@ void CharacterClass::OnSkill(time_t curr_time,
 {
 	const time_t state_elapsed_time = GetStateTime(curr_time);
 
-	switch (skillUsed_)
+	switch (skill_currently_used_.skill_type)
 	{
 	case 0:
-		if (skillState_ == 0 && state_elapsed_time >= 100)
+		if (skill_state_ == 0 && state_elapsed_time >= 100)
 		{
 			skill_objs.emplace_back(new SkillObjectBasic(position_.x + DIR_WEIGHT(direction_, 185000), position_.y,
 				DIR_WEIGHT(direction_, 100), state_start_time_ + 100));
-			skillState_ = 1;
+			skill_state_ = 1;
 		}
 		break;
 
 	case 1:	
-		if (skillState_ == 0 && state_elapsed_time >= 100)
+		if (skill_state_ == 0 && state_elapsed_time >= 100)
 		{
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 6000, -2000, state_start_time_ + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 4000, -3000, state_start_time_ + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 2000, -4000, state_start_time_ + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, 0, -4000, state_start_time_ + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -2000, -4000, state_start_time_ + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -4000, -3000, state_start_time_ + 100));
-			skill_objs.emplace_back(new SkillObjectSpear(position_.x, position_.y, -6000, -2000, state_start_time_ + 100));
+			constexpr int object_vx[7] = { 6000, 4000, 2000, 0, -2000, -4000, -6000 };
+			constexpr int object_vy[7] = { -2000, -3000, -4000, -4000, -4000, -3000, -2000 };
 
-			skillState_ = 1;
+			for (int i = 0; i < 7; i++)
+			{
+				skill_objs.emplace_back(
+					new SkillObjectSpear(position_.x, position_.y,
+						object_vx[i], object_vy[i],
+						skill_currently_used_.skill_power, state_start_time_ + 100));
+			}
+			skill_state_ = 1;
 		}			
 		break;
 
 	case 2:
-		for (; skillState_ < 4 && state_elapsed_time >= skillState_ * 70 + 70; skillState_++)
+		for (; skill_state_ < 4 && state_elapsed_time >= skill_state_ * 70 + 70; skill_state_++)
 		{
 			skill_objs.emplace_back(new SkillObjectBead(
 				position_.x, position_.y + 300000, DIR_WEIGHT(direction_, 1200),
-				(skillState_ - 1) * 200, state_start_time_ + skillState_ * 70 + 70));
+				(skill_state_ - 1) * 200,
+				skill_currently_used_.skill_power,
+				state_start_time_ + skill_state_ * 70 + 70));
 		}
 		break;
 
 	case 3:
-		if (skillState_ == 0 && state_elapsed_time >= 50)
+		if (skill_state_ == 0 && state_elapsed_time >= 50)
 		{
 			skill_objs.emplace_back(new SkillObjectLeg(
-				position_.x + DIR_WEIGHT(direction_, 300'000), state_start_time_ + 50));
-			skillState_ = 1;
+				position_.x + DIR_WEIGHT(direction_, 300'000),
+				skill_currently_used_.skill_power, state_start_time_ + 50));
+			skill_state_ = 1;
 		}
 		break;
 
 	case 4:
-		if (skillState_ == 0 && state_elapsed_time >= 0)
+		if (skill_state_ == 0 && state_elapsed_time >= 0)
 		{
 			skill_objs.emplace_back(new SkillObjectShield(
 				position_.x, position_.y + 200000, -1600, 0,
-				state_start_time_));
+				skill_currently_used_.skill_power, state_start_time_));
 			skill_objs.emplace_back(new SkillObjectShield(
 				position_.x, position_.y + 200000, 1600, 0,
-				state_start_time_));
+				skill_currently_used_.skill_power, state_start_time_));
 			skill_objs.emplace_back(new SkillObjectShield(
 				position_.x, position_.y + 200000, 0, 1600,
-				state_start_time_));
+				skill_currently_used_.skill_power, state_start_time_));
 
-			skillState_ = 1;
+			skill_state_ = 1;
 		}
 		break;
 
@@ -410,20 +423,20 @@ bool CharacterClass::UseSkill(time_t curr_time,
 		return false;
 	}
 
-	skillUsed_ = 0;
+	skill_currently_used_ = { 0, 0 };
 	for (int i = 3; i >= 0; i--)
 	{
-		if (skill_[i])
+		if (skill_[i].skill_type)
 		{
-			skillUsed_ = skill_[i];
+			skill_currently_used_ = skill_[i];
 			break;
 		}
 	}
 
-	skillState_ = 0;
+	skill_state_ = 0;
 	SetState(CharacterState::kSpell, curr_time);
 
-	switch (skillUsed_)
+	switch (skill_currently_used_.skill_type)
 	{
 	case 0:
 		time_skill_ended_ = state_start_time_ + 300;

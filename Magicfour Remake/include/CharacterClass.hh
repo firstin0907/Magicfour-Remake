@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <utility>
 
 #include "global.hh"
 #include "RigidbodyClass.hh"
@@ -24,6 +25,13 @@ private:
 	using unique_ptr = std::unique_ptr<T>;
 
 public:
+	struct SkillType
+	{
+		int skill_type;
+		int skill_power;
+	};
+
+public:
 	CharacterClass(int pos_x, int pos_y);
 
 	bool Frame(time_t time_delta, time_t curr_time, class InputClass* input,
@@ -34,8 +42,6 @@ public:
 	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);
 	inline time_t GetTimeInvincibleEnd() { return time_invincible_end_; }
 
-	template <int index>
-	int GetSkill();
 
 	// If character have been actually damanged because of this collision,
 	// this function returns true. Otherwise, it returns false.
@@ -45,6 +51,11 @@ public:
 	float GetInvincibleGaugeRatio(time_t curr_time);
 
 	void LearnSkill(int skill_id);
+	inline SkillType GetSkill(const int index)
+	{
+		assert(0 <= index && index <= 3);
+		return skill_[index];
+	}
 
 	inline unsigned long long GetTotalScore(time_t curr_time)
 	{
@@ -69,16 +80,15 @@ private:
 		class SoundClass* sound);
 
 private:
-	int hit_vx_;
-
 	int jump_cnt;
 
-	int skill_[4] = { 0 };
-	
-	int skillState_; // be used in OnSkill(...) method.
-	int skillUsed_; // ID of skill which is being used.
+	int skill_state_; // be used in OnSkill(...) method.
 
 	int score_, combo_;
+
+	// The list of skill which the character has.
+	// And the skill which is spellled.
+	struct SkillType skill_[4], skill_currently_used_;
 
 	time_t time_combo_end_;
 	time_t time_invincible_end_;
@@ -91,12 +101,5 @@ private:
 	unique_ptr<class AnimatedObjectClass> run_animation_data_;
 	unique_ptr<class AnimatedObjectClass> skill_animation_data_;
 };
-
-template<int index>
-inline int CharacterClass::GetSkill()
-{
-	static_assert(0 <= index && index <= 3);
-	return skill_[index];
-}
 
 

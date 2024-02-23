@@ -43,6 +43,10 @@ public:
 	void DrawInvincibleGauge(D2DClass* direct2D,
 		float char_screen_x, float char_screen_y,
 		float invincible_ratio);
+	void DrawSkillPower(D2DClass* direct2D,
+		int skill_type, int skill_power, float skill_stone_screen_x,
+		float skill_stone_screen_y);
+
 	void DrawFps(D2DClass* direct2D,
 		time_t actual_curr_time, time_t actual_time_delta);
 

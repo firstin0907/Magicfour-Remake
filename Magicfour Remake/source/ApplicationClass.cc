@@ -360,8 +360,8 @@ void ApplicationClass::Render()
 	}
 
 
-	constexpr float box_size = 0.30f;
-	XMMATRIX pos = 
+	constexpr float box_size = 0.32f;
+	XMMATRIX skill_stone_pos = 
 		XMMatrixRotationX(XM_PI / 18) * XMMatrixRotationY(curr_time * 0.001f) * XMMatrixRotationX(-XM_PI / 10) *
 		XMMatrixScaling(box_size, box_size * 1.2f, box_size) * XMMatrixTranslation(-1.3f, 4.0f, 0.f) *
 		character_->GetLocalWorldMatrix();
@@ -377,35 +377,20 @@ void ApplicationClass::Render()
 	};
 
 	diamondModel_->Render(direct3D_->GetDeviceContext());
-	
-	if (character_->GetSkill<0>())
-	{
-		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
-			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<0>()],
-			camera_->GetPosition());
-	}
-	if (character_->GetSkill<1>())
-	{
-		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
-			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<1>()],
-			camera_->GetPosition());
-	}
-	if (character_->GetSkill<2>())
-	{
-		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
-			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<2>()],
-			camera_->GetPosition());
-	}
-	if (character_->GetSkill<3>())
-	{
-		pos *= XMMatrixTranslation(0, -0.6f, 0);
-		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
-			pos, vp_matrix, light_->GetDirection(), skill_color[character_->GetSkill<3>()],
-			camera_->GetPosition());
-	}
 
+	for (int i = 0; i < 4; i++)
+	{
+		const int type = character_->GetSkill(i).skill_type;
+		const int power =  character_->GetSkill(i).skill_power;
+		if (type == 0) break;
+
+		const float scale = (power + 10) * 0.05f;
+
+		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
+			vp_matrix, light_->GetDirection(), skill_color[type],
+			camera_->GetPosition());
+	}
 
 	// Draw Items
 	for (auto& item : items_)
@@ -501,8 +486,22 @@ void ApplicationClass::Render()
 		character_->GetCooltimeGaugeRatio(curr_time));
 	user_interface_->DrawInvincibleGauge(direct2D_.get(), screen_x, screen_y,
 		character_->GetInvincibleGaugeRatio(curr_time));
-	user_interface_->DrawScoreAndCombo(direct2D_.get(),
-		character_.get(), curr_time);
+	user_interface_->DrawScoreAndCombo(direct2D_.get(), character_.get(), curr_time);
+
+
+	// Get the coordinate of stone with respect to screen coordinate.
+	for (int i = 0; i < 4; i++)
+	{
+		user_interface_->CalculateScreenPos(skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0) * vp_matrix, ortho_inv, screen_x, screen_y);
+		if (character_->GetSkill(i).skill_type)
+		{
+			user_interface_->DrawSkillPower(direct2D_.get(),
+				character_->GetSkill(i).skill_type,
+				character_->GetSkill(i).skill_power, screen_x, screen_y);
+		}
+	}
+
+	
 	user_interface_->DrawFps(direct2D_.get(),
 		timer_->GetActualTime(), timer_->GetActualElapsedTime());
 

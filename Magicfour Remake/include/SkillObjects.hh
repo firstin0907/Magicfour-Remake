@@ -5,7 +5,7 @@
 class SkillObjectSpear : public SkillObjectClass
 {
 public:
-	SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, time_t created_time);
+	SkillObjectSpear(int pos_x, int pos_y, int vx, int vy, int skill_level, time_t created_time);
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
@@ -32,7 +32,7 @@ private:
 class SkillObjectBead : public SkillObjectClass
 {
 public:
-	SkillObjectBead(int pos_x, int pos_y, int vx, int vy, time_t created_time);
+	SkillObjectBead(int pos_x, int pos_y, int vx, int vy, int skill_level, time_t created_time);
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
@@ -57,7 +57,7 @@ private:
 class SkillObjectLeg : public SkillObjectClass
 {
 public:
-	SkillObjectLeg(int pos_x, time_t created_time);
+	SkillObjectLeg(int pos_x, int skill_level, time_t created_time);
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
@@ -108,7 +108,7 @@ class SkillObjectShield : public SkillObjectClass
 {
 public:
 	SkillObjectShield(int pos_x, int pos_y,
-		int vx, int vy, time_t created_time);
+		int vx, int vy, int skill_level, time_t created_time);
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,

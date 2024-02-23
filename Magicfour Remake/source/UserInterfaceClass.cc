@@ -222,6 +222,65 @@ void UserInterfaceClass::DrawInvincibleGauge(D2DClass* direct2D,
 	}
 }
 
+void UserInterfaceClass::DrawFps(D2DClass* direct2D,
+	time_t actual_curr_time, time_t actual_time_delta)
+{
+	static int prev_frame_cnt = 0, frame_cnt = 0;
+	if ((actual_curr_time - actual_time_delta) / 1000 < actual_curr_time / 1000)
+	{
+		prev_frame_cnt = frame_cnt;
+		frame_cnt = 0;
+	}
+	frame_cnt++;
+
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
+	direct2D->RenderText(fps_text_format_.Get(),
+		(L"fps: " + std::to_wstring(prev_frame_cnt)).c_str(),
+		0, 10.0f, (float)(screen_width_ - 30), 45.0f);
+}
+
+void UserInterfaceClass::DrawSkillPower(D2DClass* direct2D,
+	int skill_type, int skill_power, float skill_stone_screen_x,
+	float skill_stone_screen_y)
+{
+	const int render_x = skill_stone_screen_x - 22;
+	const int render_y = skill_stone_screen_y;
+
+	// for debug
+	//direct2D->RenderRect(render_x - 5, render_y - 5, render_x + 5, render_y + 5);
+
+	constexpr float skill_color[5][3] =
+	{
+		{0, 0, 0},
+		{0.45f, 0.05f, 0.15f},
+		{0.10f, 0.04f, 0.05f},
+		{0.05f, 0.15f, 0.45f},
+		{0.01f, 0.05f, 0.05f}
+	};
+
+	direct2D->SetBrushColor(D2D1::ColorF(
+		skill_color[skill_type][0], skill_color[skill_type][1],
+		skill_color[skill_type][2]));
+
+	if(skill_power == 10)
+	{
+
+		direct2D->RenderTextWithInstantFormat(
+			direct2D->CreateTextFormat(L"Arial", 15,
+				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR),
+			L"10", 0, 0, render_x, render_y);
+	}
+	else
+	{
+		direct2D->RenderTextWithInstantFormat(
+			direct2D->CreateTextFormat(L"Arial", 15,
+				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR),
+			(L"0" + std::to_wstring(skill_power)).c_str(),
+			0, 0, render_x, render_y);
+	}
+
+}
+
 void UserInterfaceClass::DrawPauseMark(class D2DClass* direct2D)
 {
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed));
@@ -243,22 +302,6 @@ void UserInterfaceClass::DrawGameoverScreen(D2DClass* direct2D, time_t gameover_
 		0, 0, f_screen_width_, f_screen_height_);
 }
 
-void UserInterfaceClass::DrawFps(D2DClass* direct2D,
-	time_t actual_curr_time, time_t actual_time_delta)
-{
-	static int prev_frame_cnt = 0, frame_cnt = 0;
-	if ((actual_curr_time - actual_time_delta) / 1000 < actual_curr_time / 1000)
-	{
-		prev_frame_cnt = frame_cnt;
-		frame_cnt = 0;
-	}
-	frame_cnt++;
-
-	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
-	direct2D->RenderText(fps_text_format_.Get(),
-		(L"fps: " + std::to_wstring(prev_frame_cnt)).c_str(),
-		0, 10.0f, (float)(screen_width_ - 30), 45.0f);
-}
 
 void UserInterfaceClass::Begin2dDraw(D2DClass* direct2D)
 {
