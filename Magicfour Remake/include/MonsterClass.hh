@@ -75,5 +75,11 @@ public:
 	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;
 
 	bool Damage(const int amount, time_t damaged_time, int vx, int vy);
+	inline bool DamageWithNoKnockBack(const int amount, time_t damaged_time)
+	{
+		hp_ -= amount;
+		if(hp_ <= 0) SetState(MonsterState::kDie, damaged_time);
+		return hp_ > 0;
+	};
 };
 

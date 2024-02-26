@@ -13,6 +13,7 @@ unique_ptr<class ModelClass> SkillObjectBead::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectLeg::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectBasic::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectShield::model_ = nullptr;
+unique_ptr<class ModelClass> SkillObjectGuardian::model_ = nullptr;
 
 SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y,
 	int vx, int vy, int skill_level, time_t created_time)
@@ -27,6 +28,14 @@ void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
 {
 	switch (state_)
 	{
+	case SkillObjectState::kEmbryo:
+
+		if (curr_time < created_time_) break;
+
+		// If created time is passed, set state as normal and move this instance.
+		SetState(SkillObjectState::kNormal, created_time_);
+		time_delta = curr_time - created_time_;
+			
 	case SkillObjectState::kNormal:
 	{
 		// Movement acoording to the current velocity.
@@ -74,6 +83,13 @@ bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 {
 	switch (state_)
 	{
+	case SkillObjectState::kNormal:
+		if (position_.x <= kSpawnLeftX - 300000 || position_.x >= kSpawnRightX + 300000)
+		{
+			state_ = SkillObjectState::kDie;
+			return false;
+		}
+
 	case SkillObjectState::kSpearOnGround:
 		if (state_start_time_ + 1000 < curr_time)
 		{
@@ -116,9 +132,22 @@ SkillObjectBead::SkillObjectBead(int pos_x, int pos_y,
 void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<class GroundClass>& ground)
 {
-	time_t state_time = GetStateTime(curr_time);
+	switch (state_)
+	{
+	case SkillObjectState::kEmbryo:
 
-	position_ = GetPositionAfterMove(min(state_time, time_delta));
+		if (curr_time < created_time_) break;
+
+		// If created time is passed, set state as normal and move this instance.
+		SetState(SkillObjectState::kNormal, created_time_);
+		time_delta = curr_time - created_time_;
+
+	case SkillObjectState::kNormal:
+	case SkillObjectState::kBeadOneHit:
+
+		position_ = GetPositionAfterMove(time_delta);
+	}
+
 }
 
 bool SkillObjectBead::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -188,8 +217,19 @@ SkillObjectLeg::SkillObjectLeg(int pos_x, int skill_level, time_t created_time)
 void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<class GroundClass>& ground)
 {
-	time_delta = min(time_delta, curr_time - state_start_time_);
-	position_.y += 2'000 * time_delta;
+	switch (state_)
+	{
+	case SkillObjectState::kEmbryo:
+		if (curr_time < created_time_) break;
+
+		// If created time is passed, set state as normal and move this instance.
+		SetState(SkillObjectState::kNormal, created_time_);
+		time_delta = curr_time - created_time_;
+
+	case SkillObjectState::kNormal:
+		position_.y += 2'000 * time_delta;
+		break;
+	}
 }
 
 bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -240,22 +280,23 @@ ModelClass* SkillObjectLeg::GetModel()
 
 
 
-SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx, time_t created_time)
+SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx,
+	int skill_level, time_t created_time)
 	: SkillObjectClass(pos_x, pos_y,
-		rect_t{ -60000, 80000, 60000, 380000 }, vx, 0, 0, created_time)
+		rect_t{ -60000, 80000, 60000, 380000 }, vx, 0, skill_level, created_time)
 {
 }
 
 void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<class GroundClass>& ground)
 {
-	
+
 }
 
 bool SkillObjectBasic::OnCollided(MonsterClass* monster, time_t collided_time)
 {
 	if (!SkillObjectClass::OnCollided(monster, collided_time)) return false;
-	monster->Damage(40, collided_time, velocity_.x, 0);
+	monster->Damage((skill_level_) ? 70 : 35, collided_time, velocity_.x, 0);
 	return true;
 }
 
@@ -267,7 +308,7 @@ bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
 
 XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)
 {
-	return XMMatrixIdentity();
+	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
 void SkillObjectBasic::initialize(ModelClass* model)
@@ -293,10 +334,20 @@ SkillObjectShield::SkillObjectShield(int pos_x, int pos_y,
 void SkillObjectShield::FrameMove(time_t curr_time,
 	time_t time_delta, const vector<class GroundClass>& ground)
 {
-	curr_time = min(state_start_time_ + 200, curr_time);
-	time_delta = min(time_delta, curr_time - state_start_time_);
+	switch (state_)
+	{
+	case SkillObjectState::kEmbryo:
+		if (curr_time < created_time_) break;
 
-	position_ = GetPositionAfterMove(time_delta);
+		// If created time is passed, set state as normal and move this instance.
+		SetState(SkillObjectState::kNormal, created_time_);
+		time_delta = curr_time - created_time_;
+
+	case SkillObjectState::kNormal:
+
+		position_ = GetPositionAfterMove(time_delta);
+		break;
+	}
 }
 
 bool SkillObjectShield::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -339,6 +390,36 @@ void SkillObjectShield::initialize(ModelClass* model)
 }
 
 ModelClass* SkillObjectShield::GetModel()
+{
+	return model_.get();
+}
+
+SkillObjectGuardian::SkillObjectGuardian()
+	: SkillObjectClass(0, 0, rect_t{ -30000, -30000, 30000, 30000 },
+		0, 0, 0, 0)
+{
+}
+
+bool SkillObjectGuardian::OnCollided(MonsterClass* monster, time_t collided_time)
+{
+	if (!SkillObjectClass::OnCollided(monster, collided_time)) return false;
+
+	const int damage_amount = 20;
+	monster->DamageWithNoKnockBack(damage_amount, collided_time);
+	return true;
+}
+
+XMMATRIX SkillObjectGuardian::GetGlobalShapeTransform(time_t curr_time)
+{
+	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+}
+
+void SkillObjectGuardian::initialize(ModelClass* model)
+{
+	model_ = unique_ptr<ModelClass>(model);
+}
+
+ModelClass* SkillObjectGuardian::GetModel()
 {
 	return model_.get();
 }

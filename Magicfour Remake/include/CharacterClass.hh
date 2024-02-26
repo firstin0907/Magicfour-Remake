@@ -31,8 +31,22 @@ public:
 		int skill_power;
 	};
 
+	enum class SkillBonus : unsigned int
+	{
+		BONUS_STRAIGHT_FLUSH,
+		BONUS_FOUR_CARDS,
+		BONUS_FLUSH,
+		BONUS_STRAIGHT,
+		BONUS_TRIPLE,
+		BONUS_TWO_PAIR,
+		BONUS_ONE_PAIR,
+		BONUS_NO_PAIR,
+		BONUS_NONE
+	};
+
 public:
 	CharacterClass(int pos_x, int pos_y);
+	~CharacterClass() = default;
 
 	bool Frame(time_t time_delta, time_t curr_time, class InputClass* input,
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs,
@@ -50,7 +64,7 @@ public:
 	float GetCooltimeGaugeRatio(time_t curr_time);
 	float GetInvincibleGaugeRatio(time_t curr_time);
 
-	void LearnSkill(int skill_id);
+	SkillBonus LearnSkill(int skill_id, time_t curr_time);
 	inline SkillType GetSkill(const int index)
 	{
 		assert(0 <= index && index <= 3);
@@ -70,30 +84,48 @@ public:
 	inline void AddScore() { ++score_; }
 	void AddCombo(time_t curr_time);
 
-private:
+	inline SkillBonus GetSkillBonus()
+	{
+		return skill_bonus_;
+	}
+	inline time_t GetSkillBonusElapsedTime(time_t curr_time)
+	{
+		return curr_time - time_skill_bonus_get_;
+	}
 
-	void OnSkill(time_t curr_time,
+	inline class SkillObjectGuardian* GetGuardian(int index)
+	{
+		return guardians_[index].get();
+	}
+
+private:
+	void OnSkill(time_t curr_time, time_t delta_time,
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
 
 	bool UseSkill(time_t curr_time,
 		vector<unique_ptr<class SkillObjectClass> >& skill_objs,
 		class SoundClass* sound);
 
+	SkillBonus CalculateSkillBonus();
+
 private:
 	int jump_cnt;
-
-	int skill_state_; // be used in OnSkill(...) method.
-
 	int score_, combo_;
 
 	// The list of skill which the character has.
 	// And the skill which is spellled.
 	struct SkillType skill_[4], skill_currently_used_;
+	SkillBonus skill_bonus_;
+
+	time_t time_skill_bonus_get_;
 
 	time_t time_combo_end_;
 	time_t time_invincible_end_;
 	time_t time_skill_available_;
 	time_t time_skill_ended_;
+
+
+	unique_ptr<class SkillObjectGuardian> guardians_[2];
 
 	unique_ptr<class AnimatedObjectClass> jump_animation_data_;
 	unique_ptr<class AnimatedObjectClass> fall_animation_data_;

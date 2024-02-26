@@ -10,7 +10,7 @@
 
 enum class SkillObjectState
 {
-	kNormal, kDie,
+	kEmbryo, kNormal, kDie,
 	kSpearOnGround,
 	kBeadOneHit
 };
@@ -44,6 +44,8 @@ public:
 protected:
 
 	int skill_level_;
+
+	time_t created_time_;
 
 	// Monster who has been collided with this SkillObjectClass instance.
 	// Key = id of monster instance.

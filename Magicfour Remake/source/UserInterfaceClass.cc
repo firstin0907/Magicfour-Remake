@@ -246,9 +246,6 @@ void UserInterfaceClass::DrawSkillPower(D2DClass* direct2D,
 	const int render_x = skill_stone_screen_x - 22;
 	const int render_y = skill_stone_screen_y;
 
-	// for debug
-	//direct2D->RenderRect(render_x - 5, render_y - 5, render_x + 5, render_y + 5);
-
 	constexpr float skill_color[5][3] =
 	{
 		{0, 0, 0},
@@ -311,4 +308,60 @@ void UserInterfaceClass::Begin2dDraw(D2DClass* direct2D)
 void UserInterfaceClass::End2dDraw(D2DClass* direct2D)
 {
 	direct2D->EndDraw();
+}
+
+void UserInterfaceClass::DrawSkillBonus(D2DClass* direct2D,
+	unsigned int skill_bonus, time_t learn_elapsed_time)
+{
+	const wchar_t* skill_text = L"";
+	switch (static_cast<CharacterClass::SkillBonus>(skill_bonus))
+	{
+
+	case CharacterClass::SkillBonus::BONUS_STRAIGHT_FLUSH:
+		skill_text = L"Straight Flush : Straight + Flush";
+		break;
+	case CharacterClass::SkillBonus::BONUS_FOUR_CARDS:
+		skill_text = L"Four Cards : Coincided Skill";
+		break;
+	case CharacterClass::SkillBonus::BONUS_FLUSH:
+		skill_text = L"Flush : More Improved Skill";
+		break;
+	case CharacterClass::SkillBonus::BONUS_STRAIGHT:
+		skill_text = L"Straight : Faster Skill Charge";
+		break;
+	case CharacterClass::SkillBonus::BONUS_TRIPLE:
+		skill_text = L"Triple : More Powerful Skill";
+		break;
+	case CharacterClass::SkillBonus::BONUS_TWO_PAIR:
+		skill_text = L"Two Pair : Two Guardian Beads";
+		break;
+	case CharacterClass::SkillBonus::BONUS_ONE_PAIR:
+		skill_text = L"One Pair : One Guardian Bead";
+		break;
+	case CharacterClass::SkillBonus::BONUS_NO_PAIR:
+		skill_text = L"No Pair : More Powerful Basic Attack";
+		break;
+	}
+
+	if (learn_elapsed_time <= 5'000)
+	{
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, (5000 - learn_elapsed_time) / 5000.0f));
+
+		direct2D->RenderTextWithInstantFormat(
+			direct2D->CreateTextFormat(L"Arial", 40,
+				DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER),
+			skill_text, 0, 0, f_screen_width_,
+			f_screen_height_ - f_screen_height_ * (learn_elapsed_time / 8000.0f) / 3);
+	}
+
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, 0.5f));
+	direct2D->RenderRect(f_screen_width_ - 300, f_screen_height_ - 27,
+		f_screen_width_, f_screen_height_);
+
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White));
+	direct2D->RenderTextWithInstantFormat(
+		direct2D->CreateTextFormat(L"Arial", 18,
+			DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER),
+		skill_text, f_screen_width_ - 293, f_screen_height_ - 27,
+		f_screen_width_, f_screen_height_);
 }

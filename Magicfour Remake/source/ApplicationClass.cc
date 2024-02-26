@@ -105,6 +105,12 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		L"data/model/Shield/Sheld_LPFF_Sheld_BaseColor.png",
 		L"data/model/Shield/Sheld_LPFF_Sheld_Normal.png"
 	));
+	SkillObjectGuardian::initialize(new ModelClass(direct3D_->GetDevice(),
+		"data/model/Orb/orb_low.obj",
+		L"data/model/Orb/orb_low_fragment_BaseColor.png",
+		L"data/model/Orb/orb_low_fragment_Normal.png",
+		L"data/model/Orb/orb_low_fragment_Emissive.png"
+	));
 
 	// Create character instance.
 	character_ = make_unique<CharacterClass>(0, 0);
@@ -212,9 +218,44 @@ void ApplicationClass::GameFrame(InputClass* input)
 		item->FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 
+	// if
+	if (character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_ONE_PAIR ||
+		character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_TWO_PAIR)
+	{
+		for (auto& monster : monsters_)
+		{
+			if (monster->GetState() == MonsterState::kDie) continue;
+			if (monster->GetState() == MonsterState::kEmbryo) continue;
+
+			if (character_->GetGuardian(0)->GetGlobalRange().collide(monster->GetGlobalRange()))
+			{
+				if (character_->GetGuardian(0)->OnCollided(monster.get(), curr_time))
+				{
+					// If monster was sucessfully hit, add combo
+					character_->AddCombo(curr_time);
+				}
+			}
+			
+			if (character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_TWO_PAIR &&
+				character_->GetGuardian(1)->GetGlobalRange().collide(monster->GetGlobalRange()))
+			{
+				if (character_->GetGuardian(1)->OnCollided(monster.get(), curr_time))
+				{
+					// If monster was sucessfully hit, add combo
+					character_->AddCombo(curr_time);
+				}
+			}
+		}
+	}
+
+
+
 	// Coliide check
 	for (auto& skill_obj : skillObjectList_)
 	{
+		if (skill_obj->GetState() == SkillObjectState::kEmbryo) continue;
+		if (skill_obj->GetState() == SkillObjectState::kDie) continue;
+
 		for (auto& monster : monsters_)
 		{
 			if (monster->GetState() == MonsterState::kDie) continue;
@@ -258,7 +299,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 		if (character_->GetGlobalRange().collide(item->GetGlobalRange()))
 		{
-			character_->LearnSkill(item->GetType());
+			character_->LearnSkill(item->GetType(), curr_time);
 			item->SetState(ItemState::kDie, curr_time);
 		}
 	}
@@ -427,6 +468,45 @@ void ApplicationClass::Render()
 		}
 		
 	}
+	if (character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_ONE_PAIR ||
+		character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_TWO_PAIR)
+	{
+		SkillObjectGuardian* skill_obj = character_->GetGuardian(0);
+		auto obj_model = skill_obj->GetModel();
+		obj_model->Render(direct3D_->GetDeviceContext());
+
+		if (obj_model->GetNormalTexture())
+		{
+			normalMap_shader_->Render(direct3D_->GetDeviceContext(), obj_model,
+				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
+				light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+		}
+		else
+		{
+			light_shader_->Render(direct3D_->GetDeviceContext(), obj_model->GetIndexCount(),
+				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
+				light_->GetDirection(), light_->GetDiffuseColor());
+		}
+
+		if (character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_TWO_PAIR)
+		{
+			skill_obj = character_->GetGuardian(1);
+			if (obj_model->GetNormalTexture())
+			{
+				normalMap_shader_->Render(direct3D_->GetDeviceContext(), obj_model,
+					skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
+					light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+			}
+			else
+			{
+				light_shader_->Render(direct3D_->GetDeviceContext(), obj_model->GetIndexCount(),
+					skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
+					light_->GetDirection(), light_->GetDiffuseColor());
+			}
+		}
+	}
+
+
 
 	model_->Render(direct3D_->GetDeviceContext());
 	for (auto& monster : monsters_)
@@ -500,7 +580,9 @@ void ApplicationClass::Render()
 				character_->GetSkill(i).skill_power, screen_x, screen_y);
 		}
 	}
-
+	user_interface_->DrawSkillBonus(direct2D_.get(),
+		static_cast<unsigned int>(character_->GetSkillBonus()),
+			character_->GetSkillBonusElapsedTime(curr_time));
 	
 	user_interface_->DrawFps(direct2D_.get(),
 		timer_->GetActualTime(), timer_->GetActualElapsedTime());

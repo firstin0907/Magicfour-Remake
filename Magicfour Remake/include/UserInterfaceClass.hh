@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <queue>
 #include <memory>
 #include <d3d11.h>
 #include <wrl.h>
@@ -46,6 +47,8 @@ public:
 	void DrawSkillPower(D2DClass* direct2D,
 		int skill_type, int skill_power, float skill_stone_screen_x,
 		float skill_stone_screen_y);
+	void DrawSkillBonus(D2DClass* direct2D, unsigned int skill_bonus,
+		time_t learn_elapsed_time);
 
 	void DrawFps(D2DClass* direct2D,
 		time_t actual_curr_time, time_t actual_time_delta);
@@ -61,6 +64,8 @@ public:
 private:
 	int screen_width_, screen_height_;
 	float f_screen_width_, f_screen_height_;
+
+	std::pair<unsigned int, time_t> bonus_effect_;
 
 	unique_ptr<class BitmapClass> monster_hp_gauge_bitmap_;
 	unique_ptr<class BitmapClass> skill_gauge_gray_bitmap_;
