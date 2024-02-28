@@ -290,7 +290,19 @@ SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx,
 void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
 	const vector<class GroundClass>& ground)
 {
+	switch (state_)
+	{
+	case SkillObjectState::kEmbryo:
+		if (curr_time < created_time_) break;
 
+		// If created time is passed, set state as normal and move this instance.
+		SetState(SkillObjectState::kNormal, created_time_);
+		time_delta = curr_time - created_time_;
+
+	case SkillObjectState::kNormal:
+		position_ = GetPositionAfterMove(time_delta);
+		break;
+	}
 }
 
 bool SkillObjectBasic::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -303,7 +315,7 @@ bool SkillObjectBasic::OnCollided(MonsterClass* monster, time_t collided_time)
 bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
 {
 	constexpr time_t lifetime = 200;
-	return state_start_time_ + lifetime > curr_time;
+	return created_time_ + lifetime > curr_time;
 }
 
 XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)
