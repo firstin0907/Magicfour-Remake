@@ -562,12 +562,8 @@ void ApplicationClass::Render()
 
 	user_interface_->CalculateScreenPos(character_->GetLocalWorldMatrix() * vp_matrix,
 		ortho_inv, screen_x, screen_y);
-	user_interface_->DrawSkillGauge(direct2D_.get(), screen_x, screen_y,
-		character_->GetCooltimeGaugeRatio(curr_time));
-	user_interface_->DrawInvincibleGauge(direct2D_.get(), screen_x, screen_y,
-		character_->GetInvincibleGaugeRatio(curr_time));
-	user_interface_->DrawScoreAndCombo(direct2D_.get(), character_.get(), curr_time);
-
+	user_interface_->DrawCharacterInfo(direct2D_.get(), character_.get(),
+		screen_x, screen_y, curr_time);
 
 	// Get the coordinate of stone with respect to screen coordinate.
 	for (int i = 0; i < 4; i++)
@@ -580,10 +576,6 @@ void ApplicationClass::Render()
 				character_->GetSkill(i).skill_power, screen_x, screen_y);
 		}
 	}
-	user_interface_->DrawSkillBonus(direct2D_.get(),
-		static_cast<unsigned int>(character_->GetSkillBonus()),
-			character_->GetSkillBonusElapsedTime(curr_time));
-	
 	user_interface_->DrawFps(direct2D_.get(),
 		timer_->GetActualTime(), timer_->GetActualElapsedTime());
 

@@ -30,6 +30,7 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 	gameover_text_format_ = direct2D->CreateTextFormat(L"Cambria", 70,
 		DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
+
 	monster_hp_gauge_bitmap_ = make_unique<BitmapClass>(
 		direct2D, L"data/texture/user_interface/monster_hp_frame.png"
 	);
@@ -45,10 +46,6 @@ UserInterfaceClass::~UserInterfaceClass()
 {
 }
 
-void UserInterfaceClass::Render()
-{
-}
-
 void UserInterfaceClass::CalculateScreenPos(const XMMATRIX& mvp_matrix,
 	const XMMATRIX& ortho_inv, float& x, float& y)
 {
@@ -61,6 +58,33 @@ void UserInterfaceClass::CalculateScreenPos(const XMMATRIX& mvp_matrix,
 	x = point.m128_f32[0] + screen_width_ / 2.0f;
 	y = screen_height_ / 2.0f - point.m128_f32[1];
 }
+
+void UserInterfaceClass::DrawCharacterInfo(D2DClass* direct2D, CharacterClass* character,
+	float char_screen_x, float char_screen_y, time_t curr_time)
+{
+	DrawScoreAndCombo(direct2D, character, curr_time);
+	DrawSkillGauge(direct2D, char_screen_x, char_screen_y,
+		character->GetCooltimeGaugeRatio(curr_time));
+	DrawInvincibleGauge(direct2D, char_screen_x, char_screen_y,
+		character->GetInvincibleGaugeRatio(curr_time));
+	DrawScoreAndCombo(direct2D, character, curr_time);
+	DrawSkillBonus(direct2D,
+		static_cast<unsigned int>(character->GetSkillBonus()),
+		character->GetSkillBonusElapsedTime(curr_time));
+}
+
+
+void UserInterfaceClass::Begin2dDraw(D2DClass* direct2D)
+{
+	direct2D->BeginDraw();
+}
+
+void UserInterfaceClass::End2dDraw(D2DClass* direct2D)
+{
+	direct2D->EndDraw();
+}
+
+
 
 void UserInterfaceClass::DrawWarningVerticalRect(D2DClass* direct2D,
 	float center_x, float width, float progress)
@@ -116,110 +140,6 @@ void UserInterfaceClass::DrawMonsterHp(D2DClass* direct2D,
 
 	// Draw HP Frame
 	direct2D->RenderBitmap(monster_hp_gauge_bitmap_.get(), left, (float)top);
-}
-
-void UserInterfaceClass::DrawScoreAndCombo(D2DClass* direct2D,
-	CharacterClass* character, time_t curr_time)
-{
-	// Draw Score
-	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
-	direct2D->RenderText(score_text_format_.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
-		0, 30.0f, (float)(screen_width_ - 30), 200.0f);
-
-	// Draw Combo
-	const int combo = character->GetCombo();
-	if (combo > 0)
-	{
-		// Remained time for combo.
-		const time_t combo_durable_time = character->GetComboDurableTime(curr_time);
-		const float combo_text_alpha_value = SATURATE(0.0f, (combo_durable_time - 500.0f) * (1 / 3000.0f), 1.0f);
-
-
-		if (combo < 10) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, combo_text_alpha_value));
-		else if (combo < 30) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkBlue, combo_text_alpha_value));
-		else direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed, combo_text_alpha_value));
-
-
-		float font_size_1, font_size_2 = 45.0f;
-		font_size_1 = 65.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 30.0f;
-
-		if (combo_durable_time < 4970)
-			font_size_2 = 45.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 20.0f;
-
-		int font_offset = combo_durable_time > 4800 ? (combo_durable_time - 4800) / 5 : 0;
-
-
-		direct2D->RenderTextWithInstantFormat(
-			direct2D->CreateTextFormat(L"Arial", font_size_1,
-				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), std::to_wstring(combo).c_str(),
-			0, (float)(screen_height_ / 2), (float)(screen_width_ - 190 - font_offset), (float)(screen_height_ / 2));
-
-		direct2D->RenderTextWithInstantFormat(
-			direct2D->CreateTextFormat(L"Arial", font_size_2,
-				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
-			0, (float)(screen_height_ / 2), (float)(screen_width_ - 30), (float)(screen_height_ / 2));
-	}
-}
-
-void UserInterfaceClass::DrawSkillGauge(D2DClass* direct2D,
-	float char_screen_x, float char_screen_y, float skill_charge_ratio)
-{
-	if (skill_charge_ratio < -0.1f) return;
-
-	const float left = char_screen_x - 40;
-	const float top = char_screen_y - 196;
-
-	const float right = left + skill_gauge_gray_bitmap_->GetWidth();
-	const float bottom = top + skill_gauge_gray_bitmap_->GetHeight();
-
-	if (skill_charge_ratio > 0.0f)
-	{
-		const float height = skill_gauge_gray_bitmap_->GetHeight() * skill_charge_ratio;
-
-		auto dest = D2D1::RectF(left, bottom - height, right, bottom);
-		auto source = D2D1::RectF(0,
-			skill_gauge_gray_bitmap_->GetHeight() - height,
-			right, skill_gauge_gray_bitmap_->GetHeight());
-
-		direct2D->RenderBitmap(skill_gauge_gray_bitmap_.get(), dest, source);
-	}
-	else
-	{
-		const float alpha = 1.0f - skill_charge_ratio / -0.1f;
-		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, alpha));
-
-		direct2D->RenderRect(left, top, right, bottom);
-	}
-}
-void UserInterfaceClass::DrawInvincibleGauge(D2DClass* direct2D,
-	float char_screen_x, float char_screen_y, float invincible_ratio)
-{
-	if (invincible_ratio < -0.1f) return;
-
-	const float left = char_screen_x + 40;
-	const float top = char_screen_y - 196;
-
-	const float right = left + invincible_gauge_bitmap_->GetWidth();
-	const float bottom = top + invincible_gauge_bitmap_->GetHeight();
-
-	if (invincible_ratio > 0.0f)
-	{
-		const float height = invincible_gauge_bitmap_->GetHeight() * invincible_ratio;
-
-		auto dest = D2D1::RectF(left, bottom - height, right, bottom);
-		auto source = D2D1::RectF(0,
-			invincible_gauge_bitmap_->GetHeight() - height,
-			right, invincible_gauge_bitmap_->GetHeight());
-
-		direct2D->RenderBitmap(invincible_gauge_bitmap_.get(), dest, source);
-	}
-	else
-	{
-		const float alpha = 1.0f - invincible_ratio / -0.1f;
-		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, alpha));
-
-		direct2D->RenderRect(left, top, right, bottom);
-	}
 }
 
 void UserInterfaceClass::DrawFps(D2DClass* direct2D,
@@ -300,14 +220,111 @@ void UserInterfaceClass::DrawGameoverScreen(D2DClass* direct2D, time_t gameover_
 }
 
 
-void UserInterfaceClass::Begin2dDraw(D2DClass* direct2D)
+
+
+void UserInterfaceClass::DrawScoreAndCombo(D2DClass* direct2D,
+	CharacterClass* character, time_t curr_time)
 {
-	direct2D->BeginDraw();
+	// Draw Score
+	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
+	direct2D->RenderText(score_text_format_.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
+		0, 30.0f, (float)(screen_width_ - 30), 200.0f);
+
+	// Draw Combo
+	const int combo = character->GetCombo();
+	if (combo > 0)
+	{
+		// Remained time for combo.
+		const time_t combo_durable_time = character->GetComboDurableTime(curr_time);
+		const float combo_text_alpha_value = SATURATE(0.0f, (combo_durable_time - 500.0f) * (1 / 3000.0f), 1.0f);
+
+
+		if (combo < 10) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, combo_text_alpha_value));
+		else if (combo < 30) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkBlue, combo_text_alpha_value));
+		else direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed, combo_text_alpha_value));
+
+
+		float font_size_1, font_size_2 = 45.0f;
+		font_size_1 = 65.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 30.0f;
+
+		if (combo_durable_time < 4970)
+			font_size_2 = 45.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 20.0f;
+
+		int font_offset = combo_durable_time > 4800 ? (combo_durable_time - 4800) / 5 : 0;
+
+
+		direct2D->RenderTextWithInstantFormat(
+			direct2D->CreateTextFormat(L"Arial", font_size_1,
+				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), std::to_wstring(combo).c_str(),
+			0, (float)(screen_height_ / 2), (float)(screen_width_ - 190 - font_offset), (float)(screen_height_ / 2));
+
+		direct2D->RenderTextWithInstantFormat(
+			direct2D->CreateTextFormat(L"Arial", font_size_2,
+				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
+			0, (float)(screen_height_ / 2), (float)(screen_width_ - 30), (float)(screen_height_ / 2));
+	}
 }
 
-void UserInterfaceClass::End2dDraw(D2DClass* direct2D)
+void UserInterfaceClass::DrawSkillGauge(D2DClass* direct2D,
+	float char_screen_x, float char_screen_y, float skill_charge_ratio)
 {
-	direct2D->EndDraw();
+	if (skill_charge_ratio < -0.1f) return;
+
+	const float left = char_screen_x - 40;
+	const float top = char_screen_y - 196;
+
+	const float right = left + skill_gauge_gray_bitmap_->GetWidth();
+	const float bottom = top + skill_gauge_gray_bitmap_->GetHeight();
+
+	if (skill_charge_ratio > 0.0f)
+	{
+		const float height = skill_gauge_gray_bitmap_->GetHeight() * skill_charge_ratio;
+
+		auto dest = D2D1::RectF(left, bottom - height, right, bottom);
+		auto source = D2D1::RectF(0,
+			skill_gauge_gray_bitmap_->GetHeight() - height,
+			right, skill_gauge_gray_bitmap_->GetHeight());
+
+		direct2D->RenderBitmap(skill_gauge_gray_bitmap_.get(), dest, source);
+	}
+	else
+	{
+		const float alpha = 1.0f - skill_charge_ratio / -0.1f;
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, alpha));
+
+		direct2D->RenderRect(left, top, right, bottom);
+	}
+}
+
+void UserInterfaceClass::DrawInvincibleGauge(D2DClass* direct2D,
+	float char_screen_x, float char_screen_y, float invincible_ratio)
+{
+	if (invincible_ratio < -0.1f) return;
+
+	const float left = char_screen_x + 40;
+	const float top = char_screen_y - 196;
+
+	const float right = left + invincible_gauge_bitmap_->GetWidth();
+	const float bottom = top + invincible_gauge_bitmap_->GetHeight();
+
+	if (invincible_ratio > 0.0f)
+	{
+		const float height = invincible_gauge_bitmap_->GetHeight() * invincible_ratio;
+
+		auto dest = D2D1::RectF(left, bottom - height, right, bottom);
+		auto source = D2D1::RectF(0,
+			invincible_gauge_bitmap_->GetHeight() - height,
+			right, invincible_gauge_bitmap_->GetHeight());
+
+		direct2D->RenderBitmap(invincible_gauge_bitmap_.get(), dest, source);
+	}
+	else
+	{
+		const float alpha = 1.0f - invincible_ratio / -0.1f;
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, alpha));
+
+		direct2D->RenderRect(left, top, right, bottom);
+	}
 }
 
 void UserInterfaceClass::DrawSkillBonus(D2DClass* direct2D,
