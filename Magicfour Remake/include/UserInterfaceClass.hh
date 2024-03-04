@@ -45,7 +45,8 @@ public:
 	void DrawMonsterHp(class D2DClass* direct2D,
 		int center_x, int top, float hp_ratio, float hp_white_ratio);
 	void DrawSkillPower(D2DClass* direct2D,
-		int skill_type, int skill_power, float skill_stone_screen_x,
+		int skill_type, int skill_power, time_t skill_learned_elapsed_time,
+		float skill_stone_screen_x,
 		float skill_stone_screen_y);
 
 	void DrawFps(D2DClass* direct2D,

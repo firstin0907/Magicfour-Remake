@@ -126,6 +126,12 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	timer_ = make_unique<TimerClass>();
 	timer_->Frame();
 
+
+	items_.emplace_back(new ItemClass(timer_->GetTime(), 0, 0, 0));
+	items_.emplace_back(new ItemClass(timer_->GetTime(), 7777770, 111110, 0));
+	items_.emplace_back(new ItemClass(timer_->GetTime(), 1231230, 1231230, 3));
+	items_.emplace_back(new ItemClass(timer_->GetTime(), -1231230, 242320, 2));
+
 	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
 		direct3D_->GetDevice(), screenWidth, screenHeight);
 
@@ -437,7 +443,7 @@ void ApplicationClass::Render()
 		const int power =  character_->GetSkill(i).skill_power;
 		if (type == 0) break;
 
-		const float scale = (power + 10) * 0.05f;
+		const float scale = (power + 11) * 0.04f;
 
 		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
 			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
@@ -585,7 +591,9 @@ void ApplicationClass::Render()
 		{
 			user_interface_->DrawSkillPower(direct2D_.get(),
 				character_->GetSkill(i).skill_type,
-				character_->GetSkill(i).skill_power, screen_x, screen_y);
+				character_->GetSkill(i).skill_power,
+				curr_time - character_->GetSkill(i).learned_time,
+				screen_x, screen_y);
 		}
 	}
 	user_interface_->DrawFps(direct2D_.get(),

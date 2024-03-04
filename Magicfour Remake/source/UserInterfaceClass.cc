@@ -159,8 +159,8 @@ void UserInterfaceClass::DrawFps(D2DClass* direct2D,
 }
 
 void UserInterfaceClass::DrawSkillPower(D2DClass* direct2D,
-	int skill_type, int skill_power, float skill_stone_screen_x,
-	float skill_stone_screen_y)
+	int skill_type, int skill_power, time_t skill_learned_elapsed_time,
+	float skill_stone_screen_x, float skill_stone_screen_y)
 {
 	const int render_x = skill_stone_screen_x - 22;
 	const int render_y = skill_stone_screen_y;
@@ -169,7 +169,7 @@ void UserInterfaceClass::DrawSkillPower(D2DClass* direct2D,
 	{
 		{0, 0, 0},
 		{0.45f, 0.05f, 0.15f},
-		{0.10f, 0.04f, 0.05f},
+		{0.10f, 0.40f, 0.05f},
 		{0.05f, 0.15f, 0.45f},
 		{0.01f, 0.05f, 0.05f}
 	};
@@ -195,6 +195,47 @@ void UserInterfaceClass::DrawSkillPower(D2DClass* direct2D,
 			0, 0, render_x, render_y);
 	}
 
+	skill_power = 9;
+	constexpr time_t kEffectTime1 = 200;
+	if (skill_learned_elapsed_time <= kEffectTime1)
+	{
+		direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, 0.7f));
+
+		const int y_offset = 16 * skill_learned_elapsed_time / kEffectTime1;
+		direct2D->RenderRect(render_x - 19, render_y - 20 + y_offset, render_x + 38, render_y - 13 + y_offset);
+	}
+	else if (skill_power < 9)
+	{
+		constexpr time_t kEffectTime2 = 350;
+		if (skill_learned_elapsed_time <= kEffectTime1 + kEffectTime2)
+		{
+			skill_learned_elapsed_time -= kEffectTime1;
+			direct2D->SetBrushColor(D2D1::ColorF(
+				D2D1::ColorF::White, 1.0f - skill_learned_elapsed_time / (float)kEffectTime2));
+
+			direct2D->RenderRect(render_x - 19, render_y - 20, render_x + 38, render_y + 3);
+		}
+	}
+	else
+	{
+		constexpr time_t kEffectTime2 = 350;
+		if (skill_learned_elapsed_time <= kEffectTime1 + kEffectTime2)
+		{
+			direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White));
+			direct2D->RenderRect(render_x - 19, render_y - 20, render_x + 38, render_y + 3);
+		}
+		else if(skill_learned_elapsed_time <= kEffectTime1 + kEffectTime2 * 2)
+		{
+			skill_learned_elapsed_time -= kEffectTime1 + kEffectTime2;
+			direct2D->SetBrushColor(D2D1::ColorF(
+				D2D1::ColorF::White, 1.0f - skill_learned_elapsed_time / (float)kEffectTime2));
+			direct2D->RenderRect(render_x - 19, render_y - 20, render_x + 38, render_y + 3);
+		}
+
+	}
+
+
+	
 }
 
 void UserInterfaceClass::DrawPauseMark(class D2DClass* direct2D)

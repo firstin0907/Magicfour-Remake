@@ -366,6 +366,7 @@ CharacterClass::SkillBonus CharacterClass::LearnSkill(
 			// fill the skill with random power.
 			skill.skill_type = skill_id;
 			skill.skill_power = skill_power;
+			skill.learned_time = curr_time;
 
 			// If all skills is loaded,
 			if (skill_[3].skill_type)

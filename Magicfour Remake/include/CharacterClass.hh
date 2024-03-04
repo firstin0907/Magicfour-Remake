@@ -27,8 +27,9 @@ private:
 public:
 	struct SkillType
 	{
-		int skill_type;
-		int skill_power;
+		int		skill_type;
+		int		skill_power;
+		time_t	learned_time;
 	};
 
 	enum class SkillBonus : unsigned int
@@ -65,7 +66,7 @@ public:
 	float GetInvincibleGaugeRatio(time_t curr_time);
 
 	SkillBonus LearnSkill(int skill_id, time_t curr_time);
-	inline SkillType GetSkill(const int index)
+	inline const SkillType& GetSkill(const int index)
 	{
 		assert(0 <= index && index <= 3);
 		return skill_[index];
