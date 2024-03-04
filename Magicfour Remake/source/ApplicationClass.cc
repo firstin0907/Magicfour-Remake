@@ -54,10 +54,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	diamondModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
 		"data/model/diamond.obj", L"data/texture/stone01.tga");
 	gemModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
-		"data/model/Crystal/Crystals_low.obj",
-		L"data/model/Crystal/None_BaseColor.png",
-		L"data/model/Crystal/None_Normal.png",
-		L"data/model/Crystal/None_Emissive.png");
+		"data/model/Crystal/Crystals_low.obj", L"data/model/Crystal/None_BaseColor.png",
+		L"data/model/Crystal/None_Normal.png", L"data/model/Crystal/None_Emissive.png");
 
 	rainbowTexture_ = make_unique<TextureClass>(direct3D_->GetDevice(),
 		L"data/texture/skill_gauge_rainbow.png");
@@ -194,6 +192,11 @@ void ApplicationClass::GameFrame(InputClass* input)
 	{
 		delta_time = curr_time / GAME_OVER_SLOW - (curr_time - delta_time) / GAME_OVER_SLOW;
 		curr_time = state_start_time_ + character_->GetStateTime(curr_time) / GAME_OVER_SLOW;
+
+		if (curr_time - delta_time < state_start_time_ + 1000 && state_start_time_ + 1000 <= curr_time)
+		{
+			sound_->PlayEffect(EffectSound::kSoundGameOver);
+		}
 	}
 	else monster_spawner_->Frame(curr_time, delta_time, monsters_);
 
@@ -283,11 +286,19 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 			if (result)
 			{
-				sound_->PlayEffect(EffectSound::kSoundCharacterDamage);
 				if (character_->GetState() == CharacterState::kDie)
 				{
 					game_state_ = GameState::kGameOver;
 					state_start_time_ = curr_time;
+					sound_->PlayEffect(EffectSound::kSoundCharacterDie);
+				}
+				else
+				{
+					sound_->PlayEffect(EffectSound::kSoundCharacterDamage);
+					if (character_->GetSkill(0).skill_type == 0)
+					{
+						sound_->PlayEffect(EffectSound::kSoundHeartbeat);
+					}
 				}
 			}
 		}
@@ -301,6 +312,8 @@ void ApplicationClass::GameFrame(InputClass* input)
 		{
 			character_->LearnSkill(item->GetType(), curr_time);
 			item->SetState(ItemState::kDie, curr_time);
+
+			sound_->PlayEffect(EffectSound::kSoundSkillLearn);
 		}
 	}
 
@@ -382,7 +395,7 @@ void ApplicationClass::Render()
 		light_->GetDirection(), light_->GetDiffuseColor());
 	model_->Render(direct3D_->GetDeviceContext());
 
-#if 1
+#if 0
 	light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
 		character_->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 		light_->GetDirection(), light_->GetDiffuseColor());

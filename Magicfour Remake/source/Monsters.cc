@@ -353,6 +353,11 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 			position_.y = max(position_.y,
 				ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
 		}
+
+		if (position_.y == target_y)
+		{
+			velocity_.y = 0;
+		}
 		break;
 	}
 	}

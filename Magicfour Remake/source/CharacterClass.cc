@@ -525,7 +525,7 @@ bool CharacterClass::UseSkill(time_t curr_time,
 		{
 		case 0:
 			time_skill_ended_ = state_start_time_ + 300;
-			sound->PlayEffect(EffectSound::kSoundSpell1);
+			sound->PlayEffect(EffectSound::kSoundSpell3);
 			break;
 
 		case 1:

@@ -13,8 +13,13 @@ enum class BackgroundSound : unsigned int
 enum class EffectSound : unsigned int
 {
 	kSoundCharacterDamage,
+	kSoundCharacterDie,
+	kSoundSkillLearn,
 	kSoundSpell1,
 	kSoundSpell2,
+	kSoundSpell3,
+	kSoundHeartbeat,
+	kSoundGameOver
 };
 
 class SoundClass
