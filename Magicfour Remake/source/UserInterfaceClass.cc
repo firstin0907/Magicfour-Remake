@@ -67,7 +67,6 @@ void UserInterfaceClass::DrawCharacterInfo(D2DClass* direct2D, CharacterClass* c
 		character->GetCooltimeGaugeRatio(curr_time));
 	DrawInvincibleGauge(direct2D, char_screen_x, char_screen_y,
 		character->GetInvincibleGaugeRatio(curr_time));
-	DrawScoreAndCombo(direct2D, character, curr_time);
 	DrawSkillBonus(direct2D,
 		static_cast<unsigned int>(character->GetSkillBonus()),
 		character->GetSkillBonusElapsedTime(curr_time));
@@ -227,7 +226,7 @@ void UserInterfaceClass::DrawScoreAndCombo(D2DClass* direct2D,
 {
 	// Draw Score
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
-	direct2D->RenderText(score_text_format_.Get(), std::to_wstring(character->GetTotalScore(curr_time)).c_str(),
+	direct2D->RenderText(score_text_format_.Get(), std::to_wstring(character->GetScore()).c_str(),
 		0, 30.0f, (float)(screen_width_ - 30), 200.0f);
 
 	// Draw Combo

@@ -347,7 +347,6 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 			// and swap with last element and pop it.
 			swap(monsters_[i], monsters_.back());
-			character_->AddScore();
 			monsters_.pop_back();
 		}
 	}

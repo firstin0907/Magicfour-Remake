@@ -355,6 +355,9 @@ float CharacterClass::GetInvincibleGaugeRatio(time_t curr_time)
 CharacterClass::SkillBonus CharacterClass::LearnSkill(
 	int skill_id, time_t curr_time)
 {
+	int skill_power = RandomClass::rand(1, 10);
+	score_ += skill_power;
+
 	for (auto& skill : skill_)
 	{
 		// If an empty skill slot exists,
@@ -362,7 +365,7 @@ CharacterClass::SkillBonus CharacterClass::LearnSkill(
 		{
 			// fill the skill with random power.
 			skill.skill_type = skill_id;
-			skill.skill_power = RandomClass::rand(1, 10);
+			skill.skill_power = skill_power;
 
 			// If all skills is loaded,
 			if (skill_[3].skill_type)

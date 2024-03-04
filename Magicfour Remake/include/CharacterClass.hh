@@ -71,17 +71,21 @@ public:
 		return skill_[index];
 	}
 
-	inline unsigned long long GetTotalScore(time_t curr_time)
+	inline unsigned int GetScore()
 	{
-		if (state_ == CharacterState::kDie)
-			return score_ * 1'000 + state_start_time_;
-		else return score_ * 1'000 + curr_time;
-	}
-	inline int GetCombo() { return combo_; }
-	inline time_t GetComboDurableTime(time_t curr_time)
-	{ return (time_combo_end_ > curr_time) ? (time_combo_end_ - curr_time) : 0; }
+		return score_;
 
-	inline void AddScore() { ++score_; }
+	}
+	inline unsigned int GetCombo()
+	{
+		return combo_;
+	}
+	
+	inline time_t GetComboDurableTime(time_t curr_time)
+	{
+		return (time_combo_end_ > curr_time) ? (time_combo_end_ - curr_time) : 0;
+	}
+
 	void AddCombo(time_t curr_time);
 
 	inline SkillBonus GetSkillBonus()
@@ -110,7 +114,7 @@ private:
 
 private:
 	int jump_cnt;
-	int score_, combo_;
+	unsigned int score_, combo_;
 
 	// The list of skill which the character has.
 	// And the skill which is spellled.
