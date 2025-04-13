@@ -63,16 +63,16 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 		L"data/texture/background.jpg");
 
 	// Create and initialize the light shader object.
-	light_shader_ = make_unique<LightShaderClass>(direct3D_->GetDevice(), hwnd);
+	light_shader_ = make_unique<LightShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
 
 	// Create and initialize the light object.
 	light_ = make_unique<LightClass>();
 	light_->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light_->SetDirection(0.0f, 0.0f, 1.0f);
 
-	stone_shader_ = make_unique<StoneShaderClass>(direct3D_->GetDevice(), hwnd);
-	texture_shader_ = make_unique<TextureShaderClass>(direct3D_->GetDevice(), hwnd);
-	normalMap_shader_ = make_unique<NormalMapShaderClass>(direct3D_->GetDevice(), hwnd);
+	stone_shader_		= make_unique<StoneShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
+	texture_shader_		= make_unique<TextureShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
+	normalMap_shader_	= make_unique<NormalMapShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
 
 	// Set model of skill object to be rendered.
 	SkillObjectBead::initialize(new ModelClass(direct3D_->GetDevice(),
@@ -391,7 +391,7 @@ void ApplicationClass::Render()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	planeModel_->Render(direct3D_->GetDeviceContext());
-	light_shader_->Render(direct3D_->GetDeviceContext(), 
+	light_shader_->Render( 
 		model_->GetIndexCount(),
 		XMMatrixScaling(192.0f, 153.6f, 1)
 		* XMMatrixTranslation(0, 0, 100.0f),
@@ -413,7 +413,7 @@ void ApplicationClass::Render()
 	if (curr_time <= character_->GetTimeInvincibleEnd()) char_texture = rainbowTexture_->GetTexture();
 	
 	for(auto &box : char_model_matrices) {
-		light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+		light_shader_->Render(model_->GetIndexCount(),
 			box * character_->GetLocalWorldMatrix(), vp_matrix, char_texture,
 			light_->GetDirection(), light_->GetDiffuseColor());
 	}
@@ -445,7 +445,7 @@ void ApplicationClass::Render()
 
 		const float scale = (power + 11) * 0.04f;
 
-		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+		stone_shader_->Render(diamondModel_->GetIndexCount(),
 			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
 			vp_matrix, light_->GetDirection(), skill_color[type],
 			camera_->GetPosition());
@@ -454,7 +454,7 @@ void ApplicationClass::Render()
 	// Draw Items
 	for (auto& item : items_)
 	{
-		stone_shader_->Render(direct3D_->GetDeviceContext(), diamondModel_->GetIndexCount(),
+		stone_shader_->Render(diamondModel_->GetIndexCount(),
 			item->GetShapeMatrix(curr_time) * item->GetLocalWorldMatrix(), vp_matrix,
 			light_->GetDirection(), skill_color[item->GetType()], camera_->GetPosition());
 	}
@@ -474,13 +474,13 @@ void ApplicationClass::Render()
 
 		if (obj_model->GetNormalTexture())
 		{
-			normalMap_shader_->Render(direct3D_->GetDeviceContext(), obj_model,
+			normalMap_shader_->Render(obj_model,
 				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
 				light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 		}
 		else
 		{			
-			light_shader_->Render(direct3D_->GetDeviceContext(), obj_model->GetIndexCount(),
+			light_shader_->Render(obj_model->GetIndexCount(),
 				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
 				light_->GetDirection(), light_->GetDiffuseColor());
 		}
@@ -495,13 +495,13 @@ void ApplicationClass::Render()
 
 		if (obj_model->GetNormalTexture())
 		{
-			normalMap_shader_->Render(direct3D_->GetDeviceContext(), obj_model,
+			normalMap_shader_->Render(obj_model,
 				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
 				light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 		}
 		else
 		{
-			light_shader_->Render(direct3D_->GetDeviceContext(), obj_model->GetIndexCount(),
+			light_shader_->Render(obj_model->GetIndexCount(),
 				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
 				light_->GetDirection(), light_->GetDiffuseColor());
 		}
@@ -511,13 +511,13 @@ void ApplicationClass::Render()
 			skill_obj = character_->GetGuardian(1);
 			if (obj_model->GetNormalTexture())
 			{
-				normalMap_shader_->Render(direct3D_->GetDeviceContext(), obj_model,
+				normalMap_shader_->Render(obj_model,
 					skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
 					light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 			}
 			else
 			{
-				light_shader_->Render(direct3D_->GetDeviceContext(), obj_model->GetIndexCount(),
+				light_shader_->Render(obj_model->GetIndexCount(),
 					skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
 					light_->GetDirection(), light_->GetDiffuseColor());
 			}
@@ -529,25 +529,25 @@ void ApplicationClass::Render()
 	model_->Render(direct3D_->GetDeviceContext());
 	for (auto& monster : monsters_)
 	{
-		normalMap_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+		normalMap_shader_->Render(model_->GetIndexCount(),
 			monster->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			model_->GetNormalTexture(), model_->GetEmissiveTexture(), light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 	}
 
 	for (auto& ground : field_->GetGrounds())
 	{
-		light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
+		light_shader_->Render(model_->GetIndexCount(),
 			ground.GetRange().toMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			light_->GetDirection(), light_->GetDiffuseColor());
 	}
 
 	gemModel_->Render(direct3D_->GetDeviceContext());
-	normalMap_shader_->Render(direct3D_->GetDeviceContext(), gemModel_->GetIndexCount(),
+	normalMap_shader_->Render(gemModel_->GetIndexCount(),
 		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f), vp_matrix, gemModel_->GetDiffuseTexture(),
 		gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture(), light_->GetDirection(),
 		light_->GetDiffuseColor(), camera_->GetPosition());
 
-	normalMap_shader_->Render(direct3D_->GetDeviceContext(), gemModel_->GetIndexCount(),
+	normalMap_shader_->Render(gemModel_->GetIndexCount(),
 		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000) * kScope, 0.0f), vp_matrix, gemModel_->GetDiffuseTexture(),
 		gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture(), light_->GetDirection(),
 		light_->GetDiffuseColor(), camera_->GetPosition());

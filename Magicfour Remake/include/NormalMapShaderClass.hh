@@ -43,31 +43,31 @@ private:
 	};
 
 public:
-	NormalMapShaderClass(ID3D11Device* device, HWND hwnd);
+	NormalMapShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd);
 	NormalMapShaderClass(const NormalMapShaderClass&) = delete;
 	~NormalMapShaderClass() = default;
 
-	void Render(ID3D11DeviceContext* deviceContext,
+	void Render(
 		class ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
-	void Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX,
+	void Render(int, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView* diffuse_texture,
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
 private:
-	void InitializeShader(ID3D11Device* device, HWND hwnd,
+	void InitializeShader(HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
-	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX,
+	void SetShaderParameters(XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView* diffuse_texture,
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture,
 		XMFLOAT3, XMFLOAT4,
 		XMFLOAT3, XMFLOAT3, XMFLOAT3, XMFLOAT3);
-	void RenderShader(ID3D11DeviceContext*, int);
+	void RenderShader(int);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;

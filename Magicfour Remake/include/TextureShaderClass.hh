@@ -26,20 +26,21 @@ private:
 	};
 
 public:
-	TextureShaderClass(ID3D11Device* device, HWND hwnd);
+	TextureShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd);
 	TextureShaderClass(const TextureShaderClass& other) = delete;
 	~TextureShaderClass() = default;
 
-	void Render(ID3D11DeviceContext* deviceContext, int indexCount,
+	void Render(int indexCount,
 		XMMATRIX world_matrix, XMMATRIX vp_matrix, ID3D11ShaderResourceView* texture);
 
 private:
-	void InitializeShader(ID3D11Device* device, HWND hwnd,
+	void InitializeShader(HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
-	void SetShaderParameters(ID3D11DeviceContext* deviceContext,
+	void SetShaderParameters(
 		XMMATRIX world_matrix, XMMATRIX vp_matrix, ID3D11ShaderResourceView* texture);
-	void RenderShader(ID3D11DeviceContext* deviceContext, int indexCount);
+
+	void RenderShader(int indexCount);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;

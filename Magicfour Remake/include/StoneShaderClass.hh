@@ -44,26 +44,26 @@ private:
 	};
 
 public:
-	StoneShaderClass(ID3D11Device* device, HWND hwnd);
+	StoneShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd);
 	StoneShaderClass(const StoneShaderClass&) = delete;
 	~StoneShaderClass() = default;
 
-	void Render(ID3D11DeviceContext* deviceContext,
+	void Render(
 		class ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
-	void Render(ID3D11DeviceContext* deviceContext, int indexCount,
+	void Render(int indexCount,
 		XMMATRIX world_matrix, XMMATRIX vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
 private:
-	void InitializeShader(ID3D11Device* device, HWND hwnd,
+	void InitializeShader(HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
-	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX,
+	void SetShaderParameters(XMMATRIX, XMMATRIX,
 		XMFLOAT3, XMFLOAT4,
 		XMFLOAT3 camera_pos, XMFLOAT3, XMFLOAT3, XMFLOAT3);
-	void RenderShader(ID3D11DeviceContext*, int);
+	void RenderShader(int);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;

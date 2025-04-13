@@ -4,12 +4,12 @@
 
 #include "../include/GameException.hh"
 
-ShaderClass::ShaderClass()
+ShaderClass::ShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context)
+	: device_(device), device_context_(device_context)
 {
-
 }
 
-void ShaderClass::CreateShaderObject(ID3D11Device* device, HWND hwnd,
+void ShaderClass::CreateShaderObject(HWND hwnd,
 	const WCHAR* vs_filename, const WCHAR* ps_filename,
 	D3D11_INPUT_ELEMENT_DESC polygon_layout[], int num_of_elements)
 {
@@ -47,23 +47,23 @@ void ShaderClass::CreateShaderObject(ID3D11Device* device, HWND hwnd,
 	}
 	
 	// Create the vertex shader from the buffer.
-	result = device->CreateVertexShader(vs_buffer->GetBufferPointer(),
+	result = device_->CreateVertexShader(vs_buffer->GetBufferPointer(),
 		vs_buffer->GetBufferSize(), NULL, vertex_shader_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 
 	// Create the pixel shader from the buffer.
-	result = device->CreatePixelShader(ps_buffer->GetBufferPointer(),
+	result = device_->CreatePixelShader(ps_buffer->GetBufferPointer(),
 		ps_buffer->GetBufferSize(), NULL, pixel_shader_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 
 	// Create the vertex input layout.
-	result = device->CreateInputLayout(polygon_layout, num_of_elements,
+	result = device_->CreateInputLayout(polygon_layout, num_of_elements,
 		vs_buffer->GetBufferPointer(), vs_buffer->GetBufferSize(),
 		input_layout_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 }
 
-ID3D11SamplerState* ShaderClass::CreateSamplerState(ID3D11Device* device)
+ID3D11SamplerState* ShaderClass::CreateSamplerState()
 {
 	ID3D11SamplerState* sampler_state;
 	D3D11_SAMPLER_DESC sampler_desc;
@@ -84,7 +84,7 @@ ID3D11SamplerState* ShaderClass::CreateSamplerState(ID3D11Device* device)
 	sampler_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Create the texture sampler state.
-	HRESULT result = device->CreateSamplerState(&sampler_desc, &sampler_state);
+	HRESULT result = device_->CreateSamplerState(&sampler_desc, &sampler_state);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create sampler state.");
 
 	return sampler_state;

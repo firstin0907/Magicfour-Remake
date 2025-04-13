@@ -12,18 +12,18 @@ public:
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 public:
-	ShaderClass();
+	ShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context);
 	~ShaderClass() = default;
 
 	template<typename T>
-	ID3D11Buffer* CreateBasicConstantBuffer(ID3D11Device* device);
+	ID3D11Buffer* CreateBasicConstantBuffer();
 
 protected:
-	void CreateShaderObject(ID3D11Device* device, HWND hwnd,
+	void CreateShaderObject(HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename,
 		D3D11_INPUT_ELEMENT_DESC polygon_layout[], int num_of_elements);
 
-	ID3D11SamplerState* CreateSamplerState(ID3D11Device* device);
+	ID3D11SamplerState* CreateSamplerState();
 
 	void OutputShaderErrorMessage(ID3D10Blob* error_message,
 		HWND hwnd, const WCHAR* shader_filename);
@@ -32,10 +32,13 @@ protected:
 	ComPtr<ID3D11VertexShader>	vertex_shader_;
 	ComPtr<ID3D11PixelShader>	pixel_shader_;
 	ComPtr<ID3D11InputLayout>	input_layout_;
+
+	ID3D11Device*				device_;
+	ID3D11DeviceContext*		device_context_;
 };
 
 template<typename T>
-inline ID3D11Buffer* ShaderClass::CreateBasicConstantBuffer(ID3D11Device* device)
+inline ID3D11Buffer* ShaderClass::CreateBasicConstantBuffer()
 {
 	ID3D11Buffer* buffer;
 
@@ -47,7 +50,7 @@ inline ID3D11Buffer* ShaderClass::CreateBasicConstantBuffer(ID3D11Device* device
 	constantBufferDesc.StructureByteStride = 0;
 	constantBufferDesc.ByteWidth = sizeof(T);
 
-	HRESULT result = device->CreateBuffer(&constantBufferDesc, NULL, &buffer);
+	HRESULT result = device_->CreateBuffer(&constantBufferDesc, NULL, &buffer);
 	if (FAILED(result)) return nullptr;
 	else return buffer;
 }

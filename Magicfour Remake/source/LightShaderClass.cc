@@ -4,11 +4,13 @@
 #include <fstream>
 
 #include "../include/GameException.hh"
+#include "../include/D3DClass.hh"
 
-LightShaderClass::LightShaderClass(ID3D11Device* device, HWND hwnd)
+LightShaderClass::LightShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
+	: ShaderClass(device, device_context)
 {
 	// Initialize the vertex and pixel shaders.
-	InitializeShader(device, hwnd, L"shader/light.vs", L"shader/light.ps");
+	InitializeShader(hwnd, L"shader/light.vs", L"shader/light.ps");
 }
 
 LightShaderClass::~LightShaderClass()
@@ -16,19 +18,18 @@ LightShaderClass::~LightShaderClass()
 
 }
 
-void LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX world_matrix, XMMATRIX vp_matrix,
+void LightShaderClass::Render(int indexCount, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	ID3D11ShaderResourceView* texture, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
 {
 	// Set the shader parameters that it will use for rendering.
-	SetShaderParameters(deviceContext, world_matrix, vp_matrix, texture, light_direction, diffuse_color);
+	SetShaderParameters(world_matrix, vp_matrix, texture, light_direction, diffuse_color);
 
 	// Now render the prepared buffers with the shader.
-	RenderShader(deviceContext, indexCount);
+	RenderShader(indexCount);
 }
 
 
-void LightShaderClass::InitializeShader(
-	ID3D11Device* device, HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename)
+void LightShaderClass::InitializeShader(HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename)
 {
 	constexpr int num_of_elements = 3;
 	D3D11_INPUT_ELEMENT_DESC polygon_layout[num_of_elements];
@@ -54,19 +55,19 @@ void LightShaderClass::InitializeShader(
 	polygon_layout[2].SemanticName = "NORMAL";
 	polygon_layout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 
-	CreateShaderObject(device, hwnd, vs_filename, ps_filename, polygon_layout, 3);
+	CreateShaderObject(hwnd, vs_filename, ps_filename, polygon_layout, 3);
 
 	// Create the texture sampler state.
-	sample_state_ = CreateSamplerState(device);
+	sample_state_ = CreateSamplerState();
 
-	matrix_buffer_ = CreateBasicConstantBuffer<MatrixBufferType>(device);
+	matrix_buffer_ = CreateBasicConstantBuffer<MatrixBufferType>();
 	if (!matrix_buffer_) throw GAME_EXCEPTION(L"Failed to create matrix buffer");
 
-	light_buffer_ = CreateBasicConstantBuffer<LightBufferType>(device);
+	light_buffer_ = CreateBasicConstantBuffer<LightBufferType>();
 	if (!light_buffer_) throw GAME_EXCEPTION(L"Failed to create light buffer");
 }
 
-void LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX world_matrix, XMMATRIX vp_matrix,
+void LightShaderClass::SetShaderParameters(XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	ID3D11ShaderResourceView* texture, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
 {
 	HRESULT result;
@@ -76,7 +77,7 @@ void LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	LightBufferType* dataPtr2;
 
 	// Lock the constant buffer so it can be written to.
-	result = deviceContext->Map(matrix_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = device_context_->Map(matrix_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock matrix buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
@@ -88,19 +89,19 @@ void LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr->world_tr_inv = XMMatrixInverse(nullptr, world_matrix);
 
 	// Unlock the constant buffer.
-	deviceContext->Unmap(matrix_buffer_.Get(), 0);
+	device_context_->Unmap(matrix_buffer_.Get(), 0);
 
 	// Set the position of the constant buffer in the vertex shader.
 	bufferNumber = 0;
 
 	// Now set the constant buffer in the vertex shader with the updated values.
-	deviceContext->VSSetConstantBuffers(bufferNumber, 1, matrix_buffer_.GetAddressOf());
+	device_context_->VSSetConstantBuffers(bufferNumber, 1, matrix_buffer_.GetAddressOf());
 
 	// Set shader texture resource in the pixel shader.
-	deviceContext->PSSetShaderResources(0, 1, &texture);
+	device_context_->PSSetShaderResources(0, 1, &texture);
 
 	// Lock the light constant buffer so it can be written to.
-	result = deviceContext->Map(light_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = device_context_->Map(light_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock light buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
@@ -112,30 +113,30 @@ void LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr2->padding = 0.0f;
 
 	// Unlock the constant buffer.
-	deviceContext->Unmap(light_buffer_.Get(), 0);
+	device_context_->Unmap(light_buffer_.Get(), 0);
 
 	// Set the position of the light constant buffer in the pixel shader.
 	bufferNumber = 0;
 
 	// Finally set the light constant buffer in the pixel shader with the updated values.
-	deviceContext->PSSetConstantBuffers(bufferNumber, 1, light_buffer_.GetAddressOf());
+	device_context_->PSSetConstantBuffers(bufferNumber, 1, light_buffer_.GetAddressOf());
 }
 
 
-void LightShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
+void LightShaderClass::RenderShader(int indexCount)
 {
 	// Set the vertex input layout.
-	deviceContext->IASetInputLayout(input_layout_.Get());
+	device_context_->IASetInputLayout(input_layout_.Get());
 
 	// Set the vertex and pixel shaders that will be used to render this triangle.
-	deviceContext->VSSetShader(vertex_shader_.Get(), NULL, 0);
-	deviceContext->PSSetShader(pixel_shader_.Get(), NULL, 0);
+	device_context_->VSSetShader(vertex_shader_.Get(), NULL, 0);
+	device_context_->PSSetShader(pixel_shader_.Get(), NULL, 0);
 
 	// Set the sampler state in the pixel shader.
-	deviceContext->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
+	device_context_->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 
 	// Render the triangle.
-	deviceContext->DrawIndexed(indexCount, 0, 0);
+	device_context_->DrawIndexed(indexCount, 0, 0);
 
 	return;
 }

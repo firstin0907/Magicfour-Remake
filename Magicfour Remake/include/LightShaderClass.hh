@@ -9,6 +9,8 @@
 
 #include <fstream>
 
+class D3DClass;
+
 class LightShaderClass : public ShaderClass
 {
 private:
@@ -33,18 +35,17 @@ private:
 	};
 
 public:
-	LightShaderClass(ID3D11Device* device, HWND hwnd);
+	LightShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd);
 	LightShaderClass(const LightShaderClass&) = delete;
 	~LightShaderClass();
 
-	void Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
+	void Render(int, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
 private:
-	void InitializeShader(ID3D11Device* device, HWND hwnd,
-		const WCHAR* vs_filename, const WCHAR* ps_filename);
+	void InitializeShader(HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename);
 
-	void SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
-	void RenderShader(ID3D11DeviceContext*, int);
+	void SetShaderParameters(XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
+	void RenderShader(int);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;

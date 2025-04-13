@@ -28,6 +28,9 @@ private:
 	template<typename T>
 	using unique_ptr = std::unique_ptr<T>;
 
+	template<typename T>
+	using shared_ptr = std::shared_ptr<T>;
+
 public:
 	ApplicationClass(int screenWidth, int screenHeight, HWND hwnd);
 	ApplicationClass(const ApplicationClass&) = delete;
