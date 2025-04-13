@@ -37,7 +37,7 @@ constexpr int CAMERA_X_LIMIT = 1'500'000;
 
 constexpr int ITEM_DROP_PROBABILITY = 50;
 
-ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
+ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd, InputClass* input)
 {
 	direct3D_ = make_unique<D3DClass>(screenWidth, screenHeight,
 		VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
@@ -111,8 +111,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd)
 	));
 
 	// Create character instance.
-	character_ = make_unique<CharacterClass>(0, 0);
-	
+	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skillObjectList_);
+
 	// Temporary
 	//monsters_.emplace_back(new MonsterDuck(LEFT_FORWARD, 1000));
 	//monsters_.emplace_back(new MonsterOctopus(RIGHT_FORWARD, 1000));
@@ -206,8 +206,8 @@ void ApplicationClass::GameFrame(InputClass* input)
 	}
 	else monster_spawner_->Frame(curr_time, delta_time, monsters_);
 
-	character_->Frame(delta_time, curr_time, input,
-		skillObjectList_, field_->GetGrounds(), sound_.get());
+	character_->FrameMove(curr_time, delta_time, field_->GetGrounds());
+	character_->Frame(curr_time, delta_time);
 
 	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * kScope;
 	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;

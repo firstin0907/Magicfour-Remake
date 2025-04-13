@@ -200,5 +200,8 @@
     <ClInclude Include="include\FieldClass.hh">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="include\IGameObject.hh">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

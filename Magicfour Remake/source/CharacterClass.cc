@@ -19,11 +19,13 @@ constexpr int kComboDuration = 5'000;
 constexpr int kInvincibleDuration = 5'000;
 constexpr int kWalkSpd = 700, kRunSpd = 1300;
 
-CharacterClass::CharacterClass(int pos_x, int pos_y)
+CharacterClass::CharacterClass(int pos_x, int pos_y,
+	class InputClass* input, class SoundClass* sound,
+	vector<unique_ptr<class SkillObjectClass> >& skill_objs)
 	: RigidbodyClass(
 		Point2d(pos_x, pos_y),
 		rect_t{ -50000, 0, 50000, 400000 }, LEFT_FORWARD
-	), jump_cnt(0), score_(0)
+	), jump_cnt(0), score_(0), input(input), sound(sound), skill_objs(skill_objs)
 {
 	jump_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt");
 	fall_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh");
@@ -47,10 +49,7 @@ CharacterClass::CharacterClass(int pos_x, int pos_y)
 	guardians_[1] = make_unique<SkillObjectGuardian>();
 }
 
-bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* input,
-	vector<unique_ptr<class SkillObjectClass> >& skill_objs,
-	const vector<class GroundClass>& ground,
-	SoundClass* sound)
+void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector<class GroundClass>& ground)
 {
 	bool is_walk = false;
 
@@ -132,7 +131,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	switch (state_)
 	{
 	case CharacterState::kJump:
-		if(is_walk)
+		if (is_walk)
 		{
 			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
 			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
@@ -186,7 +185,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 	case CharacterState::kStop:
 		if (GetStateTime(curr_time) >= 150)
 			SetState(CharacterState::kNormal, state_start_time_ + 150);
-		else if(is_walk) SetState(CharacterState::kRun, curr_time);
+		else if (is_walk) SetState(CharacterState::kRun, curr_time);
 		break;
 
 
@@ -206,10 +205,10 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 			}
 		}
 		else OnSkill(curr_time, time_delta, skill_objs);
-		
+
 		break;
 	}
-		
+
 	case CharacterState::kHit:
 		position_.x += (int)time_delta * velocity_.x;
 		if (GetStateTime(curr_time) >= 500)
@@ -223,7 +222,7 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 		break;
 
 	case CharacterState::kDie:
-		
+
 		if (GetStateTime(curr_time) < 1000)
 		{
 			position_.x = SATURATE(kFieldLeftX, position_.x + (int)time_delta * velocity_.x, kFieldRightX);
@@ -245,9 +244,13 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time, InputClass* inpu
 			guardians_[1]->SetPosition(position_.x - offset_x, position_.y + 200000 - offset_y);
 		}
 	}
+}
 
+bool CharacterClass::Frame(time_t time_delta, time_t curr_time)
+{
 	return true;
 }
+
 
 void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& shape_matrices)
 {

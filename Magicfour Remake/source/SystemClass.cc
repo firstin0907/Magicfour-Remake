@@ -19,7 +19,7 @@ SystemClass::SystemClass()
 		input_ = make_unique<InputClass>(hinstance_, hwnd_, screenWidth, screenHeight);
 
 		// Create and initialize the application class object.  This object will handle rendering all the graphics for this application.
-		application_ = make_unique<ApplicationClass>(screenWidth, screenHeight, hwnd_);
+		application_ = make_unique<ApplicationClass>(screenWidth, screenHeight, hwnd_, input_.get());
 	}
 	catch (const wchar_t* message)
 	{

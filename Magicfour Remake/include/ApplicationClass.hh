@@ -32,7 +32,7 @@ private:
 	using shared_ptr = std::shared_ptr<T>;
 
 public:
-	ApplicationClass(int screenWidth, int screenHeight, HWND hwnd);
+	ApplicationClass(int screenWidth, int screenHeight, HWND hwnd, class InputClass* input);
 	ApplicationClass(const ApplicationClass&) = delete;
 	~ApplicationClass();
 

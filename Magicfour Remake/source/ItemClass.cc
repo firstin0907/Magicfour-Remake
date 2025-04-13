@@ -20,7 +20,7 @@ ItemClass::ItemClass(time_t create_time, int x_pos, int y_pos, int type)
 }
 
 void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
-	const GroundVector& ground)
+	const std::vector<class GroundClass>& ground)
 {
 	const int before_vy = velocity_.y, after_vy = velocity_.y - kGravity * time_delta;
 
@@ -70,6 +70,19 @@ void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 bool ItemClass::Frame(time_t curr_time, time_t time_delta)
 {
 	return curr_time <= createTime_ + ITEM_LIFETIME && state_ == ItemState::kNormal;
+}
+
+bool ItemClass::IsColliable() const
+{
+	switch (state_)
+	{
+	case ItemState::kNormal:
+		return true;
+
+	case ItemState::kDie:
+	default:
+		return false;
+	}
 }
 
 XMMATRIX ItemClass::GetShapeMatrix(time_t curr_time)

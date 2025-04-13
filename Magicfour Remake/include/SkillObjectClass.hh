@@ -31,11 +31,17 @@ public:
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
 		const vector<class GroundClass>& ground) = 0;
 
-	// Should be called when this instance is collided with any valid(live) monster.
-	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
-
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;
+
+	// Check if this instance is on collidable state.
+	virtual bool IsColliable() const override final
+	{
+		return !(state_ == SkillObjectState::kEmbryo || state_ == SkillObjectState::kDie);
+	};
+
+	// Should be called when this instance is collided with any valid(live) monster.
+	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) = 0;
 

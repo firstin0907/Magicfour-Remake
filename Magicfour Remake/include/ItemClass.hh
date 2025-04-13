@@ -17,16 +17,16 @@ private:
 	using GroundVector = std::vector<class GroundClass>;
 
 public:
-	enum state_t { STATE_NORMAL, STATE_DIE };
-
 	ItemClass(time_t create_time, int x_pos, int y_pos, int type);
 
-	// Move instance as time goes by.
-	void FrameMove(time_t curr_time, time_t time_delta,
-		const GroundVector& ground);
+	// Change the location for one frame.
+	virtual void FrameMove(time_t curr_time, time_t time_delta, const std::vector<class GroundClass>& ground) override final;
 
-	// Decide this item should be deleted due to the time.
-	bool Frame(time_t curr_time, time_t time_delta);
+	// Proceed the logic for one frame, and return this is still alive.
+	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+
+	// Check if this instance is on collidable state.
+	virtual bool IsColliable() const override final;
 
 	XMMATRIX GetShapeMatrix(time_t curr_time);
 

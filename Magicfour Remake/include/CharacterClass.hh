@@ -46,13 +46,21 @@ public:
 	};
 
 public:
-	CharacterClass(int pos_x, int pos_y);
+	CharacterClass(int pos_x, int pos_y,
+		class InputClass* input, class SoundClass *sound,
+		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
 	~CharacterClass() = default;
 
-	bool Frame(time_t time_delta, time_t curr_time, class InputClass* input,
-		vector<unique_ptr<class SkillObjectClass> >& skill_objs,
-		const vector<class GroundClass>& ground,
-		class SoundClass* sound);
+	// Move instance as time goes by.
+	virtual void FrameMove(time_t curr_time, time_t time_delta,
+		const vector<class GroundClass>& ground) override final;
+
+	// Should be called after processing any collision with monsters. 
+	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+
+	// Should be called when this instance is collided with any valid(live) monster.
+	virtual bool IsColliable() const override final { return true; };
+
 	
 	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);
 	inline time_t GetTimeInvincibleEnd() { return time_invincible_end_; }
@@ -152,6 +160,12 @@ private:
 	unique_ptr<class AnimatedObjectClass> walk_animation_data_;
 	unique_ptr<class AnimatedObjectClass> run_animation_data_;
 	unique_ptr<class AnimatedObjectClass> skill_animation_data_;
+
+private:
+	class InputClass* input;
+	class SoundClass* sound;
+
+	vector<unique_ptr<class SkillObjectClass> >& skill_objs;
 };
 
 

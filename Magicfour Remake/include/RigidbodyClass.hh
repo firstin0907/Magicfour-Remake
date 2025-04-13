@@ -1,9 +1,10 @@
 #pragma once
 
 #include "global.hh"
+#include "IGameObject.hh"
 
 template <typename STATE_TYPE>
-class RigidbodyClass
+class RigidbodyClass : public IGameObject
 {
 public:
 	struct Point2d
@@ -37,7 +38,7 @@ public:
 		return DirectX::XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0);
 	}
 
-	inline rect_t GetGlobalRange()
+	virtual rect_t GetGlobalRange() const override final
 	{
 		return range_.add(position_.x, position_.y);
 	}
