@@ -227,28 +227,19 @@ void ApplicationClass::GameFrame(InputClass* input)
 		item->FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 
-	// if
-	if (character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_ONE_PAIR ||
-		character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_TWO_PAIR)
+	// Handle collision for the gaurdians.
+	// The content of this loop is proceeded at most two times at once,
+	// because character_->GetGuardian(3) always returns nullptr.
+	for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
 	{
 		for (auto& monster : monsters_)
 		{
 			if (monster->GetState() == MonsterState::kDie) continue;
 			if (monster->GetState() == MonsterState::kEmbryo) continue;
 
-			if (character_->GetGuardian(0)->GetGlobalRange().collide(monster->GetGlobalRange()))
+			if (character_->GetGuardian(i)->GetGlobalRange().collide(monster->GetGlobalRange()))
 			{
-				if (character_->GetGuardian(0)->OnCollided(monster.get(), curr_time))
-				{
-					// If monster was sucessfully hit, add combo
-					character_->AddCombo(curr_time);
-				}
-			}
-			
-			if (character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_TWO_PAIR &&
-				character_->GetGuardian(1)->GetGlobalRange().collide(monster->GetGlobalRange()))
-			{
-				if (character_->GetGuardian(1)->OnCollided(monster.get(), curr_time))
+				if (character_->GetGuardian(i)->OnCollided(monster.get(), curr_time))
 				{
 					// If monster was sucessfully hit, add combo
 					character_->AddCombo(curr_time);
@@ -256,8 +247,6 @@ void ApplicationClass::GameFrame(InputClass* input)
 			}
 		}
 	}
-
-
 
 	// Coliide check
 	for (auto& skill_obj : skillObjectList_)
@@ -616,6 +605,7 @@ void ApplicationClass::Render()
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	direct3D_->TurnZBufferOn();
+
 
 
 	// Present the rendered scene to the screen.

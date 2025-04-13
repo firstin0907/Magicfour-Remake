@@ -98,9 +98,24 @@ public:
 		return curr_time - time_skill_bonus_get_;
 	}
 
+	/**
+	* @brief return guardian pointer for the index if the guardian is activated.
+	* @param[in] index
+	* @returns if the guardian is activated and valid, return the pointer. If not, return nullptr.
+	*/
 	inline class SkillObjectGuardian* GetGuardian(int index)
 	{
-		return guardians_[index].get();
+		if (index == 1)
+		{
+			if (skill_bonus_ == SkillBonus::BONUS_TWO_PAIR) return guardians_[1].get();
+			return nullptr;
+		}
+		else if (index == 0)
+		{
+			if (skill_bonus_ == SkillBonus::BONUS_ONE_PAIR || skill_bonus_ == SkillBonus::BONUS_TWO_PAIR) return guardians_[0].get();
+			return nullptr;
+		}
+		else return nullptr;
 	}
 
 private:
