@@ -27,6 +27,7 @@
 #include "../include/RandomClass.hh"
 #include "../include/GameException.hh"
 #include "../include/SoundClass.hh"
+#include "../include/CollisionProcessor.hh"
 #include "../include/FieldClass.hh"
 
 using namespace std;
@@ -111,7 +112,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	));
 
 	// Create character instance.
-	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skillObjectList_);
+	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skillObjectList_.elements);
 
 	// Temporary
 	//monsters_.emplace_back(new MonsterDuck(LEFT_FORWARD, 1000));
@@ -127,10 +128,10 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	timer_->Frame();
 
 
-	items_.emplace_back(new ItemClass(timer_->GetTime(), 0, 0, 0));
-	items_.emplace_back(new ItemClass(timer_->GetTime(), 7777770, 111110, 0));
-	items_.emplace_back(new ItemClass(timer_->GetTime(), 1231230, 1231230, 3));
-	items_.emplace_back(new ItemClass(timer_->GetTime(), -1231230, 242320, 2));
+	items_.Insert(new ItemClass(timer_->GetTime(), 0, 0, 0));
+	items_.Insert(new ItemClass(timer_->GetTime(), 7777770, 111110, 0));
+	items_.Insert(new ItemClass(timer_->GetTime(), 1231230, 1231230, 3));
+	items_.Insert(new ItemClass(timer_->GetTime(), -1231230, 242320, 2));
 
 	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
 		direct3D_->GetDevice(), screenWidth, screenHeight);
@@ -204,27 +205,19 @@ void ApplicationClass::GameFrame(InputClass* input)
 			sound_->PlayEffect(EffectSound::kSoundGameOver);
 		}
 	}
-	else monster_spawner_->Frame(curr_time, delta_time, monsters_);
+	else monster_spawner_->Frame(curr_time, delta_time, monsters_.elements);
 
 	character_->FrameMove(curr_time, delta_time, field_->GetGrounds());
 	character_->Frame(curr_time, delta_time);
 
-	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * kScope;
-	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
-	camera_->SetPosition(camera_x, camera_y, CAMERA_Z_POSITION);
-
-
 	// Move skill object instances.
-	for (auto& skill_obj : skillObjectList_)
-		skill_obj->FrameMove(curr_time, delta_time, field_->GetGrounds());
+	skillObjectList_.FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 	// Move monsters.
-	for (auto& monster : monsters_)
-		monster->FrameMove(curr_time, delta_time, field_->GetGrounds());
+	monsters_.FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 	// Move items.
-	for (auto& item : items_)
-		item->FrameMove(curr_time, delta_time, field_->GetGrounds());
+	items_.FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 
 	// Handle collision for the gaurdians.
@@ -232,136 +225,77 @@ void ApplicationClass::GameFrame(InputClass* input)
 	// because character_->GetGuardian(3) always returns nullptr.
 	for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
 	{
-		for (auto& monster : monsters_)
-		{
-			if (monster->GetState() == MonsterState::kDie) continue;
-			if (monster->GetState() == MonsterState::kEmbryo) continue;
-
-			if (character_->GetGuardian(i)->GetGlobalRange().collide(monster->GetGlobalRange()))
+		CollisionProcessor::Process<SkillObjectGuardian, MonsterClass>(
+			character_->GetGuardian(i), monsters_, [this, curr_time](SkillObjectGuardian* skill_obj, MonsterClass* monster)
 			{
-				if (character_->GetGuardian(i)->OnCollided(monster.get(), curr_time))
-				{
-					// If monster was sucessfully hit, add combo
-					character_->AddCombo(curr_time);
-				}
-			}
-		}
+				if (!skill_obj->OnCollided(monster, curr_time)) return;
+				character_->AddCombo(curr_time);
+			});
 	}
 
 	// Coliide check
-	for (auto& skill_obj : skillObjectList_)
-	{
-		if (skill_obj->GetState() == SkillObjectState::kEmbryo) continue;
-		if (skill_obj->GetState() == SkillObjectState::kDie) continue;
-
-		for (auto& monster : monsters_)
+	CollisionProcessor::Process<SkillObjectClass, MonsterClass>(
+		skillObjectList_, monsters_, [this, curr_time](SkillObjectClass* skill_obj, MonsterClass* monster)
 		{
-			if (monster->GetState() == MonsterState::kDie) continue;
-			if (monster->GetState() == MonsterState::kEmbryo) continue;
+			if (!skill_obj->OnCollided(monster, curr_time)) return;				
+			character_->AddCombo(curr_time);
+		});
 
-			if (skill_obj->GetGlobalRange().collide(monster->GetGlobalRange()))
+
+	CollisionProcessor::Process<CharacterClass, MonsterClass>(
+		character_.get(), monsters_, [this, curr_time](CharacterClass* character, MonsterClass* monster)
+		{
+			if (!character->OnCollided(curr_time, monster->GetVx())) return;
+
+			if (character_->GetState() == CharacterState::kDie)
 			{
-				if (skill_obj->OnCollided(monster.get(), curr_time))
+				game_state_ = GameState::kGameOver;
+				state_start_time_ = curr_time;
+				sound_->PlayEffect(EffectSound::kSoundCharacterDie);
+			}
+			else
+			{
+				sound_->PlayEffect(EffectSound::kSoundCharacterDamage);
+				if (character_->GetSkill(0).skill_type == 0)
 				{
-					// If monster was sucessfully hit, add combo
-					character_->AddCombo(curr_time);
+					sound_->PlayEffect(EffectSound::kSoundHeartbeat);
 				}
 			}
-		}
-	}
+		});
 
 
-	for (auto& monster : monsters_)
-	{
-		if (monster->GetState() == MonsterState::kDie) continue;
-
-		if (character_->GetGlobalRange().collide(monster->GetGlobalRange()))
+	CollisionProcessor::Process<CharacterClass, ItemClass>(
+		character_.get(), items_, [this, curr_time](CharacterClass* character, ItemClass* item)
 		{
-			bool result = character_->OnCollided(curr_time, monster->GetVx());
-
-			if (result)
-			{
-				if (character_->GetState() == CharacterState::kDie)
-				{
-					game_state_ = GameState::kGameOver;
-					state_start_time_ = curr_time;
-					sound_->PlayEffect(EffectSound::kSoundCharacterDie);
-				}
-				else
-				{
-					sound_->PlayEffect(EffectSound::kSoundCharacterDamage);
-					if (character_->GetSkill(0).skill_type == 0)
-					{
-						sound_->PlayEffect(EffectSound::kSoundHeartbeat);
-					}
-				}
-			}
-		}
-	}
-
-	for (auto& item : items_)
-	{
-		if (item->GetState() == ItemState::kDie) continue;
-
-		if (character_->GetGlobalRange().collide(item->GetGlobalRange()))
-		{
-			character_->LearnSkill(item->GetType(), curr_time);
+			character->LearnSkill(item->GetType(), curr_time);
 			item->SetState(ItemState::kDie, curr_time);
 
 			sound_->PlayEffect(EffectSound::kSoundSkillLearn);
-		}
-	}
+		});
+
 
 	// Process some work which should be conducted per frame,
 	// for skill object instances
-	for (int i = 0; i < skillObjectList_.size(); i++)
-	{
-		// If this skill object should be deleted,
-		if (!skillObjectList_[i]->Frame(curr_time, delta_time))
-		{
-			// swap with last element and pop it.
-			swap(skillObjectList_[i], skillObjectList_.back());
-			skillObjectList_.pop_back();
-		}
-	}
-
+	skillObjectList_.Frame(curr_time, delta_time);
 
 	// Process some work which should be conducted per frame,
 	// for monster object instances
-	for (int i = 0; i < monsters_.size(); i++)
-	{
-		// If this monster instance should be deleted,
-		if (!monsters_[i]->Frame(curr_time, delta_time))
+	monsters_.Frame(curr_time, delta_time, [this, curr_time](IGameObject* obj)
 		{
-			// create item for 50% probablity.
-			if (monsters_[i]->GetType() >= 0 && RandomClass::rand(0, 100) < ITEM_DROP_PROBABILITY)
-			{
-				items_.emplace_back(new ItemClass(curr_time, monsters_[i]->GetPosition().x,
-					monsters_[i]->GetPosition().y, monsters_[i]->GetType()));
-			}
+			auto monster = static_cast<MonsterClass*>(obj);
+			this->items_.Insert(new ItemClass(curr_time, monster->GetPosition().x,
+				monster->GetPosition().y, monster->GetType()));
+		});
 
-			// and swap with last element and pop it.
-			swap(monsters_[i], monsters_.back());
-			monsters_.pop_back();
-		}
-	}
-
-	// Process some work which should be conducted per frame,
-	// for items.
-	for (int i = 0; i < items_.size(); i++)
-	{
-		// If this monster instance should be deleted,
-		if (!items_[i]->Frame(curr_time, delta_time))
-		{
-			// swap with last element and pop it.
-			swap(items_[i], items_.back());
-			items_.pop_back();
-		}
-	}
+	items_.Frame(curr_time, delta_time);
 }
 
 void ApplicationClass::Render()
 {
+	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * kScope;
+	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
+	camera_->SetPosition(camera_x, camera_y, CAMERA_Z_POSITION);
+
 	XMMATRIX viewMatrix, projectionMatrix, orthoMatrix;
 	time_t curr_time = timer_->GetTime();
 
@@ -441,8 +375,10 @@ void ApplicationClass::Render()
 	}
 
 	// Draw Items
-	for (auto& item : items_)
+	for (auto& obj : items_.elements)
 	{
+		auto item = static_cast<ItemClass*>(obj.get());
+
 		stone_shader_->Render(diamondModel_->GetIndexCount(),
 			item->GetShapeMatrix(curr_time) * item->GetLocalWorldMatrix(), vp_matrix,
 			light_->GetDirection(), skill_color[item->GetType()], camera_->GetPosition());
@@ -450,7 +386,7 @@ void ApplicationClass::Render()
 
 
 	// Draw skill object
-	for (auto& skill_obj : skillObjectList_)
+	for (auto& obj : skillObjectList_.elements)
 	{
 		/*
 		model_->Render(direct3D_->GetDeviceContext());
@@ -458,6 +394,7 @@ void ApplicationClass::Render()
 			skill_obj->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			light_->GetDirection(), light_->GetDiffuseColor());*/
 		
+		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
 		auto obj_model = skill_obj->GetModel();
 		obj_model->Render(direct3D_->GetDeviceContext());
 
@@ -516,8 +453,10 @@ void ApplicationClass::Render()
 
 
 	model_->Render(direct3D_->GetDeviceContext());
-	for (auto& monster : monsters_)
+	for (auto& obj: monsters_.elements)
 	{
+		MonsterClass* monster = static_cast<MonsterClass*>(obj.get());
+
 		normalMap_shader_->Render(model_->GetIndexCount(),
 			monster->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			model_->GetNormalTexture(), model_->GetEmissiveTexture(), light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
@@ -548,8 +487,10 @@ void ApplicationClass::Render()
 
 	const XMMATRIX ortho_inv = XMMatrixInverse(nullptr, orthoMatrix);
 	float screen_x, screen_y;
-	for (auto& monster : monsters_)
+	for (auto& object : monsters_.elements)
 	{
+		MonsterClass* monster = static_cast<MonsterClass*>(object.get());
+
 		user_interface_->CalculateScreenPos(monster->GetLocalWorldMatrix() * vp_matrix,
 			ortho_inv, screen_x, screen_y);
 

@@ -4,8 +4,11 @@
 
 #include <memory>
 #include <vector>
+#include <functional>
 
 #include <DirectXMath.h>
+
+#include "GameObjectList.hh"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -16,6 +19,7 @@ enum class GameState
 {
 	kGameRun, kGamePause, kGameOver
 };
+
 
 class ApplicationClass
 {
@@ -68,9 +72,9 @@ private:
 
 	unique_ptr<class CharacterClass>	character_;
 
-	vector<unique_ptr<class SkillObjectClass> > skillObjectList_;
-	vector<unique_ptr<class MonsterClass> >	monsters_;
-	vector<unique_ptr<class ItemClass> >	items_;
+	GameObjectList	skillObjectList_;
+	GameObjectList	monsters_;
+	GameObjectList	items_;
 
 	unique_ptr<class FieldClass>			field_;
 

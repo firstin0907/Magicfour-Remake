@@ -8,6 +8,8 @@
 class IGameObject
 {
 public:
+	virtual ~IGameObject() {};
+
 	// Change the location for one frame.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
 		const std::vector<class GroundClass>& ground) = 0;

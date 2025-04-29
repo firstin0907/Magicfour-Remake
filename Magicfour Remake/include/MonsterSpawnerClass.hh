@@ -18,7 +18,7 @@ public:
 	MonsterSpawnerClass();
 
 	void Frame(time_t curr_time, time_t delta_time,
-		vector<unique_ptr<class MonsterClass> >& monsters_);
+		vector<unique_ptr<class IGameObject> >& monsters_);
 
 private:
 	int game_level_;

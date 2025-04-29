@@ -14,7 +14,7 @@ MonsterSpawnerClass::MonsterSpawnerClass() : game_level_(0)
 }
 
 void MonsterSpawnerClass::Frame(time_t curr_time, time_t delta_time,
-	vector<unique_ptr<class MonsterClass> >& monsters_)
+	vector<unique_ptr<class IGameObject> >& monsters_)
 {
 	// When Gamelevel is up, plan which and when the monster will be spawned.
 	const unsigned __int64 curr_game_level = (curr_time + (kLevelupTerm - kSpawnBeginTime)) / kLevelupTerm;

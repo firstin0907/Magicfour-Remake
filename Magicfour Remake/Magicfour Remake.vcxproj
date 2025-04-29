@@ -133,6 +133,7 @@
     <ClCompile Include="source\BitmapClass.cc" />
     <ClCompile Include="source\D2DClass.cc" />
     <ClCompile Include="source\FieldClass.cc" />
+    <ClCompile Include="source\GameObjectList.cc" />
     <ClCompile Include="source\ItemClass.cc" />
     <ClCompile Include="source\ShaderClass.cc" />
     <ClCompile Include="source\CameraClass.cc" />
@@ -161,9 +162,11 @@
     <ClInclude Include="include\AnimatedObjectClass.hh" />
     <ClInclude Include="include\ApplicationClass.hh" />
     <ClInclude Include="include\BitmapClass.hh" />
+    <ClInclude Include="include\CollisionPairProcess.hh" />
     <ClInclude Include="include\D2DClass.hh" />
     <ClInclude Include="include\FieldClass.hh" />
     <ClInclude Include="include\IGameObject.hh" />
+    <ClInclude Include="include\GameObjectList.hh" />
     <ClInclude Include="include\ItemClass.hh" />
     <ClInclude Include="include\RigidbodyClass.hh" />
     <ClInclude Include="include\ShaderClass.hh" />

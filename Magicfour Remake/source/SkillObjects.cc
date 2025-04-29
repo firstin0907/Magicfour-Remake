@@ -410,6 +410,7 @@ SkillObjectGuardian::SkillObjectGuardian()
 	: SkillObjectClass(0, 0, rect_t{ -30000, -30000, 30000, 30000 },
 		0, 0, 0, 0)
 {
+	SetState(SkillObjectState::kNormal, 0);
 }
 
 bool SkillObjectGuardian::OnCollided(MonsterClass* monster, time_t collided_time)

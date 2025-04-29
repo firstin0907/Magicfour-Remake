@@ -48,7 +48,7 @@ public:
 public:
 	CharacterClass(int pos_x, int pos_y,
 		class InputClass* input, class SoundClass *sound,
-		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
+		vector<unique_ptr<class IGameObject> >& skill_objs);
 	~CharacterClass() = default;
 
 	// Move instance as time goes by.
@@ -128,10 +128,10 @@ public:
 
 private:
 	void OnSkill(time_t curr_time, time_t delta_time,
-		vector<unique_ptr<class SkillObjectClass> >& skill_objs);
+		vector<unique_ptr<class IGameObject> >& skill_objs);
 
 	bool UseSkill(time_t curr_time,
-		vector<unique_ptr<class SkillObjectClass> >& skill_objs,
+		vector<unique_ptr<class IGameObject> >& skill_objs,
 		class SoundClass* sound);
 
 	SkillBonus CalculateSkillBonus();
@@ -165,7 +165,7 @@ private:
 	class InputClass* input;
 	class SoundClass* sound;
 
-	vector<unique_ptr<class SkillObjectClass> >& skill_objs;
+	vector<unique_ptr<class IGameObject> >& skill_objs;
 };
 
 

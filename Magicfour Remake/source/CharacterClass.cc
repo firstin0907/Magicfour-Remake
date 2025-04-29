@@ -21,7 +21,7 @@ constexpr int kWalkSpd = 700, kRunSpd = 1300;
 
 CharacterClass::CharacterClass(int pos_x, int pos_y,
 	class InputClass* input, class SoundClass* sound,
-	vector<unique_ptr<class SkillObjectClass> >& skill_objs)
+	vector<unique_ptr<class IGameObject> >& skill_objs)
 	: RigidbodyClass(
 		Point2d(pos_x, pos_y),
 		rect_t{ -50000, 0, 50000, 400000 }, LEFT_FORWARD
@@ -392,7 +392,7 @@ void CharacterClass::AddCombo(time_t curr_time)
 }
 
 void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
-	vector<unique_ptr<class SkillObjectClass> >& skill_objs)
+	vector<unique_ptr<class IGameObject> >& skill_objs)
 {
 	const time_t state_time = GetStateTime(curr_time);
 	const time_t prev_state_time =
@@ -511,7 +511,7 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 }
 
 bool CharacterClass::UseSkill(time_t curr_time,
-	vector<unique_ptr<class SkillObjectClass> >& skill_objs,
+	vector<unique_ptr<class IGameObject> >& skill_objs,
 	SoundClass* sound)
 {
 	if (curr_time < time_skill_available_)
