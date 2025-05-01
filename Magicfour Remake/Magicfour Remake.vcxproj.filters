@@ -5,212 +5,253 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="헤더 파일">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="리소스 파일">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\core">
+      <UniqueIdentifier>{38b398bc-9da8-431c-8464-6f8e698f23e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\util">
+      <UniqueIdentifier>{2da0b494-226a-4352-9a71-580832e439a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\game-object">
+      <UniqueIdentifier>{03409969-af5c-474a-8007-2c53b1300e64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\graphics">
+      <UniqueIdentifier>{8363015a-b704-44a6-9663-185cdc638852}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\shader">
+      <UniqueIdentifier>{a51be7a8-2e36-4c4f-bd62-d24f41806208}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\map">
+      <UniqueIdentifier>{0eeeb06c-82a2-4e31-b0a4-1172d4de9ad5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\ui">
+      <UniqueIdentifier>{f78c73bb-d06c-4bcd-ac2e-a0d24c53e5b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{10d8c7a4-ffa6-4eb1-ba1e-61d107c5d8d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\core">
+      <UniqueIdentifier>{9fa24f13-99e7-4c04-981a-65f484f78a0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\game-object">
+      <UniqueIdentifier>{f877b750-a3e6-4e08-876d-ed6906ed3d56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\graphics">
+      <UniqueIdentifier>{d3933528-4a62-466e-af6a-2f703d3d987b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\map">
+      <UniqueIdentifier>{03358237-2bac-4dbb-b23d-cceb3c8795b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\ui">
+      <UniqueIdentifier>{8150442d-b55c-4d0a-a984-61ae4372bfe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\util">
+      <UniqueIdentifier>{a18590ae-e9cc-48d7-b19e-50ba63daabbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\shader">
+      <UniqueIdentifier>{12d0f442-b232-4773-8ae4-1b7538d7d475}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\AnimatedObjectClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\InputClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\ApplicationClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\SystemClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\CameraClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\ApplicationClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\D2DClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\D3DClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\D3DClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\ModelClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\GameObjectList.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\TextureClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\InputClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\LightClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\MonsterSpawnerClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\LightShaderClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\SoundClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\CharacterClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\core\SystemClass.cc">
+      <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\MonsterClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\util\RandomClass.cc">
+      <Filter>소스 파일\util</Filter>
     </ClCompile>
-    <ClCompile Include="source\AnimatedObjectClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\util\TimerClass.cc">
+      <Filter>소스 파일\util</Filter>
     </ClCompile>
-    <ClCompile Include="source\StoneShaderClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\game-object\CharacterClass.cc">
+      <Filter>소스 파일\game-object</Filter>
     </ClCompile>
-    <ClCompile Include="source\CameraClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\game-object\ItemClass.cc">
+      <Filter>소스 파일\game-object</Filter>
     </ClCompile>
-    <ClCompile Include="source\SkillObjectClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\game-object\MonsterClass.cc">
+      <Filter>소스 파일\game-object</Filter>
     </ClCompile>
-    <ClCompile Include="source\SkillObjects.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\game-object\Monsters.cc">
+      <Filter>소스 파일\game-object</Filter>
     </ClCompile>
-    <ClCompile Include="source\Monsters.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\game-object\SkillObjectClass.cc">
+      <Filter>소스 파일\game-object</Filter>
     </ClCompile>
-    <ClCompile Include="source\NormalMapShaderClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\game-object\SkillObjects.cc">
+      <Filter>소스 파일\game-object</Filter>
     </ClCompile>
-    <ClCompile Include="source\RandomClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\graphics\BitmapClass.cc">
+      <Filter>소스 파일\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="source\MonsterSpawnerClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\graphics\LightClass.cc">
+      <Filter>소스 파일\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="source\TimerClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\graphics\ModelClass.cc">
+      <Filter>소스 파일\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="source\TextureShaderClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\graphics\TextureClass.cc">
+      <Filter>소스 파일\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="source\UserInterfaceClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\shader\LightShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
     </ClCompile>
-    <ClCompile Include="source\ItemClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\shader\NormalMapShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
     </ClCompile>
-    <ClCompile Include="source\ShaderClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\shader\ShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
     </ClCompile>
-    <ClCompile Include="source\D2DClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\shader\StoneShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
     </ClCompile>
-    <ClCompile Include="source\BitmapClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\shader\TextureShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
     </ClCompile>
-    <ClCompile Include="source\SoundClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\map\FieldClass.cc">
+      <Filter>소스 파일\map</Filter>
     </ClCompile>
-    <ClCompile Include="source\FieldClass.cc">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="source\ui\UserInterfaceClass.cc">
+      <Filter>소스 파일\ui</Filter>
     </ClCompile>
-    <ClCompile Include="source\GameObjectList.cc">
+    <ClCompile Include="source\main.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\InputClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\util\RandomClass.hh">
+      <Filter>헤더 파일\util</Filter>
     </ClInclude>
-    <ClInclude Include="include\SystemClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\util\TimerClass.hh">
+      <Filter>헤더 파일\util</Filter>
     </ClInclude>
-    <ClInclude Include="include\ApplicationClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\util\CollisionProcessor.hh">
+      <Filter>헤더 파일\util</Filter>
     </ClInclude>
-    <ClInclude Include="include\D3DClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\ui\UserInterfaceClass.hh">
+      <Filter>헤더 파일\ui</Filter>
     </ClInclude>
-    <ClInclude Include="include\ModelClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\shader\LightShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
-    <ClInclude Include="include\TextureClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\shader\NormalMapShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
-    <ClInclude Include="include\LightClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\shader\ShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
-    <ClInclude Include="include\LightShaderClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\shader\StoneShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
-    <ClInclude Include="include\CharacterClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\shader\TextureShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
-    <ClInclude Include="include\GameException.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\map\FieldClass.hh">
+      <Filter>헤더 파일\map</Filter>
     </ClInclude>
-    <ClInclude Include="include\MonsterClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\map\GroundClass.hh">
+      <Filter>헤더 파일\map</Filter>
     </ClInclude>
-    <ClInclude Include="include\AnimatedObjectClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\graphics\BitmapClass.hh">
+      <Filter>헤더 파일\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="include\StoneShaderClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\graphics\LightClass.hh">
+      <Filter>헤더 파일\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="include\CameraClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\graphics\ModelClass.hh">
+      <Filter>헤더 파일\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="include\SkillObjectClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\graphics\TextureClass.hh">
+      <Filter>헤더 파일\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="include\global.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\game-object\CharacterClass.hh">
+      <Filter>헤더 파일\game-object</Filter>
     </ClInclude>
-    <ClInclude Include="include\SkillObjects.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\game-object\ItemClass.hh">
+      <Filter>헤더 파일\game-object</Filter>
     </ClInclude>
-    <ClInclude Include="include\Monsters.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\game-object\MonsterClass.hh">
+      <Filter>헤더 파일\game-object</Filter>
     </ClInclude>
-    <ClInclude Include="include\GroundClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\game-object\Monsters.hh">
+      <Filter>헤더 파일\game-object</Filter>
     </ClInclude>
-    <ClInclude Include="include\NormalMapShaderClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\game-object\SkillObjectClass.hh">
+      <Filter>헤더 파일\game-object</Filter>
     </ClInclude>
-    <ClInclude Include="include\MonsterSpawnerClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\game-object\SkillObjects.hh">
+      <Filter>헤더 파일\game-object</Filter>
     </ClInclude>
-    <ClInclude Include="include\RandomClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\AnimatedObjectClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\TimerClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\ApplicationClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\TextureShaderClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\CameraClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\UserInterfaceClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\D2DClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\ItemClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\D3DClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\ShaderClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\GameException.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\D2DClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\GameObjectList.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\RigidbodyClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\global.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\BitmapClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\IGameObject.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\SoundClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\InputClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\FieldClass.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\MonsterSpawnerClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\IGameObject.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\RigidbodyClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\CollisionPairProcess.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\SoundClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\GameObjectList.hh">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="include\core\SystemClass.hh">
+      <Filter>헤더 파일\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

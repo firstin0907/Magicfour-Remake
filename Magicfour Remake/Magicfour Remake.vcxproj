@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)\\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -127,73 +128,73 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cc" />
-    <ClCompile Include="source\AnimatedObjectClass.cc" />
-    <ClCompile Include="source\ApplicationClass.cc" />
-    <ClCompile Include="source\BitmapClass.cc" />
-    <ClCompile Include="source\D2DClass.cc" />
-    <ClCompile Include="source\FieldClass.cc" />
-    <ClCompile Include="source\GameObjectList.cc" />
-    <ClCompile Include="source\ItemClass.cc" />
-    <ClCompile Include="source\ShaderClass.cc" />
-    <ClCompile Include="source\CameraClass.cc" />
-    <ClCompile Include="source\CharacterClass.cc" />
-    <ClCompile Include="source\D3DClass.cc" />
-    <ClCompile Include="source\InputClass.cc" />
-    <ClCompile Include="source\LightClass.cc" />
-    <ClCompile Include="source\LightShaderClass.cc" />
-    <ClCompile Include="source\ModelClass.cc" />
-    <ClCompile Include="source\MonsterClass.cc" />
-    <ClCompile Include="source\Monsters.cc" />
-    <ClCompile Include="source\MonsterSpawnerClass.cc" />
-    <ClCompile Include="source\NormalMapShaderClass.cc" />
-    <ClCompile Include="source\RandomClass.cc" />
-    <ClCompile Include="source\SkillObjectClass.cc" />
-    <ClCompile Include="source\SkillObjects.cc" />
-    <ClCompile Include="source\SoundClass.cc" />
-    <ClCompile Include="source\StoneShaderClass.cc" />
-    <ClCompile Include="source\SystemClass.cc" />
-    <ClCompile Include="source\TextureClass.cc" />
-    <ClCompile Include="source\TextureShaderClass.cc" />
-    <ClCompile Include="source\TimerClass.cc" />
-    <ClCompile Include="source\UserInterfaceClass.cc" />
+    <ClCompile Include="source\core\AnimatedObjectClass.cc" />
+    <ClCompile Include="source\core\ApplicationClass.cc" />
+    <ClCompile Include="source\core\CameraClass.cc" />
+    <ClCompile Include="source\core\D2DClass.cc" />
+    <ClCompile Include="source\core\D3DClass.cc" />
+    <ClCompile Include="source\core\GameObjectList.cc" />
+    <ClCompile Include="source\core\InputClass.cc" />
+    <ClCompile Include="source\core\MonsterSpawnerClass.cc" />
+    <ClCompile Include="source\core\SoundClass.cc" />
+    <ClCompile Include="source\core\SystemClass.cc" />
+    <ClCompile Include="source\game-object\CharacterClass.cc" />
+    <ClCompile Include="source\game-object\ItemClass.cc" />
+    <ClCompile Include="source\game-object\MonsterClass.cc" />
+    <ClCompile Include="source\game-object\Monsters.cc" />
+    <ClCompile Include="source\game-object\SkillObjectClass.cc" />
+    <ClCompile Include="source\game-object\SkillObjects.cc" />
+    <ClCompile Include="source\graphics\BitmapClass.cc" />
+    <ClCompile Include="source\graphics\LightClass.cc" />
+    <ClCompile Include="source\graphics\ModelClass.cc" />
+    <ClCompile Include="source\graphics\TextureClass.cc" />
+    <ClCompile Include="source\main.cc" />
+    <ClCompile Include="source\map\FieldClass.cc" />
+    <ClCompile Include="source\shader\LightShaderClass.cc" />
+    <ClCompile Include="source\shader\NormalMapShaderClass.cc" />
+    <ClCompile Include="source\shader\ShaderClass.cc" />
+    <ClCompile Include="source\shader\StoneShaderClass.cc" />
+    <ClCompile Include="source\shader\TextureShaderClass.cc" />
+    <ClCompile Include="source\ui\UserInterfaceClass.cc" />
+    <ClCompile Include="source\util\RandomClass.cc" />
+    <ClCompile Include="source\util\TimerClass.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\AnimatedObjectClass.hh" />
-    <ClInclude Include="include\ApplicationClass.hh" />
-    <ClInclude Include="include\BitmapClass.hh" />
-    <ClInclude Include="include\CollisionPairProcess.hh" />
-    <ClInclude Include="include\D2DClass.hh" />
-    <ClInclude Include="include\FieldClass.hh" />
-    <ClInclude Include="include\IGameObject.hh" />
-    <ClInclude Include="include\GameObjectList.hh" />
-    <ClInclude Include="include\ItemClass.hh" />
-    <ClInclude Include="include\RigidbodyClass.hh" />
-    <ClInclude Include="include\ShaderClass.hh" />
-    <ClInclude Include="include\CameraClass.hh" />
-    <ClInclude Include="include\CharacterClass.hh" />
-    <ClInclude Include="include\GroundClass.hh" />
-    <ClInclude Include="include\D3DClass.hh" />
-    <ClInclude Include="include\GameException.hh" />
-    <ClInclude Include="include\global.hh" />
-    <ClInclude Include="include\InputClass.hh" />
-    <ClInclude Include="include\LightClass.hh" />
-    <ClInclude Include="include\LightShaderClass.hh" />
-    <ClInclude Include="include\ModelClass.hh" />
-    <ClInclude Include="include\MonsterClass.hh" />
-    <ClInclude Include="include\Monsters.hh" />
-    <ClInclude Include="include\MonsterSpawnerClass.hh" />
-    <ClInclude Include="include\NormalMapShaderClass.hh" />
-    <ClInclude Include="include\RandomClass.hh" />
-    <ClInclude Include="include\SkillObjectClass.hh" />
-    <ClInclude Include="include\SkillObjects.hh" />
-    <ClInclude Include="include\SoundClass.hh" />
-    <ClInclude Include="include\StoneShaderClass.hh" />
-    <ClInclude Include="include\SystemClass.hh" />
-    <ClInclude Include="include\TextureClass.hh" />
-    <ClInclude Include="include\TextureShaderClass.hh" />
-    <ClInclude Include="include\TimerClass.hh" />
-    <ClInclude Include="include\UserInterfaceClass.hh" />
+    <ClInclude Include="include\core\AnimatedObjectClass.hh" />
+    <ClInclude Include="include\core\ApplicationClass.hh" />
+    <ClInclude Include="include\core\CameraClass.hh" />
+    <ClInclude Include="include\core\D2DClass.hh" />
+    <ClInclude Include="include\core\D3DClass.hh" />
+    <ClInclude Include="include\core\GameException.hh" />
+    <ClInclude Include="include\core\GameObjectList.hh" />
+    <ClInclude Include="include\core\global.hh" />
+    <ClInclude Include="include\core\IGameObject.hh" />
+    <ClInclude Include="include\core\InputClass.hh" />
+    <ClInclude Include="include\core\MonsterSpawnerClass.hh" />
+    <ClInclude Include="include\core\RigidbodyClass.hh" />
+    <ClInclude Include="include\core\SoundClass.hh" />
+    <ClInclude Include="include\core\SystemClass.hh" />
+    <ClInclude Include="include\game-object\CharacterClass.hh" />
+    <ClInclude Include="include\game-object\ItemClass.hh" />
+    <ClInclude Include="include\game-object\MonsterClass.hh" />
+    <ClInclude Include="include\game-object\Monsters.hh" />
+    <ClInclude Include="include\game-object\SkillObjectClass.hh" />
+    <ClInclude Include="include\game-object\SkillObjects.hh" />
+    <ClInclude Include="include\graphics\BitmapClass.hh" />
+    <ClInclude Include="include\graphics\LightClass.hh" />
+    <ClInclude Include="include\graphics\ModelClass.hh" />
+    <ClInclude Include="include\graphics\TextureClass.hh" />
+    <ClInclude Include="include\map\FieldClass.hh" />
+    <ClInclude Include="include\map\GroundClass.hh" />
+    <ClInclude Include="include\shader\LightShaderClass.hh" />
+    <ClInclude Include="include\shader\NormalMapShaderClass.hh" />
+    <ClInclude Include="include\shader\ShaderClass.hh" />
+    <ClInclude Include="include\shader\StoneShaderClass.hh" />
+    <ClInclude Include="include\shader\TextureShaderClass.hh" />
+    <ClInclude Include="include\ui\UserInterfaceClass.hh" />
+    <ClInclude Include="include\util\CollisionProcessor.hh" />
+    <ClInclude Include="include\util\RandomClass.hh" />
+    <ClInclude Include="include\util\TimerClass.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
