@@ -60,12 +60,12 @@ void StoneShaderClass::Render(int indexCount,
 void StoneShaderClass::InitializeShader(
 	HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename)
 {
-	constexpr int num_of_elements = 3;
-	D3D11_INPUT_ELEMENT_DESC polygon_layout[num_of_elements];
+	constexpr int kNumOfElements = 3;
+	D3D11_INPUT_ELEMENT_DESC polygon_layout[kNumOfElements];
 
 	// Create the vertex input layout description.
 	// This setup needs to match the VertexType stucture in the ModelClass and in the shader.
-	for (int i = 0; i < num_of_elements; i++)
+	for (int i = 0; i < kNumOfElements; i++)
 	{
 		polygon_layout[i].SemanticIndex = 0;
 		polygon_layout[i].InputSlot = 0;
@@ -84,7 +84,7 @@ void StoneShaderClass::InitializeShader(
 	polygon_layout[2].SemanticName = "NORMAL";
 	polygon_layout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 
-	CreateShaderObject(hwnd, vs_filename, ps_filename, polygon_layout, num_of_elements);
+	CreateShaderObject(hwnd, vs_filename, ps_filename, polygon_layout, kNumOfElements);
 
 	sample_state_ = CreateSamplerState();
 

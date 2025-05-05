@@ -20,12 +20,12 @@ void TextureShaderClass::Render(int indexCount,
 void TextureShaderClass::InitializeShader(HWND hwnd,
 	const WCHAR* vs_filename, const WCHAR* ps_filename)
 {
-	constexpr int num_of_elements = 2;
-	D3D11_INPUT_ELEMENT_DESC polygon_layout[num_of_elements];
+	constexpr int kNumOfElements = 2;
+	D3D11_INPUT_ELEMENT_DESC polygon_layout[kNumOfElements];
 
 	// Create the vertex input layout description.
 	// This setup needs to match the VertexType stucture in the ModelClass and in the shader.
-	for (int i = 0; i < num_of_elements; i++)
+	for (int i = 0; i < kNumOfElements; i++)
 	{
 		polygon_layout[i].SemanticIndex = 0;
 		polygon_layout[i].InputSlot = 0;
@@ -41,7 +41,7 @@ void TextureShaderClass::InitializeShader(HWND hwnd,
 	polygon_layout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	polygon_layout[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 
-	CreateShaderObject(hwnd, vs_filename, ps_filename, polygon_layout, num_of_elements);
+	CreateShaderObject(hwnd, vs_filename, ps_filename, polygon_layout, kNumOfElements);
 
 	// Create the texture sampler state.
 	sample_state_ = CreateSamplerState();

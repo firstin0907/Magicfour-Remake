@@ -33,10 +33,9 @@
 using namespace std;
 using namespace DirectX;
 
-constexpr float CAMERA_Z_POSITION = -20.0f;
-constexpr int CAMERA_X_LIMIT = 1'500'000;
-
-constexpr int ITEM_DROP_PROBABILITY = 50;
+constexpr float kCameraZPosition = -20.0f;
+constexpr int	kCameraXLimit = 1'500'000;
+constexpr int	kItemDropProbability = 50;
 
 ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd, InputClass* input)
 {
@@ -46,7 +45,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	sound_ = make_unique<SoundClass>();
 
 	camera_ = make_unique<CameraClass>();
-	camera_->SetPosition(0.0f, 0.0f, CAMERA_Z_POSITION);
+	camera_->SetPosition(0.0f, 0.0f, kCameraZPosition);
 
 	model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
 		"data/model/abox.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
@@ -292,9 +291,9 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 void ApplicationClass::Render()
 {
-	const float camera_x = SATURATE(-CAMERA_X_LIMIT, character_->GetPosition().x, CAMERA_X_LIMIT) * kScope;
+	const float camera_x = SATURATE(-kCameraXLimit, character_->GetPosition().x, kCameraXLimit) * kScope;
 	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
-	camera_->SetPosition(camera_x, camera_y, CAMERA_Z_POSITION);
+	camera_->SetPosition(camera_x, camera_y, kCameraZPosition);
 
 	XMMATRIX viewMatrix, projectionMatrix, orthoMatrix;
 	time_t curr_time = timer_->GetTime();
@@ -342,14 +341,14 @@ void ApplicationClass::Render()
 	}
 
 
-	constexpr float box_size = 0.32f;
+	constexpr float kBoxSize = 0.32f;
 	XMMATRIX skill_stone_pos = 
 		XMMatrixRotationX(XM_PI / 18) * XMMatrixRotationY(curr_time * 0.001f) * XMMatrixRotationX(-XM_PI / 10) *
-		XMMatrixScaling(box_size, box_size * 1.2f, box_size) * XMMatrixTranslation(-1.3f, 4.0f, 0.f) *
+		XMMatrixScaling(kBoxSize, kBoxSize * 1.2f, kBoxSize) * XMMatrixTranslation(-1.3f, 4.0f, 0.f) *
 		character_->GetLocalWorldMatrix();
 
 
-	constexpr XMFLOAT4 skill_color[5] =
+	constexpr XMFLOAT4 kSkillColor[5] =
 	{
 		{0, 0, 0, 1.0f},
 		{0.9f, 0.1f, 0.3f, 1.0f},
@@ -370,7 +369,7 @@ void ApplicationClass::Render()
 
 		stone_shader_->Render(diamondModel_->GetIndexCount(),
 			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
-			vp_matrix, light_->GetDirection(), skill_color[type],
+			vp_matrix, light_->GetDirection(), kSkillColor[type],
 			camera_->GetPosition());
 	}
 
@@ -381,7 +380,7 @@ void ApplicationClass::Render()
 
 		stone_shader_->Render(diamondModel_->GetIndexCount(),
 			item->GetShapeMatrix(curr_time) * item->GetLocalWorldMatrix(), vp_matrix,
-			light_->GetDirection(), skill_color[item->GetType()], camera_->GetPosition());
+			light_->GetDirection(), kSkillColor[item->GetType()], camera_->GetPosition());
 	}
 
 

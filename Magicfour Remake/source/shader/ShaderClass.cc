@@ -11,7 +11,7 @@ ShaderClass::ShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_conte
 
 void ShaderClass::CreateShaderObject(HWND hwnd,
 	const WCHAR* vs_filename, const WCHAR* ps_filename,
-	D3D11_INPUT_ELEMENT_DESC polygon_layout[], int num_of_elements)
+	D3D11_INPUT_ELEMENT_DESC polygon_layout[], int kNumOfElements)
 {
 	HRESULT result;
 	ComPtr<ID3D10Blob> error_message = nullptr;
@@ -57,7 +57,7 @@ void ShaderClass::CreateShaderObject(HWND hwnd,
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 
 	// Create the vertex input layout.
-	result = device_->CreateInputLayout(polygon_layout, num_of_elements,
+	result = device_->CreateInputLayout(polygon_layout, kNumOfElements,
 		vs_buffer->GetBufferPointer(), vs_buffer->GetBufferSize(),
 		input_layout_.GetAddressOf());
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");

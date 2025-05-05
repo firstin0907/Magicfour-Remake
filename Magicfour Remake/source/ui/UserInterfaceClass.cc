@@ -165,7 +165,7 @@ void UserInterfaceClass::DrawSkillPower(D2DClass* direct2D,
 	const int render_x = skill_stone_screen_x - 22;
 	const int render_y = skill_stone_screen_y;
 
-	constexpr float skill_color[5][3] =
+	constexpr float kSkillColor[5][3] =
 	{
 		{0, 0, 0},
 		{0.45f, 0.05f, 0.15f},
@@ -175,8 +175,8 @@ void UserInterfaceClass::DrawSkillPower(D2DClass* direct2D,
 	};
 
 	direct2D->SetBrushColor(D2D1::ColorF(
-		skill_color[skill_type][0], skill_color[skill_type][1],
-		skill_color[skill_type][2]));
+		kSkillColor[skill_type][0], kSkillColor[skill_type][1],
+		kSkillColor[skill_type][2]));
 
 	if(skill_power == 10)
 	{

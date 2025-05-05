@@ -21,7 +21,7 @@ public:
 protected:
 	void CreateShaderObject(HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename,
-		D3D11_INPUT_ELEMENT_DESC polygon_layout[], int num_of_elements);
+		D3D11_INPUT_ELEMENT_DESC polygon_layout[], int kNumOfElements);
 
 	ID3D11SamplerState* CreateSamplerState();
 
