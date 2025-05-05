@@ -617,7 +617,7 @@ CharacterClass::SkillBonus CharacterClass::CalculateSkillBonus()
 	sort(powers, powers + 4);
 	for (int i = 1; i <= 3; i++)
 	{
-		if (skill_[i].skill_power + 1 != skill_[i - 1].skill_power)
+		if (powers[i] != powers[i - 1] + 1)
 		{
 			is_straight = false;
 		}
