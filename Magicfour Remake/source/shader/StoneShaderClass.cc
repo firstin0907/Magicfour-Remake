@@ -14,6 +14,7 @@ void StoneShaderClass::Render(
 	ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos)
 {
+	model->Render(device_context_);
 	auto& material_list = model->GetMaterial();
 	
 	int curr = 0;

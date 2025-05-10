@@ -111,4 +111,6 @@ private:
 	vector<ModelType> model_;
 
 	vector<std::pair<MaterialType, int> > materialList_;
+
+	static ModelClass* lastRenderedModel_;
 };

@@ -1,6 +1,7 @@
 #include "shader/TextureShaderClass.hh"
 
 #include "core/GameException.hh"
+#include "graphics/ModelClass.hh"
 
 TextureShaderClass::TextureShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
 	: ShaderClass(device, device_context_)
@@ -10,11 +11,11 @@ TextureShaderClass::TextureShaderClass(ID3D11Device* device, ID3D11DeviceContext
 }
 
 
-void TextureShaderClass::Render(int indexCount,
+void TextureShaderClass::Render(class ModelClass* model,
 	XMMATRIX world_matrix, XMMATRIX vp_matrix, ID3D11ShaderResourceView* texture)
 {
 	SetShaderParameters(world_matrix, vp_matrix, texture);
-	RenderShader(indexCount);
+	RenderShader(model->GetIndexCount());
 }
 
 void TextureShaderClass::InitializeShader(HWND hwnd,

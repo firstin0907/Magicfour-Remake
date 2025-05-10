@@ -12,6 +12,8 @@
 
 using namespace std;
 
+ModelClass* ModelClass::lastRenderedModel_ = nullptr;
+
 ModelClass::ModelClass(ID3D11Device* device,
 	const char* modelFilename,
 	const wchar_t* diffuse_filename,
@@ -46,6 +48,10 @@ void ModelClass::Shutdown()
 
 void ModelClass::Render(ID3D11DeviceContext* deviceContext)
 {
+	if (lastRenderedModel_ == this) return;
+
+	lastRenderedModel_ = this;
+
 	// Put the vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	RenderBuffers(deviceContext);
 

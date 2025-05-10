@@ -5,6 +5,7 @@
 
 #include "core/GameException.hh"
 #include "core/D3DClass.hh"
+#include "graphics/ModelClass.hh"
 
 LightShaderClass::LightShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
 	: ShaderClass(device, device_context)
@@ -18,14 +19,17 @@ LightShaderClass::~LightShaderClass()
 
 }
 
-void LightShaderClass::Render(int indexCount, XMMATRIX world_matrix, XMMATRIX vp_matrix,
+void LightShaderClass::Render(ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	ID3D11ShaderResourceView* texture, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
 {
+
+	model->Render(device_context_);
+
 	// Set the shader parameters that it will use for rendering.
 	SetShaderParameters(world_matrix, vp_matrix, texture, light_direction, diffuse_color);
 
 	// Now render the prepared buffers with the shader.
-	RenderShader(indexCount);
+	RenderShader(model->GetIndexCount());
 }
 
 

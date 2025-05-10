@@ -51,7 +51,7 @@ public:
 		class ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
-	void Render(int, XMMATRIX, XMMATRIX,
+	void Render(ModelClass* model, XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView* diffuse_texture,
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture,

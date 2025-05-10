@@ -30,7 +30,7 @@ public:
 	TextureShaderClass(const TextureShaderClass& other) = delete;
 	~TextureShaderClass() = default;
 
-	void Render(int indexCount,
+	void Render(class ModelClass* model,
 		XMMATRIX world_matrix, XMMATRIX vp_matrix, ID3D11ShaderResourceView* texture);
 
 private:

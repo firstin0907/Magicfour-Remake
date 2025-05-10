@@ -39,7 +39,7 @@ public:
 	LightShaderClass(const LightShaderClass&) = delete;
 	~LightShaderClass();
 
-	void Render(int, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
+	void Render(class ModelClass*, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
 private:
 	void InitializeShader(HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename);

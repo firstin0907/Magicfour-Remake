@@ -50,7 +50,7 @@ void NormalMapShaderClass::Render(
 	}
 }
 
-void NormalMapShaderClass::Render(int indexCount, XMMATRIX world_matrix, XMMATRIX vp_matrix,
+void NormalMapShaderClass::Render(ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	ID3D11ShaderResourceView* diffuse_texture,
 	ID3D11ShaderResourceView* normal_texture,
 	ID3D11ShaderResourceView* emissive_texture,
@@ -62,7 +62,7 @@ void NormalMapShaderClass::Render(int indexCount, XMMATRIX world_matrix, XMMATRI
 		camera_pos,	{ 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } );
 
 	// Now render the prepared buffers with the shader.
-	RenderShader(indexCount);
+	RenderShader(model->GetIndexCount());
 }
 
 
