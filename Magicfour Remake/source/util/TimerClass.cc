@@ -10,44 +10,35 @@ TimerClass::TimerClass()
         L"Failed to get performance frequency, needed to initialize TimerClass.");
 
     // Get the initial start time.
-    QueryPerformanceCounter((LARGE_INTEGER*)&start_ticks_);
-    prev_ticks_ = curr_ticks_ = 0;
+    QueryPerformanceCounter((LARGE_INTEGER*)&curr_ticks_);
+    prev_ticks_ = set_speed_timestamp_ticks_ = curr_ticks_;
+    set_speed_timestamp_game_time_ = prev_game_time_ = curr_game_time_ = 0;
 
-    is_paused_ = wait_to_resume_ = false;
+    game_speed_ = 1000;
 }
 
 void TimerClass::Frame()
 {
-    if (!is_paused_)
-    {
-        prev_ticks_ = curr_ticks_;
+    prev_ticks_ = curr_ticks_;
 
-        // Query the current time.
-        QueryPerformanceCounter((LARGE_INTEGER*)&curr_ticks_);
-    }
-    else if (wait_to_resume_)
-    {
-        // Query the current time.
-        QueryPerformanceCounter((LARGE_INTEGER*)&curr_ticks_);
+    // Query the current time.
+    QueryPerformanceCounter((LARGE_INTEGER*)&curr_ticks_);
 
-        start_ticks_ += curr_ticks_ - prev_ticks_;
-        prev_ticks_ = curr_ticks_;
+    prev_game_time_ = curr_game_time_;
 
-        wait_to_resume_ = is_paused_ = false;
-    }
+    const INT64 elapsed_ticks = curr_ticks_ - set_speed_timestamp_ticks_;
+
+    curr_game_time_ = set_speed_timestamp_game_time_ + elapsed_ticks * game_speed_ / frequency_;
+
     return;
 }
 
 void TimerClass::Pause()
 {
-    if (!is_paused_)
-    {
-        prev_ticks_ = curr_ticks_;
-        is_paused_ = true;
-    }
+    SetGameSpeed(0);
 }
 
 void TimerClass::Resume()
 {
-    wait_to_resume_ = true;
+    SetGameSpeed(1000);
 }

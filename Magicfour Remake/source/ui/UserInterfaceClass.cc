@@ -249,11 +249,11 @@ void UserInterfaceClass::DrawPauseMark(class D2DClass* direct2D)
 
 void UserInterfaceClass::DrawGameoverScreen(D2DClass* direct2D, time_t gameover_elapsed_time)
 {
-	const float blackout_alpha = SATURATE(0.0f, (gameover_elapsed_time - 2000) / 3000.0f, 1.0f);
+	const float blackout_alpha = SATURATE(0.0f, (gameover_elapsed_time - 1000) / 1500.f, 1.0f);
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, blackout_alpha));
 	direct2D->RenderRect(0, 0, f_screen_width_, f_screen_height_);
 
-	const float text_alpha = SATURATE(0.0f, (gameover_elapsed_time - 5000) / 3000.0f, 1.0f);
+	const float text_alpha = SATURATE(0.0f, (gameover_elapsed_time - 2500) / 1500.f, 1.0f);
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::White, text_alpha));
 	direct2D->RenderText(gameover_text_format_.Get(), L"GAME OVER",
 		0, 0, f_screen_width_, f_screen_height_);

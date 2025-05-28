@@ -24,25 +24,32 @@ public:
 			prev_ticks_ * 1'000 / frequency_;
 	}
 
+	inline void SetGameSpeed(INT64 game_speed)
+	{
+		game_speed_ = game_speed;
+		set_speed_timestamp_game_time_ = curr_game_time_;
+		set_speed_timestamp_ticks_ = curr_ticks_;
+	}
+
 	inline INT64 GetElapsedTime()
 	{
-		return (curr_ticks_ - start_ticks_) * 1'000 / frequency_ -
-			(prev_ticks_ - start_ticks_) * 1'000 / frequency_;
+		return curr_game_time_ - prev_game_time_;
 	}
 
 	inline INT64 GetTime()
 	{
-		return (curr_ticks_ - start_ticks_) * 1'000 / frequency_;
+		return curr_game_time_;
 	};
 
 private:
 	INT64 frequency_;
 
-	INT64 start_ticks_;
+	INT64 game_speed_;
+	INT64 curr_game_time_;
+	INT64 prev_game_time_;
+	INT64 set_speed_timestamp_game_time_;
 
 	INT64 prev_ticks_;
 	INT64 curr_ticks_;
-
-	bool is_paused_, wait_to_resume_;
-
+	INT64 set_speed_timestamp_ticks_;
 };

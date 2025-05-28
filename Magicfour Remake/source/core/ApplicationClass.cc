@@ -196,9 +196,6 @@ void ApplicationClass::GameFrame(InputClass* input)
 	const int GAME_OVER_SLOW = 4;
 	if (character_->GetState() == CharacterState::kDie)
 	{
-		delta_time = curr_time / GAME_OVER_SLOW - (curr_time - delta_time) / GAME_OVER_SLOW;
-		curr_time = state_start_time_ + character_->GetStateTime(curr_time) / GAME_OVER_SLOW;
-
 		if (curr_time - delta_time < state_start_time_ + 1000 && state_start_time_ + 1000 <= curr_time)
 		{
 			sound_->PlayEffect(EffectSound::kSoundGameOver);
@@ -251,6 +248,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 				game_state_ = GameState::kGameOver;
 				state_start_time_ = curr_time;
 				sound_->PlayEffect(EffectSound::kSoundCharacterDie);
+				timer_->SetGameSpeed(250);
 			}
 			else
 			{
