@@ -122,6 +122,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	field_ = make_unique<FieldClass>("data/field/field001.txt");
 	
 	monster_spawner_ = make_unique<MonsterSpawnerClass>();
+	monster_spawner_->SetBaseTotalSpawnRate(6);
+	monster_spawner_->SetIndividualSpawnRate(25, 25, 25, 25);
 
 	timer_ = make_unique<TimerClass>();
 	timer_->Frame();
