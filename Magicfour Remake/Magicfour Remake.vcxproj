@@ -195,6 +195,7 @@
     <ClInclude Include="include\util\CollisionProcessor.hh" />
     <ClInclude Include="include\util\RandomClass.hh" />
     <ClInclude Include="include\util\TimerClass.hh" />
+    <ClInclude Include="include\core\Skill.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

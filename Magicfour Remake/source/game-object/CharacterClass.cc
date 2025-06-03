@@ -38,7 +38,7 @@ CharacterClass::CharacterClass(int pos_x, int pos_y,
 	skill_[0] = { 1, 1 };
 	skill_[1] = { 2, 1 };
 	skill_[2] = { 3, 1 };
-	skill_[3] = { 4, 1 };
+	skill_[3] = { 4, 10 };
 
 	time_invincible_end_ = 0;
 
@@ -235,8 +235,8 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 	if (skill_bonus_ == SkillBonus::BONUS_ONE_PAIR || skill_bonus_ == SkillBonus::BONUS_TWO_PAIR)
 	{
 		constexpr float radius = 500'000.0f;
-		const float offset_x = static_cast<int>(radius * cos(curr_time * 0.003f));
-		const float offset_y = static_cast<int>(radius * sin(curr_time * 0.003f));
+		const int offset_x = static_cast<int>(radius * cos(curr_time * 0.003f));
+		const int offset_y = static_cast<int>(radius * sin(curr_time * 0.003f));
 
 		guardians_[0]->SetPosition(position_.x + offset_x, position_.y + 200000 + offset_y);
 		if (skill_bonus_ == SkillBonus::BONUS_TWO_PAIR)
@@ -331,6 +331,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 				if (skill_[i].skill_type)
 				{
 					skill_[i].skill_type = 0;
+					skill_[i].is_part_of_skillbonus = 0;
 					break;
 				}
 			}
@@ -355,7 +356,7 @@ float CharacterClass::GetInvincibleGaugeRatio(time_t curr_time)
 
 
 
-CharacterClass::SkillBonus CharacterClass::LearnSkill(
+SkillBonus CharacterClass::LearnSkill(
 	int skill_id, time_t curr_time)
 {
 	int skill_power = RandomClass::rand(1, 10);
@@ -370,13 +371,14 @@ CharacterClass::SkillBonus CharacterClass::LearnSkill(
 			skill.skill_type = skill_id;
 			skill.skill_power = skill_power;
 			skill.learned_time = curr_time;
+			skill.is_part_of_skillbonus = false;
 
 			// If all skills is loaded,
 			if (skill_[3].skill_type)
 			{
 				// check bonus and set it.
 				time_skill_bonus_get_ = curr_time;
-				return skill_bonus_ = CalculateSkillBonus();
+				return skill_bonus_ = CalculateSkillBonus(skill_);
 			}
 			// Otherwise, don't need to do anything.
 			else return SkillBonus::BONUS_NONE;
@@ -597,53 +599,4 @@ bool CharacterClass::UseSkill(time_t curr_time,
 	else time_skill_available_ = time_skill_ended_ + kSkillCooltime;
 
 	return true;
-}
-
-CharacterClass::SkillBonus CharacterClass::CalculateSkillBonus()
-{
-	bool is_flush = true, is_straight = true;
-	// check is it flush
-	for (int i = 1; i <= 3; i++)
-	{
-		if (skill_[i].skill_type != skill_[i - 1].skill_type)
-		{
-			is_flush = false;
-		}
-	}
-
-	// check is it straight
-	int powers[4] = { 0 };
-	for (int i = 0; i <= 3; i++) powers[i] = skill_[i].skill_power;
-	sort(powers, powers + 4);
-	for (int i = 1; i <= 3; i++)
-	{
-		if (powers[i] != powers[i - 1] + 1)
-		{
-			is_straight = false;
-		}
-	}
-		
-	if (is_flush && is_straight)
-		return SkillBonus::BONUS_STRAIGHT_FLUSH;
-
-	if (powers[1] == powers[2] && powers[0] == powers[1] && powers[2] == powers[3])
-		return SkillBonus::BONUS_FOUR_CARDS;
-
-	if (is_flush)
-		return SkillBonus::BONUS_FLUSH;
-
-	if (is_straight)
-		return SkillBonus::BONUS_STRAIGHT;
-
-	if (powers[1] == powers[2] && (powers[0] == powers[1] || powers[2] == powers[3]))
-		return SkillBonus::BONUS_TRIPLE;
-
-	if (powers[0] == powers[1] && powers[2] == powers[3])
-		return SkillBonus::BONUS_TWO_PAIR;
-
-	if (powers[1] == powers[2] || powers[0] == powers[1] || powers[2] == powers[3])
-		return SkillBonus::BONUS_ONE_PAIR;
-
-
-	return SkillBonus::BONUS_NO_PAIR;
 }

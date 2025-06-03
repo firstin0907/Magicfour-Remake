@@ -44,20 +44,6 @@ void StoneShaderClass::Render(
 	}
 }
 
-void StoneShaderClass::Render(int indexCount,
-	XMMATRIX world_matrix, XMMATRIX vp_matrix,
-	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos)
-{
-	// Set the shader parameters that it will use for rendering.
-	SetShaderParameters(world_matrix, vp_matrix,
-		light_direction, diffuse_color, camera_pos,
-		{ 1, 1, 1}, { 1, 1, 1 }, { 1, 1, 1 });
-
-	// Now render the prepared buffers with the shader.
-	RenderShader(indexCount);
-}
-
-
 void StoneShaderClass::InitializeShader(
 	HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename)
 {

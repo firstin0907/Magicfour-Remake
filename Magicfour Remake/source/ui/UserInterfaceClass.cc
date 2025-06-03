@@ -370,35 +370,7 @@ void UserInterfaceClass::DrawInvincibleGauge(D2DClass* direct2D,
 void UserInterfaceClass::DrawSkillBonus(D2DClass* direct2D,
 	unsigned int skill_bonus, time_t learn_elapsed_time)
 {
-	const wchar_t* skill_text = L"";
-	switch (static_cast<CharacterClass::SkillBonus>(skill_bonus))
-	{
-
-	case CharacterClass::SkillBonus::BONUS_STRAIGHT_FLUSH:
-		skill_text = L"Straight Flush : Straight + Flush";
-		break;
-	case CharacterClass::SkillBonus::BONUS_FOUR_CARDS:
-		skill_text = L"Four Cards : Coincided Skill";
-		break;
-	case CharacterClass::SkillBonus::BONUS_FLUSH:
-		skill_text = L"Flush : More Improved Skill";
-		break;
-	case CharacterClass::SkillBonus::BONUS_STRAIGHT:
-		skill_text = L"Straight : Faster Skill Charge";
-		break;
-	case CharacterClass::SkillBonus::BONUS_TRIPLE:
-		skill_text = L"Triple : More Powerful Skill";
-		break;
-	case CharacterClass::SkillBonus::BONUS_TWO_PAIR:
-		skill_text = L"Two Pair : Two Guardian Beads";
-		break;
-	case CharacterClass::SkillBonus::BONUS_ONE_PAIR:
-		skill_text = L"One Pair : One Guardian Bead";
-		break;
-	case CharacterClass::SkillBonus::BONUS_NO_PAIR:
-		skill_text = L"No Pair : More Powerful Basic Attack";
-		break;
-	}
+	const wchar_t* skill_text = SkillBonusText(static_cast<SkillBonus>(skill_bonus));
 
 	if (learn_elapsed_time <= 5'000)
 	{

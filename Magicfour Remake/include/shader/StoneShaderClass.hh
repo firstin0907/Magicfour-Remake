@@ -52,10 +52,6 @@ public:
 		class ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
-	void Render(int indexCount,
-		XMMATRIX world_matrix, XMMATRIX vp_matrix,
-		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
-
 private:
 	void InitializeShader(HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename);

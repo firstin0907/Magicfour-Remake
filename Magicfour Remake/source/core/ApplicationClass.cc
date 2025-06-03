@@ -358,7 +358,7 @@ void ApplicationClass::Render()
 	};
 
 	
-	auto drawStone = [this, &vp_matrix](const XMMATRIX& shape, int type)
+	auto drawStone = [this, &vp_matrix](const XMMATRIX& shape, int type, float brightness = 0.0f)
 		{
 			constexpr XMFLOAT4 kSkillColor[5] =
 			{
@@ -368,21 +368,48 @@ void ApplicationClass::Render()
 				{0.1f, 0.3f, 0.9f, 1.0f},
 				{0.2f, 0.1f, 0.1f, 1.0f}
 			};
+			
 			diamondModel_->Render(direct3D_->GetDeviceContext());
-			this->stone_shader_->Render(diamondModel_->GetIndexCount(), shape, vp_matrix,
-				this->light_->GetDirection(), kSkillColor[type], this->camera_->GetPosition());
+			if (brightness == 0)
+			{
+				this->stone_shader_->Render(diamondModel_.get(), shape, vp_matrix,
+					this->light_->GetDirection(), kSkillColor[type], this->camera_->GetPosition());
+			}
+			else
+			{
+				XMFLOAT4 skill_color = kSkillColor[type];
+				skill_color.x += (1 - skill_color.x) * brightness * 0.6;
+				skill_color.y += (1 - skill_color.y) * brightness * 0.6;
+				skill_color.z += (1 - skill_color.z) * brightness * 0.6;
+				skill_color.w += (1 - skill_color.w) * brightness * 0.6;
+
+				this->stone_shader_->Render(diamondModel_.get(), shape, vp_matrix,
+					this->light_->GetDirection(), skill_color, this->camera_->GetPosition());
+			}			
 		};
 
+	int sb_count = 0;
+	time_t elapsed_time_for_sb = curr_time - character_->GetSkill(3).learned_time;
 	for (int i = 0; i < 4; i++)
 	{
 		const int type = character_->GetSkill(i).skill_type;
 		const int power = character_->GetSkill(i).skill_power;
 		if (type == 0) break;
 
-		const float scale = (power + 11) * 0.04f;
+		const float scale = (power + 13) * 0.04f;
+		float brightness = 0.0f;
+
+		if (character_->GetSkill(i).is_part_of_skillbonus)
+		{
+			const time_t local_time = (elapsed_time_for_sb + 5'000 - 400 * ++sb_count) % 5'000;
+			if(local_time <= 800.0f) brightness = max(0.0f, sin(local_time / 200.0f));
+
+			const time_t global_time = (elapsed_time_for_sb + 5'000 - 2'000) % 5'000;
+			if(global_time <= 1200.0f) brightness = max(0.0f, sin(global_time / 300.0f));
+		}
 
 		drawStone(XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
-			type);
+			type, brightness);
 	}
 
 	// Draw Items
@@ -420,8 +447,8 @@ void ApplicationClass::Render()
 		}
 		
 	}
-	if (character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_ONE_PAIR ||
-		character_->GetSkillBonus() == CharacterClass::SkillBonus::BONUS_TWO_PAIR)
+	if (character_->GetSkillBonus() == SkillBonus::BONUS_ONE_PAIR ||
+		character_->GetSkillBonus() == SkillBonus::BONUS_TWO_PAIR)
 	{
 		ModelClass* obj_model = character_->GetGuardian(0)->GetModel();
 		obj_model->Render(direct3D_->GetDeviceContext());

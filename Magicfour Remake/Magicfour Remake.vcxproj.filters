@@ -253,5 +253,8 @@
     <ClInclude Include="include\core\SystemClass.hh">
       <Filter>헤더 파일\core</Filter>
     </ClInclude>
+    <ClInclude Include="include\core\Skill.hh">
+      <Filter>헤더 파일\core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@
 
 #include "core/global.hh"
 #include "core/RigidbodyClass.hh"
+#include "core/Skill.hh"
 
 enum class CharacterState
 {
@@ -23,27 +24,6 @@ private:
 
 	template<typename T>
 	using unique_ptr = std::unique_ptr<T>;
-
-public:
-	struct SkillType
-	{
-		int		skill_type;
-		int		skill_power;
-		time_t	learned_time;
-	};
-
-	enum class SkillBonus : unsigned int
-	{
-		BONUS_STRAIGHT_FLUSH,
-		BONUS_FOUR_CARDS,
-		BONUS_FLUSH,
-		BONUS_STRAIGHT,
-		BONUS_TRIPLE,
-		BONUS_TWO_PAIR,
-		BONUS_ONE_PAIR,
-		BONUS_NO_PAIR,
-		BONUS_NONE
-	};
 
 public:
 	CharacterClass(int pos_x, int pos_y,
@@ -133,8 +113,6 @@ private:
 	bool UseSkill(time_t curr_time,
 		vector<unique_ptr<class IGameObject> >& skill_objs,
 		class SoundClass* sound);
-
-	SkillBonus CalculateSkillBonus();
 
 private:
 	int jump_cnt;
