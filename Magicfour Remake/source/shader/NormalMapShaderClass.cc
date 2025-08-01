@@ -15,6 +15,84 @@ NormalMapShaderClass::NormalMapShaderClass(ID3D11Device* device, ID3D11DeviceCon
 
 }
 
+void NormalMapShaderClass::PushRenderQueue(ModelClass* model, XMMATRIX world_matrix)
+{
+	RenderCommand render_command;
+	render_command.model			  = model;
+	render_command.world_matrix	  = world_matrix;
+	render_command.diffuse_texture  = model->GetDiffuseTexture();
+	render_command.normal_texture   = model->GetNormalTexture();
+	render_command.emissive_texture = model->GetEmissiveTexture();
+
+	auto& material_list = model->GetMaterial();
+	for (size_t i = 0; i < material_list.size(); i++)
+	{
+		render_command.ambient_weight  = material_list[i].first.ambient;
+		render_command.diffuse_weight  = material_list[i].first.diffuse;
+		render_command.specular_weight = material_list[i].first.specular;
+		
+		if (i == material_list.size() - 1)
+		{
+			render_command.index_count = model->GetIndexCount() - material_list[i].second;
+			render_command.index_start = material_list[i].second;
+		}
+		else
+		{
+			render_command.index_count = material_list[i + 1].second - material_list[i].second;
+			render_command.index_start = material_list[i].second;
+		}
+
+		render_queue_[model].push_back(render_command);
+	}
+}
+
+void NormalMapShaderClass::PushRenderQueue(
+	ModelClass* model, XMMATRIX world_matrix,
+	ID3D11ShaderResourceView* diffuse_texture,
+	ID3D11ShaderResourceView* normal_texture,
+	ID3D11ShaderResourceView* emissive_texture)
+{
+	RenderCommand render_command;
+
+	render_command.model			  = model;
+	render_command.world_matrix	  = world_matrix;
+	render_command.diffuse_texture  = diffuse_texture;
+	render_command.normal_texture   = normal_texture;
+	render_command.emissive_texture = emissive_texture;
+
+	render_command.ambient_weight	  = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	render_command.diffuse_weight	  = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	render_command.specular_weight  = XMFLOAT3(1.0f, 1.0f, 1.0f);
+
+	render_command.index_count	  = model->GetIndexCount();
+	render_command.index_start	  = 0;
+
+	render_queue_[model].push_back(render_command);
+}
+
+void NormalMapShaderClass::ProcessRenderQueue(const XMMATRIX& vp_matrix,
+	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos)
+{
+	for (auto& [model, params] : render_queue_)
+	{
+		// Batch processing for draw calls with same model
+		model->Render(device_context_);
+		for (const auto& param : params)
+		{
+			// Set the shader parameters that it will use for rendering.
+			SetShaderParameters(param.world_matrix, vp_matrix,
+				param.diffuse_texture, param.normal_texture, param.emissive_texture,
+				light_direction, diffuse_color, camera_pos,
+				param.ambient_weight, param.diffuse_weight, param.specular_weight);
+
+			// Now render the prepared buffers with the shader.
+			RenderShader(param.index_count, param.index_start);
+		}
+	}
+
+	render_queue_.clear();
+}
+
 void NormalMapShaderClass::Render(
 	ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos)
@@ -191,7 +269,7 @@ void NormalMapShaderClass::SetShaderParameters(
 }
 
 
-void NormalMapShaderClass::RenderShader(int indexCount)
+void NormalMapShaderClass::RenderShader(int index_count, int index_start)
 {
 	// Set the vertex input layout.
 	device_context_->IASetInputLayout(input_layout_.Get());
@@ -204,7 +282,7 @@ void NormalMapShaderClass::RenderShader(int indexCount)
 	device_context_->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 
 	// Render the triangle.
-	device_context_->DrawIndexed(indexCount, 0, 0);
+	device_context_->DrawIndexed(index_count, index_start, 0);
 
 	return;
 }

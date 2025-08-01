@@ -10,6 +10,7 @@ using namespace DirectX;
 
 unique_ptr<class ModelClass> SkillObjectSpear::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectBead::model_ = nullptr;
+unique_ptr<class ModelClass> SkillObjectBead::effect_model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectLeg::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectBasic::model_ = nullptr;
 unique_ptr<class ModelClass> SkillObjectShield::model_ = nullptr;
@@ -198,14 +199,20 @@ XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
 		* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
-void SkillObjectBead::initialize(class ModelClass* model)
+void SkillObjectBead::initialize(class ModelClass* model, class ModelClass* effect_model)
 {
 	model_ = unique_ptr<ModelClass>(model);
+	effect_model_ = unique_ptr<ModelClass>(effect_model);
 }
 
 ModelClass* SkillObjectBead::GetModel()
 {
 	return model_.get();
+}
+
+ModelClass* SkillObjectBead::GetEffectModel()
+{
+	return effect_model_.get();
 }
 
 SkillObjectLeg::SkillObjectLeg(int pos_x, int skill_level, time_t created_time)

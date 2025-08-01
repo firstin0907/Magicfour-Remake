@@ -10,6 +10,59 @@ StoneShaderClass::StoneShaderClass(ID3D11Device* device, ID3D11DeviceContext* de
 	InitializeShader(hwnd, L"shader/stone.vs", L"shader/stone.ps");
 }
 
+
+void StoneShaderClass::PushRenderQueue(ModelClass* model, XMMATRIX world_matrix, XMFLOAT4 color)
+{
+	RenderCommand render_command;
+
+	render_command.model = model;
+	render_command.world_matrix = world_matrix;
+	render_command.diffuse_color = color;
+	
+	auto& material_list = model->GetMaterial();
+	for (size_t i = 0; i < material_list.size(); i++)
+	{
+		render_command.ambient_weight  = material_list[i].first.ambient;
+		render_command.diffuse_weight  = material_list[i].first.diffuse;
+		render_command.specular_weight = material_list[i].first.specular;
+
+		if (i == material_list.size() - 1)
+		{
+			render_command.index_count = model->GetIndexCount() - material_list[i].second;
+			render_command.index_start = material_list[i].second;
+		}
+		else
+		{
+			render_command.index_count = material_list[i + 1].second - material_list[i].second;
+			render_command.index_start = material_list[i].second;
+		}
+	}
+
+	
+
+	render_queue_[model].push_back(render_command);
+}
+
+void StoneShaderClass::ProcessRenderQueue(const XMMATRIX& vp_matrix,
+	XMFLOAT3 light_direction, XMFLOAT3 camera_pos)
+{
+	for (auto& [model, params] : render_queue_)
+	{
+		// Batch processing for draw calls with same model
+		model->Render(device_context_);
+		for (const auto& param : params)
+		{
+			SetShaderParameters(param.world_matrix, vp_matrix,
+				light_direction, param.diffuse_color, camera_pos,
+				param.ambient_weight, param.diffuse_weight, param.specular_weight);
+
+			RenderShader(param.index_count, param.index_start);
+		}
+	}
+
+	render_queue_.clear();
+}
+
 void StoneShaderClass::Render(
 	ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos)
@@ -167,7 +220,7 @@ void StoneShaderClass::SetShaderParameters(XMMATRIX world_matrix, XMMATRIX vp_ma
 }
 
 
-void StoneShaderClass::RenderShader(int indexCount)
+void StoneShaderClass::RenderShader(int index_count, int index_start)
 {
 	// Set the vertex input layout.
 	device_context_->IASetInputLayout(input_layout_.Get());
@@ -180,7 +233,7 @@ void StoneShaderClass::RenderShader(int indexCount)
 	device_context_->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 
 	// Render the triangle.
-	device_context_->DrawIndexed(indexCount, 0, 0);
+	device_context_->DrawIndexed(index_count, index_start, 0);
 
 	return;
 }

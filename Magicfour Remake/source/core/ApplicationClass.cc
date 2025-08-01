@@ -8,6 +8,7 @@
 #include "core/InputClass.hh"
 #include "shader/LightShaderClass.hh"
 #include "shader/NormalMapShaderClass.hh"
+#include "shader/FireShaderClass.hh"
 #include "graphics/LightClass.hh"
 #include "shader/StoneShaderClass.hh"
 #include "game-object/CharacterClass.hh"
@@ -49,6 +50,10 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 	model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
 		"data/model/abox.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
+
+	fire_model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
+		"data/model/PlaneObject.obj", L"data/texture/fire/fire02.png", L"data/texture/fire/noise01.png", L"data/texture/fire/alpha02.png");
+
 	planeModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
 		"data/model/PlaneObject.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
 	diamondModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
@@ -73,25 +78,35 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	stone_shader_		= make_unique<StoneShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
 	texture_shader_		= make_unique<TextureShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
 	normalMap_shader_	= make_unique<NormalMapShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
+	fire_shader_		= make_unique<FireShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
 
 	// Set model of skill object to be rendered.
-	SkillObjectBead::initialize(new ModelClass(direct3D_->GetDevice(),
-		"data/model/Orb/orb_low.obj",
-		L"data/model/Orb/orb_low_fragment_BaseColor.png",
-		L"data/model/Orb/orb_low_fragment_Normal.png",
-		L"data/model/Orb/orb_low_fragment_Emissive.png"
-	));
+	SkillObjectBead::initialize(
+		new ModelClass(direct3D_->GetDevice(),
+			"data/model/Orb/orb_low.obj",
+			L"data/model/Orb/orb_low_fragment_BaseColor.png",
+			L"data/model/Orb/orb_low_fragment_Normal.png",
+			L"data/model/Orb/orb_low_fragment_Emissive.png"
+		),
+		new ModelClass(direct3D_->GetDevice(),
+			"data/model/PlaneObject.obj",
+			L"data/texture/fire/fire02.png",
+			L"data/texture/fire/noise01.png",
+			L"data/texture/fire/alpha02.png"
+		));
 	SkillObjectSpear::initialize(new ModelClass(direct3D_->GetDevice(),
 		"data/model/Blade/MagicCeramicBlade.obj",
 		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg",
 		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg",
 		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"
 	));
-	SkillObjectLeg::initialize(new ModelClass(direct3D_->GetDevice(),
-		"data/model/Crystal/Crystals_low.obj",
-		L"data/model/Crystal/None_BaseColor.png",
-		L"data/model/Crystal/None_Normal.png"
-	));
+	SkillObjectLeg::initialize(
+		new ModelClass(direct3D_->GetDevice(),
+			"data/model/Crystal/Crystals_low.obj",
+			L"data/model/Crystal/None_BaseColor.png",
+			L"data/model/Crystal/None_Normal.png"
+		)
+	);
 	SkillObjectBasic::initialize(new ModelClass(direct3D_->GetDevice(),
 		"data/model/Blade/MagicCeramicBlade.obj",
 		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg",
@@ -311,18 +326,12 @@ void ApplicationClass::Render()
 
 	XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	planeModel_->Render(direct3D_->GetDeviceContext());
-	light_shader_->Render(
-		planeModel_.get(),
-		XMMatrixScaling(192.0f, 153.6f, 1)
-		* XMMatrixTranslation(0, 0, 100.0f),
-		vp_matrix,
-		backgroundTexture_->GetTexture(),
-		light_->GetDirection(), light_->GetDiffuseColor());
-	model_->Render(direct3D_->GetDeviceContext());
+	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);
+	light_shader_->PushRenderQueue(planeModel_.get(), kBackgroundMarix,
+		backgroundTexture_->GetTexture());
 
 #if 0
+	model_->Render(direct3D_->GetDeviceContext());
 	light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
 		character_->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 		light_->GetDirection(), light_->GetDiffuseColor());
@@ -335,9 +344,8 @@ void ApplicationClass::Render()
 	if (curr_time <= character_->GetTimeInvincibleEnd()) char_texture = rainbowTexture_->GetTexture();
 
 	for (auto& box : char_model_matrices) {
-		light_shader_->Render(model_.get(),
-			box * character_->GetLocalWorldMatrix(), vp_matrix, char_texture,
-			light_->GetDirection(), light_->GetDiffuseColor());
+		light_shader_->PushRenderQueue(model_.get(),
+			box * character_->GetLocalWorldMatrix(), char_texture);
 	}
 
 
@@ -369,11 +377,9 @@ void ApplicationClass::Render()
 				{0.2f, 0.1f, 0.1f, 1.0f}
 			};
 			
-			diamondModel_->Render(direct3D_->GetDeviceContext());
 			if (brightness == 0)
 			{
-				this->stone_shader_->Render(diamondModel_.get(), shape, vp_matrix,
-					this->light_->GetDirection(), kSkillColor[type], this->camera_->GetPosition());
+				this->stone_shader_->PushRenderQueue(diamondModel_.get(), shape, kSkillColor[type]);
 			}
 			else
 			{
@@ -383,8 +389,7 @@ void ApplicationClass::Render()
 				skill_color.z += (1 - skill_color.z) * brightness * 0.6;
 				skill_color.w += (1 - skill_color.w) * brightness * 0.6;
 
-				this->stone_shader_->Render(diamondModel_.get(), shape, vp_matrix,
-					this->light_->GetDirection(), skill_color, this->camera_->GetPosition());
+				this->stone_shader_->PushRenderQueue(diamondModel_.get(), shape, skill_color);
 			}			
 		};
 
@@ -431,19 +436,16 @@ void ApplicationClass::Render()
 		
 		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
 		auto obj_model = skill_obj->GetModel();
-		obj_model->Render(direct3D_->GetDeviceContext());
 
 		if (obj_model->GetNormalTexture())
 		{
-			normalMap_shader_->Render(obj_model,
-				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
-				light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+			normalMap_shader_->PushRenderQueue(obj_model,
+				skill_obj->GetGlobalShapeTransform(curr_time));
 		}
 		else
 		{			
-			light_shader_->Render(obj_model,
-				skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
-				light_->GetDirection(), light_->GetDiffuseColor());
+			light_shader_->PushRenderQueue(obj_model,
+				skill_obj->GetGlobalShapeTransform(curr_time), obj_model->GetDiffuseTexture());
 		}
 		
 	}
@@ -451,55 +453,64 @@ void ApplicationClass::Render()
 		character_->GetSkillBonus() == SkillBonus::BONUS_TWO_PAIR)
 	{
 		ModelClass* obj_model = character_->GetGuardian(0)->GetModel();
-		obj_model->Render(direct3D_->GetDeviceContext());
 
 		for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
 		{
 			SkillObjectGuardian* skill_obj = character_->GetGuardian(i);
 			if (obj_model->GetNormalTexture())
 			{
-				normalMap_shader_->Render(obj_model,
-					skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix,
-					light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+				normalMap_shader_->PushRenderQueue(obj_model,
+					skill_obj->GetGlobalShapeTransform(curr_time));
 			}
 			else
 			{
-				light_shader_->Render(obj_model,
-					skill_obj->GetGlobalShapeTransform(curr_time), vp_matrix, obj_model->GetDiffuseTexture(),
-					light_->GetDirection(), light_->GetDiffuseColor());
+
+				light_shader_->PushRenderQueue(obj_model,
+					skill_obj->GetGlobalShapeTransform(curr_time),
+					obj_model->GetDiffuseTexture());
 			}
 
 		}
 	}
 
 
-	model_->Render(direct3D_->GetDeviceContext());
 	for (auto& obj: monsters_.elements)
 	{
 		MonsterClass* monster = static_cast<MonsterClass*>(obj.get());
 
-		normalMap_shader_->Render(model_.get(),
+		/*normalMap_shader_->Render(model_.get(),
 			monster->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
 			model_->GetNormalTexture(), model_->GetEmissiveTexture(), light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+			*/
+		
+		
+		light_shader_->PushRenderQueue(model_.get(),
+			monster->GetRangeRepresentMatrix(), model_->GetDiffuseTexture());
 	}
 
 	for (auto& ground : field_->GetGrounds())
 	{
-		light_shader_->Render(model_.get(),
-			ground.GetRange().toMatrix(), vp_matrix, model_->GetDiffuseTexture(),
-			light_->GetDirection(), light_->GetDiffuseColor());
+		light_shader_->PushRenderQueue(model_.get(),
+			ground.GetRange().toMatrix(), model_->GetDiffuseTexture());
+
 	}
 
-	gemModel_->Render(direct3D_->GetDeviceContext());
-	normalMap_shader_->Render(gemModel_.get(),
-		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f), vp_matrix, gemModel_->GetDiffuseTexture(),
-		gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture(), light_->GetDirection(),
-		light_->GetDiffuseColor(), camera_->GetPosition());
+	normalMap_shader_->PushRenderQueue(gemModel_.get(),
+		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f),
+		gemModel_->GetDiffuseTexture(), gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture());
+	
+	normalMap_shader_->PushRenderQueue(gemModel_.get(),
+		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000)* kScope, 0.0f),
+		gemModel_->GetDiffuseTexture(), gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture());
 
-	normalMap_shader_->Render(gemModel_.get(),
-		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000) * kScope, 0.0f), vp_matrix, gemModel_->GetDiffuseTexture(),
-		gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture(), light_->GetDirection(),
-		light_->GetDiffuseColor(), camera_->GetPosition());
+
+	light_shader_	 ->ProcessRenderQueue(vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
+	normalMap_shader_->ProcessRenderQueue(vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+	stone_shader_	 ->ProcessRenderQueue(vp_matrix, light_->GetDirection(), camera_->GetPosition());
+
+	direct3D_->EnableAlphaBlending(); // Turn on alpha blending for the fire transparency.
+	fire_shader_	 ->ProcessRenderQueue(curr_time * 0.0004f);
+	direct3D_->DisableAlphaBlending();
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	direct3D_->TurnZBufferOff();

@@ -6,6 +6,9 @@
 #include <fstream>
 #include <wrl.h>
 
+#include <unordered_map>
+#include <vector>
+
 #include "ShaderClass.hh"
 
 class NormalMapShaderClass : public ShaderClass
@@ -47,6 +50,16 @@ public:
 	NormalMapShaderClass(const NormalMapShaderClass&) = delete;
 	~NormalMapShaderClass() = default;
 
+	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix);
+	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix,
+		ID3D11ShaderResourceView* diffuse_texture,
+		ID3D11ShaderResourceView* normal_texture,
+		ID3D11ShaderResourceView* emissive_texture);
+
+	void ProcessRenderQueue(const XMMATRIX& vp_matrix,
+		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
+
+
 	void Render(
 		class ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
@@ -67,7 +80,7 @@ private:
 		ID3D11ShaderResourceView* emissive_texture,
 		XMFLOAT3, XMFLOAT4,
 		XMFLOAT3, XMFLOAT3, XMFLOAT3, XMFLOAT3);
-	void RenderShader(int);
+	void RenderShader(int index_count, int index_start = 0);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;
@@ -75,4 +88,22 @@ private:
 	ComPtr<ID3D11Buffer>		matrix_buffer_;
 	ComPtr<ID3D11Buffer>		light_buffer_;
 	ComPtr<ID3D11Buffer>		camera_buffer_;
+
+	struct RenderCommand
+	{
+		class ModelClass*			model;
+		XMMATRIX					world_matrix;
+
+		ID3D11ShaderResourceView*	diffuse_texture;
+		ID3D11ShaderResourceView*	normal_texture;
+		ID3D11ShaderResourceView*	emissive_texture;
+
+		XMFLOAT3 					ambient_weight;
+		XMFLOAT3					diffuse_weight;
+		XMFLOAT3					specular_weight;
+
+		int index_count, index_start;
+	};
+
+	std::unordered_map<ModelClass*, std::vector<RenderCommand> > render_queue_;
 };

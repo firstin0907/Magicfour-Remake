@@ -1,0 +1,77 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: fire.ps
+////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////
+// GLOBALS //
+/////////////
+Texture2D fireTexture : register(t0);
+Texture2D noiseTexture : register(t1);
+Texture2D alphaTexture : register(t2);
+
+SamplerState SampleTypeWrap : register(s0);
+SamplerState SampleTypeClamp : register(s1);
+
+cbuffer DistortionBuffer
+{
+    float2 distortion1; // for noise1
+    float2 distortion2; // for noise2
+    float2 distortion3; // for noise3
+    float distortionScale;
+    float distortionBias;
+};
+
+
+
+//////////////
+// TYPEDEFS //
+//////////////
+struct PixelInputType
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+    float2 texCoords1 : TEXCOORD1; // By doing so, can use multi-scale texture.
+    float2 texCoords2 : TEXCOORD2;
+    float2 texCoords3 : TEXCOORD3;
+};
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixel Shader
+////////////////////////////////////////////////////////////////////////////////
+float4 psMain(PixelInputType input) : SV_TARGET
+{
+    // Get Noise color
+    float4 noise1 = noiseTexture.Sample(SampleTypeWrap, input.texCoords1);
+    float4 noise2 = noiseTexture.Sample(SampleTypeWrap, input.texCoords2);
+    float4 noise3 = noiseTexture.Sample(SampleTypeWrap, input.texCoords3);
+
+    // (0, 1) --> (-1, +1) 
+    noise1 = (noise1 - 0.5f) * 2.0f;
+    noise2 = (noise2 - 0.5f) * 2.0f;
+    noise3 = (noise3 - 0.5f) * 2.0f;
+
+    // insert distortion 
+    noise1.xy = noise1.xy * distortion1.xy;
+    noise2.xy = noise2.xy * distortion2.xy;
+    noise3.xy = noise3.xy * distortion3.xy;
+
+    float4 finalNoise = noise1 + noise2 + noise3;
+
+    // top(near 0) : more distortion
+    float4 perturb = ((1.0f - input.tex.y) * distortionScale) + distortionBias;
+
+    float2 noiseCoords;
+
+    // ÃÖÁ¾ ÁÂÇ¥ = ¿ø·¡ ÁÂÇ¥ + preturb.
+    noiseCoords.xy = (finalNoise.xy * perturb) + input.tex.xy;
+
+    float4 fireColor = fireTexture.Sample(SampleTypeClamp, noiseCoords.xy);
+    float4 alphaColor = alphaTexture.Sample(SampleTypeClamp, noiseCoords.xy);
+
+    fireColor.a = alphaColor.r;
+
+	return fireColor;
+}

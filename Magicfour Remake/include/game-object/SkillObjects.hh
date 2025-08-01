@@ -46,12 +46,14 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
-	static void initialize(class ModelClass* model);
+	static void initialize(class ModelClass* model, class ModelClass* effect_model);
 
 	virtual class ModelClass* GetModel();
+	virtual class ModelClass* GetEffectModel();
 private:
 
 	static unique_ptr<class ModelClass> model_;
+	static unique_ptr<class ModelClass> effect_model_;
 };
 
 class SkillObjectLeg : public SkillObjectClass

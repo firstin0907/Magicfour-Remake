@@ -60,6 +60,7 @@ private:
 	unique_ptr<class ModelClass>		planeModel_;
 	unique_ptr<class ModelClass>		diamondModel_;
 	unique_ptr<class ModelClass>		gemModel_;
+	unique_ptr<class ModelClass>		fire_model_;
 	unique_ptr<class TextureClass>		rainbowTexture_;
 	unique_ptr<class TextureClass>		backgroundTexture_;
 
@@ -69,6 +70,7 @@ private:
 	unique_ptr<class StoneShaderClass>	stone_shader_;
 	unique_ptr<class TextureShaderClass>	texture_shader_;
 	unique_ptr<class NormalMapShaderClass>	normalMap_shader_;
+	unique_ptr<class FireShaderClass>	fire_shader_;
 
 	unique_ptr<class CharacterClass>	character_;
 

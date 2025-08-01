@@ -8,6 +8,8 @@
 #include <wrl.h>
 
 #include <fstream>
+#include <unordered_map>
+#include <vector>
 
 class D3DClass;
 
@@ -39,6 +41,12 @@ public:
 	LightShaderClass(const LightShaderClass&) = delete;
 	~LightShaderClass();
 
+	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix,
+		ID3D11ShaderResourceView* texture);
+
+	void ProcessRenderQueue(const XMMATRIX& vp_matrix,
+		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color);
+
 	void Render(class ModelClass*, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
 private:
@@ -51,4 +59,13 @@ private:
 	ComPtr<ID3D11SamplerState>	sample_state_;
 	ComPtr<ID3D11Buffer>		matrix_buffer_;
 	ComPtr<ID3D11Buffer>		light_buffer_;
+
+	struct RenderCommand
+	{
+		class ModelClass*			model;
+		XMMATRIX					world_matrix;
+		ID3D11ShaderResourceView*	texture;
+	};
+
+	std::unordered_map<ModelClass*, std::vector<RenderCommand> > render_queue_;
 };

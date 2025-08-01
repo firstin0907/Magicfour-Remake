@@ -146,6 +146,9 @@
     <ClCompile Include="source\main.cc">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="source\shader\FIreShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\util\RandomClass.hh">
@@ -255,6 +258,9 @@
     </ClInclude>
     <ClInclude Include="include\core\Skill.hh">
       <Filter>헤더 파일\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shader\FireShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

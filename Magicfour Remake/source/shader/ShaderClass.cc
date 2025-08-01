@@ -63,16 +63,16 @@ void ShaderClass::CreateShaderObject(HWND hwnd,
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Could not initialize the shader object.");
 }
 
-ID3D11SamplerState* ShaderClass::CreateSamplerState()
+ID3D11SamplerState* ShaderClass::CreateSamplerState(D3D11_TEXTURE_ADDRESS_MODE mode)
 {
 	ID3D11SamplerState* sampler_state;
 	D3D11_SAMPLER_DESC sampler_desc;
 
 	// Create a texture sampler state description.
 	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressU = mode;
+	sampler_desc.AddressV = mode;
+	sampler_desc.AddressW = mode;
 	sampler_desc.MipLODBias = 0.0f;
 	sampler_desc.MaxAnisotropy = 1;
 	sampler_desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;

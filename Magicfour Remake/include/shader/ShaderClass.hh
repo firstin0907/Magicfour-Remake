@@ -23,7 +23,7 @@ protected:
 		const WCHAR* vs_filename, const WCHAR* ps_filename,
 		D3D11_INPUT_ELEMENT_DESC polygon_layout[], int kNumOfElements);
 
-	ID3D11SamplerState* CreateSamplerState();
+	ID3D11SamplerState* CreateSamplerState(D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_WRAP);
 
 	void OutputShaderErrorMessage(ID3D10Blob* error_message,
 		HWND hwnd, const WCHAR* shader_filename);

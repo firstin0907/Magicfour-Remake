@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)\\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,6 +151,7 @@
     <ClCompile Include="source\graphics\TextureClass.cc" />
     <ClCompile Include="source\main.cc" />
     <ClCompile Include="source\map\FieldClass.cc" />
+    <ClCompile Include="source\shader\FIreShaderClass.cc" />
     <ClCompile Include="source\shader\LightShaderClass.cc" />
     <ClCompile Include="source\shader\NormalMapShaderClass.cc" />
     <ClCompile Include="source\shader\ShaderClass.cc" />
@@ -186,6 +188,7 @@
     <ClInclude Include="include\graphics\TextureClass.hh" />
     <ClInclude Include="include\map\FieldClass.hh" />
     <ClInclude Include="include\map\GroundClass.hh" />
+    <ClInclude Include="include\shader\FireShaderClass.hh" />
     <ClInclude Include="include\shader\LightShaderClass.hh" />
     <ClInclude Include="include\shader\NormalMapShaderClass.hh" />
     <ClInclude Include="include\shader\ShaderClass.hh" />

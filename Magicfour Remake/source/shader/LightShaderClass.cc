@@ -19,6 +19,36 @@ LightShaderClass::~LightShaderClass()
 
 }
 
+void LightShaderClass::PushRenderQueue(ModelClass* model, XMMATRIX world_matrix,
+	ID3D11ShaderResourceView* texture)
+{
+	RenderCommand render_command;
+	render_command.model			= model;
+	render_command.world_matrix	= world_matrix;
+	render_command.texture		= texture;
+
+	render_queue_[model].push_back(render_command);
+}
+
+void LightShaderClass::ProcessRenderQueue(const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
+{
+	for (auto& [model, params] : render_queue_)
+	{
+		// Batch processing for draw calls with same model
+		model->Render(device_context_);
+		for (const auto& param : params)
+		{
+			// Set the shader parameters that it will use for rendering.
+			SetShaderParameters(param.world_matrix, vp_matrix, param.texture, light_direction, diffuse_color);
+
+			// Now render the prepared buffers with the shader.
+			RenderShader(model->GetIndexCount());
+		}
+	}
+
+	render_queue_.clear();
+}
+
 void LightShaderClass::Render(ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
 	ID3D11ShaderResourceView* texture, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
 {
