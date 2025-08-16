@@ -31,12 +31,22 @@
 #include "util/CollisionProcessor.hh"
 #include "map/FieldClass.hh"
 
+//#define DEBUG_RANGE
+
 using namespace std;
 using namespace DirectX;
 
 constexpr float kCameraZPosition = -20.0f;
 constexpr int	kCameraXLimit = 1'500'000;
 constexpr int	kItemDropProbability = 50;
+constexpr XMFLOAT4 kSkillColor[5] =
+{
+	{0, 0, 0, 1.0f},
+	{0.9f, 0.1f, 0.3f, 1.0f},
+	{0.2f, 0.8f, 0.1f, 1.0f},
+	{0.1f, 0.3f, 0.9f, 1.0f},
+	{0.2f, 0.1f, 0.1f, 1.0f}
+};
 
 ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd, InputClass* input)
 {
@@ -330,12 +340,6 @@ void ApplicationClass::Render()
 	light_shader_->PushRenderQueue(planeModel_.get(), kBackgroundMarix,
 		backgroundTexture_->GetTexture());
 
-#if 0
-	model_->Render(direct3D_->GetDeviceContext());
-	light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
-		character_->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
-		light_->GetDirection(), light_->GetDiffuseColor());
-#endif
 	vector<XMMATRIX> char_model_matrices;
 	character_->GetShapeMatrices(curr_time, char_model_matrices);
 
@@ -355,42 +359,19 @@ void ApplicationClass::Render()
 		XMMatrixScaling(kBoxSize, kBoxSize * 1.2f, kBoxSize) * XMMatrixTranslation(-1.3f, 4.0f, 0.f) *
 		character_->GetLocalWorldMatrix();
 
-
-	constexpr XMFLOAT4 kSkillColor[5] =
-	{
-		{0, 0, 0, 1.0f},
-		{0.9f, 0.1f, 0.3f, 1.0f},
-		{0.2f, 0.8f, 0.1f, 1.0f},
-		{0.1f, 0.3f, 0.9f, 1.0f},
-		{0.2f, 0.1f, 0.1f, 1.0f}
-	};
-
 	
 	auto drawStone = [this, &vp_matrix](const XMMATRIX& shape, int type, float brightness = 0.0f)
 		{
-			constexpr XMFLOAT4 kSkillColor[5] =
-			{
-				{0, 0, 0, 1.0f},
-				{0.9f, 0.1f, 0.3f, 1.0f},
-				{0.2f, 0.8f, 0.1f, 1.0f},
-				{0.1f, 0.3f, 0.9f, 1.0f},
-				{0.2f, 0.1f, 0.1f, 1.0f}
-			};
-			
-			if (brightness == 0)
-			{
-				this->stone_shader_->PushRenderQueue(diamondModel_.get(), shape, kSkillColor[type]);
-			}
-			else
+			XMFLOAT4 skill_color = kSkillColor[type];
+			if (brightness > 0.0f)
 			{
 				XMFLOAT4 skill_color = kSkillColor[type];
 				skill_color.x += (1 - skill_color.x) * brightness * 0.6;
 				skill_color.y += (1 - skill_color.y) * brightness * 0.6;
 				skill_color.z += (1 - skill_color.z) * brightness * 0.6;
 				skill_color.w += (1 - skill_color.w) * brightness * 0.6;
-
-				this->stone_shader_->PushRenderQueue(diamondModel_.get(), shape, skill_color);
-			}			
+			}
+			this->stone_shader_->PushRenderQueue(diamondModel_.get(), shape, skill_color);
 		};
 
 	int sb_count = 0;
@@ -427,13 +408,7 @@ void ApplicationClass::Render()
 
 	// Draw skill object
 	for (auto& obj : skillObjectList_.elements)
-	{
-		/*
-		model_->Render(direct3D_->GetDeviceContext());
-		result = light_shader_->Render(direct3D_->GetDeviceContext(), model_->GetIndexCount(),
-			skill_obj->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
-			light_->GetDirection(), light_->GetDiffuseColor());*/
-		
+	{		
 		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
 		auto obj_model = skill_obj->GetModel();
 
@@ -478,12 +453,6 @@ void ApplicationClass::Render()
 	{
 		MonsterClass* monster = static_cast<MonsterClass*>(obj.get());
 
-		/*normalMap_shader_->Render(model_.get(),
-			monster->GetRangeRepresentMatrix(), vp_matrix, model_->GetDiffuseTexture(),
-			model_->GetNormalTexture(), model_->GetEmissiveTexture(), light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
-			*/
-		
-		
 		light_shader_->PushRenderQueue(model_.get(),
 			monster->GetRangeRepresentMatrix(), model_->GetDiffuseTexture());
 	}
@@ -502,6 +471,32 @@ void ApplicationClass::Render()
 	normalMap_shader_->PushRenderQueue(gemModel_.get(),
 		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000)* kScope, 0.0f),
 		gemModel_->GetDiffuseTexture(), gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture());
+
+
+#ifdef DEBUG_RANGE
+
+	light_shader_->PushRenderQueue(planeModel_.get(), character_->GetRangeRepresentMatrix(), model_->GetDiffuseTexture());
+
+	for (auto& obj : skillObjectList_.elements)
+	{
+		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
+		light_shader_->PushRenderQueue(planeModel_.get(), skill_obj->GetRangeRepresentMatrix(), model_->GetDiffuseTexture());
+	}
+
+#endif
+
+	fire_shader_->PushRenderQueue(
+		planeModel_.get(),
+		XMMatrixScaling(2.0f, 2.0f, 1)* vp_matrix,
+		fire_model_->GetDiffuseTexture(),
+		fire_model_->GetNormalTexture(),
+		fire_model_->GetEmissiveTexture(),
+		{ 1.3f, 2.1f, 2.3f },
+		{ 1.0f, 2.0f, 3.0f },
+		{ 0.1f, 0.2f },
+		{ 0.1f, 0.3f },
+		{ 0.1f, 0.1f },
+		0.8f, 0.0f);
 
 
 	light_shader_	 ->ProcessRenderQueue(vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
