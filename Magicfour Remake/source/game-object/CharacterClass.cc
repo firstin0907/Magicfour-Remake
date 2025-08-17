@@ -97,6 +97,17 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		combo_ = 0;
 	}
 
+	// down attempt
+	if (input->IsKeyDown(DIK_DOWN)
+		&& state_ != CharacterState::kSpell && state_ != CharacterState::kHit
+		&& state_ != CharacterState::kSlip && state_ != CharacterState::kDie
+		&& state_ != CharacterState::kJump)
+	{
+		velocity_.y = -1.0, jump_cnt = 1;
+		position_.y = max(position_.y - 30, kGroundY);
+	}
+
+
 	// jump attempt
 	if (jump_cnt <= 1 && input->IsKeyDown(DIK_UP)
 		&& state_ != CharacterState::kSpell && state_ != CharacterState::kHit
