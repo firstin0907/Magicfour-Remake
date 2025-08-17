@@ -549,7 +549,7 @@ bool CharacterClass::UseSkill(time_t curr_time,
 			break;
 
 		case 1:
-			if (velocity_.y == 0 && jump_cnt == 0) velocity_.y = 3'600;
+			velocity_.y = 3'600;
 
 			time_skill_ended_ = state_start_time_ + 300;
 			sound->PlayEffect(EffectSound::kSoundSpell1);
