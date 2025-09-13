@@ -61,6 +61,7 @@ private:
 	unique_ptr<class ModelClass>		diamondModel_;
 	unique_ptr<class ModelClass>		gemModel_;
 	unique_ptr<class ModelClass>		fire_model_;
+	unique_ptr<class ModelClass>		grass_model_;
 	unique_ptr<class TextureClass>		rainbowTexture_;
 	unique_ptr<class TextureClass>		backgroundTexture_;
 

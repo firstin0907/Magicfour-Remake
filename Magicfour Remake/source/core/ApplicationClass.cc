@@ -63,6 +63,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 	fire_model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
 		"data/model/PlaneObject.obj", L"data/texture/fire/fire02.png", L"data/texture/fire/noise01.png", L"data/texture/fire/alpha02.png");
+	grass_model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
+		"data/model/abox.obj", L"data/texture/grass/diffuse.png", L"data/texture/fire/noise01.png", L"data/texture/fire/alpha03.png");
 
 	planeModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
 		"data/model/PlaneObject.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
@@ -459,9 +461,49 @@ void ApplicationClass::Render()
 
 	for (auto& ground : field_->GetGrounds())
 	{
-		light_shader_->PushRenderQueue(model_.get(),
-			ground.GetRange().toMatrix(), model_->GetDiffuseTexture());
+		// for grass
+		rect_t grass_range = ground.GetRange();
+		const int grass_drawing_steps = grass_range.get_w() / 100000 + 1;
+		for (long long i = 0; i < grass_drawing_steps; i++)
+		{
+			rect_t grass_section_range = grass_range;
 
+			const long long curr_x = grass_range.x1 + grass_range.get_w() * i / grass_drawing_steps;
+			const long long next_x = grass_range.x1 + grass_range.get_w() * (i + 1) / grass_drawing_steps;
+			grass_section_range.x1 = curr_x, grass_section_range.x2 = next_x;
+
+			const XMMATRIX&& grass_matrix = XMMatrixRotationY(3 * M_PI_2) * XMMatrixRotationZ(3 * M_PI_2) *
+				XMMatrixTranslation(0.0f, 0.0f, -0.0001f) *
+				grass_section_range.toMatrix();
+
+			fire_shader_->PushRenderQueue(
+				model_.get(),
+				grass_matrix,
+				grass_model_->GetDiffuseTexture(),
+				grass_model_->GetNormalTexture(),
+				grass_model_->GetEmissiveTexture(),
+				{ -0.3f, -0.1f, -0.3f },
+				{ 1.0f, 2.0f, 3.0f },
+				{ 0.1f, 0.2f },
+				{ 0.1f, 0.3f },
+				{ 0.1f, 0.1f },
+				0.4f, 0.0f);
+		}
+
+		rect_t ground_range = ground.GetRange();
+		const int ground_drawing_steps = grass_range.get_w() / 420000 + 1;
+		for (long long i = 0; i < ground_drawing_steps; i++)
+		{
+			// for ground
+			rect_t ground_display_range = ground_range;
+
+			const long long curr_x = ground_range.x1 + ground_range.get_w() * i / ground_drawing_steps;
+			const long long next_x = ground_range.x1 + ground_range.get_w() * (i + 1) / ground_drawing_steps;
+			ground_display_range.x1 = curr_x, ground_display_range.x2 = next_x;
+
+			light_shader_->PushRenderQueue(model_.get(),
+				ground_display_range.toMatrix(), model_->GetDiffuseTexture());
+		}
 	}
 
 	normalMap_shader_->PushRenderQueue(gemModel_.get(),
@@ -487,7 +529,7 @@ void ApplicationClass::Render()
 
 	fire_shader_->PushRenderQueue(
 		planeModel_.get(),
-		XMMatrixScaling(2.0f, 2.0f, 1)* vp_matrix,
+		XMMatrixScaling(2.0f, 2.0f, 1),
 		fire_model_->GetDiffuseTexture(),
 		fire_model_->GetNormalTexture(),
 		fire_model_->GetEmissiveTexture(),
@@ -504,7 +546,7 @@ void ApplicationClass::Render()
 	stone_shader_	 ->ProcessRenderQueue(vp_matrix, light_->GetDirection(), camera_->GetPosition());
 
 	direct3D_->EnableAlphaBlending(); // Turn on alpha blending for the fire transparency.
-	fire_shader_	 ->ProcessRenderQueue(curr_time * 0.0004f);
+	fire_shader_	 ->ProcessRenderQueue(vp_matrix, curr_time * 0.0004f);
 	direct3D_->DisableAlphaBlending();
 
 	// Turn off the Z buffer to begin all 2D rendering.

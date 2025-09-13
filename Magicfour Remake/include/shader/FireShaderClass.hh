@@ -65,7 +65,7 @@ public:
 		float distortion_scale,
 		float distortion_bias);
 
-	void ProcessRenderQueue(float frame_time);
+	void ProcessRenderQueue(XMMATRIX vp_matrix, float frame_time);
 
 	void Render(class ModelClass* model,
 		XMMATRIX mvp_matrix,
@@ -108,7 +108,7 @@ private:
 	{
 		class ModelClass*	model;
 		
-		XMMATRIX mvp_matrix;
+		XMMATRIX	world_matrix;
 		ID3D11ShaderResourceView* fire_texture;
 		ID3D11ShaderResourceView* noise_texture;
 		ID3D11ShaderResourceView* alpha_texture;

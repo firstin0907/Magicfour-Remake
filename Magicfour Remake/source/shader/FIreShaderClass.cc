@@ -17,7 +17,7 @@ FireShaderClass::~FireShaderClass()
 }
 
 void FireShaderClass::PushRenderQueue(class ModelClass* model,
-	XMMATRIX mvp_matrix,
+	XMMATRIX world_matrix,
 	ID3D11ShaderResourceView* fire_texture,
 	ID3D11ShaderResourceView* noise_texture,
 	ID3D11ShaderResourceView* alpha_texture,
@@ -27,7 +27,7 @@ void FireShaderClass::PushRenderQueue(class ModelClass* model,
 {
 	RenderCommand render_command;
 	render_command.model = model;
-	render_command.mvp_matrix = mvp_matrix;
+	render_command.world_matrix = world_matrix;
 	render_command.fire_texture = fire_texture;
 	render_command.noise_texture = noise_texture;
 	render_command.alpha_texture = alpha_texture;
@@ -42,7 +42,7 @@ void FireShaderClass::PushRenderQueue(class ModelClass* model,
 	render_queue_[model].push_back(render_command);
 }
 
-void FireShaderClass::ProcessRenderQueue(float frame_time)
+void FireShaderClass::ProcessRenderQueue(XMMATRIX vp_matrix, float frame_time)
 {
 	for (auto& [model, params] : render_queue_)
 	{
@@ -51,7 +51,7 @@ void FireShaderClass::ProcessRenderQueue(float frame_time)
 		for (const auto& param : params)
 		{
 			MatrixBufferType matrix_data;
-			matrix_data.mvp = param.mvp_matrix;
+			matrix_data.mvp = param.world_matrix * vp_matrix;
 
 			NoiseBufferType noise_data;
 			noise_data.frame_time = frame_time;
