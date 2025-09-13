@@ -367,7 +367,6 @@ void ApplicationClass::Render()
 			XMFLOAT4 skill_color = kSkillColor[type];
 			if (brightness > 0.0f)
 			{
-				XMFLOAT4 skill_color = kSkillColor[type];
 				skill_color.x += (1 - skill_color.x) * brightness * 0.6;
 				skill_color.y += (1 - skill_color.y) * brightness * 0.6;
 				skill_color.z += (1 - skill_color.z) * brightness * 0.6;
