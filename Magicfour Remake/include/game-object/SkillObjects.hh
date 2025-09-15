@@ -2,6 +2,8 @@
 
 #include "SkillObjectClass.hh"
 
+#include <string>
+
 class SkillObjectSpear : public SkillObjectClass
 {
 public:
@@ -19,12 +21,12 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 	
-	static void initialize(class ModelClass* model);
+	static void initialize(const std::string& model_name);
 
-	virtual class ModelClass* GetModel();
+	virtual std::string GetModelName();
 
 private:
-	static unique_ptr<class ModelClass> model_;
+	static std::string model_name_;
 
 	float angle_;
 };
@@ -46,14 +48,14 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
-	static void initialize(class ModelClass* model, class ModelClass* effect_model);
+	static void initialize(const std::string& model_name, const std::string& effect_model_name);
 
-	virtual class ModelClass* GetModel();
-	virtual class ModelClass* GetEffectModel();
+	virtual std::string GetModelName();
+	virtual std::string GetEffectModel();
 private:
 
-	static unique_ptr<class ModelClass> model_;
-	static unique_ptr<class ModelClass> effect_model_;
+	static std::string model_name_;
+	static std::string effect_model_name_;
 };
 
 class SkillObjectLeg : public SkillObjectClass
@@ -73,12 +75,12 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
-	static void initialize(class ModelClass* model);
+	static void initialize(const std::string& model_name);
 
-	virtual class ModelClass* GetModel();
+	virtual std::string GetModelName();
 
 private:
-	static unique_ptr<class ModelClass> model_;
+	static std::string model_name_;
 };
 
 class SkillObjectBasic : public SkillObjectClass
@@ -99,12 +101,12 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
-	static void initialize(class ModelClass* model);
+	static void initialize(const std::string& model_name);
 
-	virtual class ModelClass* GetModel();
+	virtual std::string GetModelName();
 
 private:
-	static unique_ptr<class ModelClass> model_;
+	static std::string model_name_;
 };
 
 class SkillObjectShield : public SkillObjectClass
@@ -125,12 +127,12 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
-	static void initialize(class ModelClass* model);
+	static void initialize(const std::string& model_name);
 
-	virtual class ModelClass* GetModel();
+	virtual std::string GetModelName();
 
 private:
-	static unique_ptr<class ModelClass> model_;
+	static std::string model_name_;
 
 };
 
@@ -151,9 +153,9 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
-	static void initialize(class ModelClass* model);
+	static void initialize(const std::string& model_name);
 
-	virtual class ModelClass* GetModel();
+	virtual std::string GetModelName();
 
 	inline void SetPosition(int x, int y)
 	{
@@ -161,6 +163,6 @@ public:
 	}
 
 private:
-	static unique_ptr<class ModelClass> model_;
+	static std::string model_name_;
 
 };

@@ -1,4 +1,5 @@
 #include "core/SoundClass.hh"
+
 #include "../third-party/Audio.h"
 
 using namespace DirectX;
@@ -15,34 +16,24 @@ SoundClass::SoundClass()
 
 	aud_engine_ = std::make_unique<AudioEngine>(eflags);
 
-	backgrounds_.emplace_back(new SoundEffect(aud_engine_.get(),
-		L"data/sound/background.wav"));
-
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/character_damage.wav"));
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/character_death.wav"));
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/skill_learn.wav"));
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/spell1.wav"));
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/spell2.wav"));
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/spell3.wav"));
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/heartbeat.wav"));
-	effects_.emplace_back(new SoundEffect(aud_engine_.get(), L"data/sound/gameover.wav"));
-	
-	background_loop_ = backgrounds_[0]->CreateInstance();
-	background_loop_->Play(true);
+	sounds_.loadFromXML("data/resources.xml", "Sound",
+		[this](xml_node_wrapper node) -> unique_ptr<SoundEffect>
+		{
+			std::string src = node.get_required_attr("src");
+			return std::make_unique<SoundEffect>(this->aud_engine_.get(),
+				std::wstring(src.begin(), src.end()).c_str());
+		});
 }
 
-void SoundClass::PlayBackground(BackgroundSound background_music)
+void SoundClass::PlayBackground(const std::string& background_music)
 {
-	background_loop_ = backgrounds_[
-		static_cast<unsigned int>(background_music)
-	]->CreateInstance();
-
+	background_loop_ = sounds_.get(background_music)->CreateInstance();
 	background_loop_->Play();
 }
 
-void SoundClass::PlayEffect(EffectSound effect)
+void SoundClass::PlayEffect(const std::string& sound_name)
 {
-	effects_[static_cast<unsigned int>(effect)]->Play();
+	sounds_.get(sound_name)->Play();
 }
 
 

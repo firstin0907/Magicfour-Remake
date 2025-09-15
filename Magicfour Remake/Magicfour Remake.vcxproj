@@ -197,8 +197,12 @@
     <ClInclude Include="include\ui\UserInterfaceClass.hh" />
     <ClInclude Include="include\util\CollisionProcessor.hh" />
     <ClInclude Include="include\util\RandomClass.hh" />
+    <ClInclude Include="include\util\ResourceMap.hh" />
     <ClInclude Include="include\util\TimerClass.hh" />
     <ClInclude Include="include\core\Skill.hh" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="data\resources.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

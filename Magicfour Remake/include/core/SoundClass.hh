@@ -1,26 +1,10 @@
 #pragma once
 
 #include "../third-party/Audio.h"
+#include "util/ResourceMap.hh"
 
 #include <vector>
 #include <memory>
-
-enum class BackgroundSound : unsigned int
-{
-	kSoundOnGameBackground
-};
-
-enum class EffectSound : unsigned int
-{
-	kSoundCharacterDamage,
-	kSoundCharacterDie,
-	kSoundSkillLearn,
-	kSoundSpell1,
-	kSoundSpell2,
-	kSoundSpell3,
-	kSoundHeartbeat,
-	kSoundGameOver
-};
 
 class SoundClass
 {
@@ -33,14 +17,13 @@ public:
 	SoundClass();
 	~SoundClass();
 
-	void PlayBackground(BackgroundSound background_music);
-	void PlayEffect(EffectSound effect);
+	void PlayBackground(const std::string& background_music);
+	void PlayEffect(const std::string& effect);
 
 private:
 	unique_ptr<DirectX::AudioEngine> aud_engine_;
 
-	std::vector<unique_ptr<DirectX::SoundEffect> > backgrounds_;
-	std::vector<unique_ptr<DirectX::SoundEffect> > effects_;
+	ResourceMap<DirectX::SoundEffect> sounds_;
 
 	unique_ptr<DirectX::SoundEffectInstance> background_loop_;
 };

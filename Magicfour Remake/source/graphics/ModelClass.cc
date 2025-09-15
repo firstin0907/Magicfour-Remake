@@ -15,6 +15,17 @@ using namespace std;
 ModelClass* ModelClass::lastRenderedModel_ = nullptr;
 
 ModelClass::ModelClass(ID3D11Device* device,
+	const std::string& modelFilename,
+	const std::string& diffuse_filename,
+	const std::string& normal_filename,
+	const std::string& emissive_filename)
+	: ModelClass(device,
+		modelFilename.c_str(),
+		diffuse_filename.empty() ? nullptr : std::wstring(diffuse_filename.begin(), diffuse_filename.end()).c_str(),
+		normal_filename.empty() ? nullptr : std::wstring(normal_filename.begin(), normal_filename.end()).c_str(),
+		emissive_filename.empty() ? nullptr : std::wstring(emissive_filename.begin(), emissive_filename.end()).c_str()) {};
+
+ModelClass::ModelClass(ID3D11Device* device,
 	const char* modelFilename,
 	const wchar_t* diffuse_filename,
 	const wchar_t* normal_filename,

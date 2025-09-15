@@ -58,26 +58,23 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	camera_ = make_unique<CameraClass>();
 	camera_->SetPosition(0.0f, 0.0f, kCameraZPosition);
 
-	model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
-		"data/model/abox.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
+	models_.loadFromXML("data/resources.xml", "Model",
+		[this](xml_node_wrapper node) -> std::unique_ptr<ModelClass>
+		{
+			return make_unique<ModelClass>(this->direct3D_->GetDevice(),
+				node.get_required_attr("src"),
+				node.get_required_attr("texture"),
+				node.get_attr("normal"),
+				node.get_attr("emissive")
+			);
+		});
 
-	fire_model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
-		"data/model/PlaneObject.obj", L"data/texture/fire/fire02.png", L"data/texture/fire/noise01.png", L"data/texture/fire/alpha02.png");
-	grass_model_ = make_unique<ModelClass>(direct3D_->GetDevice(),
-		"data/model/abox.obj", L"data/texture/grass/diffuse.png", L"data/texture/fire/noise01.png", L"data/texture/fire/alpha03.png");
-
-	planeModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
-		"data/model/PlaneObject.obj", L"data/texture/stone01.tga", L"data/texture/normal01.tga");
-	diamondModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
-		"data/model/diamond.obj", L"data/texture/stone01.tga");
-	gemModel_ = make_unique<ModelClass>(direct3D_->GetDevice(),
-		"data/model/Crystal/Crystals_low.obj", L"data/model/Crystal/None_BaseColor.png",
-		L"data/model/Crystal/None_Normal.png", L"data/model/Crystal/None_Emissive.png");
-
-	rainbowTexture_ = make_unique<TextureClass>(direct3D_->GetDevice(),
-		L"data/texture/skill_gauge_rainbow.png");
-	backgroundTexture_ = make_unique<TextureClass>(direct3D_->GetDevice(),
-		L"data/texture/background.jpg");
+	textures_.loadFromXML("data/resources.xml", "Texture",
+		[this](xml_node_wrapper node) -> std::unique_ptr<TextureClass>
+		{
+			return make_unique<TextureClass>(this->direct3D_->GetDevice(),
+				node.get_required_attr("src"));
+		});
 
 	// Create and initialize the light shader object.
 	light_shader_ = make_unique<LightShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
@@ -93,49 +90,12 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	fire_shader_		= make_unique<FireShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
 
 	// Set model of skill object to be rendered.
-	SkillObjectBead::initialize(
-		new ModelClass(direct3D_->GetDevice(),
-			"data/model/Orb/orb_low.obj",
-			L"data/model/Orb/orb_low_fragment_BaseColor.png",
-			L"data/model/Orb/orb_low_fragment_Normal.png",
-			L"data/model/Orb/orb_low_fragment_Emissive.png"
-		),
-		new ModelClass(direct3D_->GetDevice(),
-			"data/model/PlaneObject.obj",
-			L"data/texture/fire/fire02.png",
-			L"data/texture/fire/noise01.png",
-			L"data/texture/fire/alpha02.png"
-		));
-	SkillObjectSpear::initialize(new ModelClass(direct3D_->GetDevice(),
-		"data/model/Blade/MagicCeramicBlade.obj",
-		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg",
-		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg",
-		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"
-	));
-	SkillObjectLeg::initialize(
-		new ModelClass(direct3D_->GetDevice(),
-			"data/model/Crystal/Crystals_low.obj",
-			L"data/model/Crystal/None_BaseColor.png",
-			L"data/model/Crystal/None_Normal.png"
-		)
-	);
-	SkillObjectBasic::initialize(new ModelClass(direct3D_->GetDevice(),
-		"data/model/Blade/MagicCeramicBlade.obj",
-		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg",
-		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg",
-		L"data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"
-	));
-	SkillObjectShield::initialize(new ModelClass(direct3D_->GetDevice(),
-		"data/model/Shield/shield.obj",
-		L"data/model/Shield/Sheld_LPFF_Sheld_BaseColor.png",
-		L"data/model/Shield/Sheld_LPFF_Sheld_Normal.png"
-	));
-	SkillObjectGuardian::initialize(new ModelClass(direct3D_->GetDevice(),
-		"data/model/Orb/orb_low.obj",
-		L"data/model/Orb/orb_low_fragment_BaseColor.png",
-		L"data/model/Orb/orb_low_fragment_Normal.png",
-		L"data/model/Orb/orb_low_fragment_Emissive.png"
-	));
+	SkillObjectBead::initialize("orb", "fire-effect");
+	SkillObjectSpear::initialize("spear");
+	SkillObjectLeg::initialize("leg");
+	SkillObjectBasic::initialize("basic");
+	SkillObjectShield::initialize("shield");
+	SkillObjectGuardian::initialize("orb");
 
 	// Create character instance.
 	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skillObjectList_.elements);
@@ -164,7 +124,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
 		direct3D_->GetDevice(), screenWidth, screenHeight);
 
-	sound_->PlayBackground(BackgroundSound::kSoundOnGameBackground);
+	sound_->PlayBackground("background");
 	
 	game_state_ = GameState::kGameRun;
 	state_start_time_ = timer_->GetTime();
@@ -227,7 +187,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 	{
 		if (curr_time - delta_time < state_start_time_ + 1000 && state_start_time_ + 1000 <= curr_time)
 		{
-			sound_->PlayEffect(EffectSound::kSoundGameOver);
+			sound_->PlayEffect("gameover");
 		}
 	}
 	else monster_spawner_->Frame(curr_time, delta_time, monsters_.elements);
@@ -276,15 +236,15 @@ void ApplicationClass::GameFrame(InputClass* input)
 			{
 				game_state_ = GameState::kGameOver;
 				state_start_time_ = curr_time;
-				sound_->PlayEffect(EffectSound::kSoundCharacterDie);
+				sound_->PlayEffect("die");
 				timer_->SetGameSpeed(250);
 			}
 			else
 			{
-				sound_->PlayEffect(EffectSound::kSoundCharacterDamage);
+				sound_->PlayEffect("character_damage");
 				if (character_->GetSkill(0).skill_type == 0)
 				{
-					sound_->PlayEffect(EffectSound::kSoundHeartbeat);
+					sound_->PlayEffect("heartbeat");
 				}
 			}
 		});
@@ -296,7 +256,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 			character->LearnSkill(item->GetType(), curr_time);
 			item->SetState(ItemState::kDie, curr_time);
 
-			sound_->PlayEffect(EffectSound::kSoundSkillLearn);
+			sound_->PlayEffect("skill_learn");
 		});
 
 
@@ -339,18 +299,18 @@ void ApplicationClass::Render()
 	XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
 	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);
-	light_shader_->PushRenderQueue(planeModel_.get(), kBackgroundMarix,
-		backgroundTexture_->GetTexture());
+	light_shader_->PushRenderQueue(models_.get("plane"), kBackgroundMarix,
+		textures_.get("background")->GetTexture());
 
 	vector<XMMATRIX> char_model_matrices;
 	character_->GetShapeMatrices(curr_time, char_model_matrices);
 
 
-	ID3D11ShaderResourceView* char_texture = model_->GetDiffuseTexture();
-	if (curr_time <= character_->GetTimeInvincibleEnd()) char_texture = rainbowTexture_->GetTexture();
+	ID3D11ShaderResourceView* char_texture = models_.get("cube")->GetDiffuseTexture();
+	if (curr_time <= character_->GetTimeInvincibleEnd()) char_texture = textures_.get("rainbow")->GetTexture();
 
 	for (auto& box : char_model_matrices) {
-		light_shader_->PushRenderQueue(model_.get(),
+		light_shader_->PushRenderQueue(models_.get("cube"),
 			box * character_->GetLocalWorldMatrix(), char_texture);
 	}
 
@@ -372,7 +332,7 @@ void ApplicationClass::Render()
 				skill_color.z += (1 - skill_color.z) * brightness * 0.6;
 				skill_color.w += (1 - skill_color.w) * brightness * 0.6;
 			}
-			this->stone_shader_->PushRenderQueue(diamondModel_.get(), shape, skill_color);
+			this->stone_shader_->PushRenderQueue(models_.get("diamond"), shape, skill_color);
 		};
 
 	int sb_count = 0;
@@ -411,7 +371,9 @@ void ApplicationClass::Render()
 	for (auto& obj : skillObjectList_.elements)
 	{		
 		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
-		auto obj_model = skill_obj->GetModel();
+		auto obj_model = models_.get(skill_obj->GetModelName());
+
+		if (obj_model == nullptr) throw GAME_EXCEPTION(L"Failed to read object model");
 
 		if (obj_model->GetNormalTexture())
 		{
@@ -428,7 +390,8 @@ void ApplicationClass::Render()
 	if (character_->GetSkillBonus() == SkillBonus::BONUS_ONE_PAIR ||
 		character_->GetSkillBonus() == SkillBonus::BONUS_TWO_PAIR)
 	{
-		ModelClass* obj_model = character_->GetGuardian(0)->GetModel();
+		ModelClass* obj_model = models_.get(character_->GetGuardian(0)->GetModelName());
+		if (obj_model == nullptr) throw GAME_EXCEPTION(L"Failed to read object model");
 
 		for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
 		{
@@ -454,8 +417,8 @@ void ApplicationClass::Render()
 	{
 		MonsterClass* monster = static_cast<MonsterClass*>(obj.get());
 
-		light_shader_->PushRenderQueue(model_.get(),
-			monster->GetRangeRepresentMatrix(), model_->GetDiffuseTexture());
+		light_shader_->PushRenderQueue(models_.get("cube"),
+			monster->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
 	}
 
 	for (auto& ground : field_->GetGrounds())
@@ -476,11 +439,11 @@ void ApplicationClass::Render()
 				grass_section_range.toMatrix();
 
 			fire_shader_->PushRenderQueue(
-				model_.get(),
+				models_.get("cube"),
 				grass_matrix,
-				grass_model_->GetDiffuseTexture(),
-				grass_model_->GetNormalTexture(),
-				grass_model_->GetEmissiveTexture(),
+				models_.get("grass")->GetDiffuseTexture(),
+				models_.get("grass")->GetNormalTexture(),
+				models_.get("grass")->GetEmissiveTexture(),
 				{ -0.3f, -0.1f, -0.3f },
 				{ 1.0f, 2.0f, 3.0f },
 				{ 0.1f, 0.2f },
@@ -500,38 +463,38 @@ void ApplicationClass::Render()
 			const long long next_x = ground_range.x1 + ground_range.get_w() * (i + 1) / ground_drawing_steps;
 			ground_display_range.x1 = curr_x, ground_display_range.x2 = next_x;
 
-			light_shader_->PushRenderQueue(model_.get(),
-				ground_display_range.toMatrix(), model_->GetDiffuseTexture());
+			light_shader_->PushRenderQueue(models_.get("cube"),
+				ground_display_range.toMatrix(), models_.get("cube")->GetDiffuseTexture());
 		}
 	}
 
-	normalMap_shader_->PushRenderQueue(gemModel_.get(),
+	normalMap_shader_->PushRenderQueue(models_.get("gem"),
 		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f),
-		gemModel_->GetDiffuseTexture(), gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture());
+		models_.get("gem")->GetDiffuseTexture(), models_.get("gem")->GetNormalTexture(), models_.get("gem")->GetEmissiveTexture());
 	
-	normalMap_shader_->PushRenderQueue(gemModel_.get(),
+	normalMap_shader_->PushRenderQueue(models_.get("gem"),
 		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000)* kScope, 0.0f),
-		gemModel_->GetDiffuseTexture(), gemModel_->GetNormalTexture(), gemModel_->GetEmissiveTexture());
+		models_.get("gem")->GetDiffuseTexture(), models_.get("gem")->GetNormalTexture(), models_.get("gem")->GetEmissiveTexture());
 
 
 #ifdef DEBUG_RANGE
 
-	light_shader_->PushRenderQueue(planeModel_.get(), character_->GetRangeRepresentMatrix(), model_->GetDiffuseTexture());
+	light_shader_->PushRenderQueue(models_.get("plane").get(), character_->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
 
 	for (auto& obj : skillObjectList_.elements)
 	{
 		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
-		light_shader_->PushRenderQueue(planeModel_.get(), skill_obj->GetRangeRepresentMatrix(), model_->GetDiffuseTexture());
+		light_shader_->PushRenderQueue(models_.get("plane").get(), skill_obj->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
 	}
 
 #endif
 
 	fire_shader_->PushRenderQueue(
-		planeModel_.get(),
+		models_.get("plane"),
 		XMMatrixScaling(2.0f, 2.0f, 1),
-		fire_model_->GetDiffuseTexture(),
-		fire_model_->GetNormalTexture(),
-		fire_model_->GetEmissiveTexture(),
+		models_.get("fire")->GetDiffuseTexture(),
+		models_.get("fire")->GetNormalTexture(),
+		models_.get("fire")->GetEmissiveTexture(),
 		{ 1.3f, 2.1f, 2.3f },
 		{ 1.0f, 2.0f, 3.0f },
 		{ 0.1f, 0.2f },

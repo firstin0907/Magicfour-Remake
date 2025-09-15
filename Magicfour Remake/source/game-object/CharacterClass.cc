@@ -545,29 +545,29 @@ bool CharacterClass::UseSkill(time_t curr_time,
 		{
 		case 0:
 			time_skill_ended_ = state_start_time_ + 300;
-			sound->PlayEffect(EffectSound::kSoundSpell3);
+			sound->PlayEffect("spell3");
 			break;
 
 		case 1:
 			velocity_.y = 3'600;
 
 			time_skill_ended_ = state_start_time_ + 300;
-			sound->PlayEffect(EffectSound::kSoundSpell1);
+			sound->PlayEffect("spell1");
 			break;
 
 		case 2:
 			time_skill_ended_ = state_start_time_ + 300;
-			sound->PlayEffect(EffectSound::kSoundSpell2);
+			sound->PlayEffect("spell2");
 			break;
 
 		case 3:
 			time_skill_ended_ = state_start_time_ + 300;
-			sound->PlayEffect(EffectSound::kSoundSpell2);
+			sound->PlayEffect("spell2");
 			break;
 
 		case 4:
 			time_skill_ended_ = state_start_time_ + 300;
-			sound->PlayEffect(EffectSound::kSoundSpell2);
+			sound->PlayEffect("spell2");
 
 
 			skill_objs.emplace_back(new SkillObjectShield(

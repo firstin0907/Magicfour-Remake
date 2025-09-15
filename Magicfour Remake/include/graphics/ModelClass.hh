@@ -63,11 +63,20 @@ private:
 	};
 
 public:
-	ModelClass(ID3D11Device* device, const char* modelFilename,
+	ModelClass(ID3D11Device* device, const char* model_filename,
 		const wchar_t* diffuse_filename,
 		const wchar_t* normal_filename = nullptr,
 		const wchar_t* emissive_filename = nullptr
 	);
+
+	ModelClass(ID3D11Device* device,
+		const std::string& model_filename,
+		const std::string& diffuse_filename,
+		const std::string& normal_filename = "",
+		const std::string& emissive_filename = ""
+	);
+
+
 	ModelClass(const ModelClass&) = delete;
 	~ModelClass();
 

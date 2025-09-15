@@ -9,6 +9,7 @@
 #include <DirectXMath.h>
 
 #include "GameObjectList.hh"
+#include "util/ResourceMap.hh"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -56,14 +57,8 @@ private:
 
 	unique_ptr<class CameraClass>		camera_;
 
-	unique_ptr<class ModelClass>		model_;
-	unique_ptr<class ModelClass>		planeModel_;
-	unique_ptr<class ModelClass>		diamondModel_;
-	unique_ptr<class ModelClass>		gemModel_;
-	unique_ptr<class ModelClass>		fire_model_;
-	unique_ptr<class ModelClass>		grass_model_;
-	unique_ptr<class TextureClass>		rainbowTexture_;
-	unique_ptr<class TextureClass>		backgroundTexture_;
+	ResourceMap<class ModelClass>		models_;
+	ResourceMap<class TextureClass>		textures_;
 
 	unique_ptr<class LightClass>		light_;
 

@@ -1,0 +1,30 @@
+<Resources>
+  <Model name="cube" src="data/model/abox.obj" texture="data/texture/stone01.tga" normal="data/texture/normal01.tga"/>
+  <Model name="fire" src="data/model/PlaneObject.obj" texture="data/texture/fire/fire02.png" normal="data/texture/fire/noise01.png" emissive="data/texture/fire/alpha02.png"/>
+  <Model name="grass" src="data/model/abox.obj" texture="data/texture/grass/diffuse.png" normal="data/texture/fire/noise01.png" emissive="data/texture/fire/alpha03.png"/>
+  <Model name="plane" src="data/model/PlaneObject.obj" texture="data/texture/stone01.tga" normal="data/texture/normal01.tga"/>
+  <Model name="diamond" src="data/model/diamond.obj" texture="data/texture/stone01.tga"/>
+  <Model name="gem" src="data/model/Crystal/Crystals_low.obj" texture="data/model/Crystal/None_BaseColor.png" normal="data/model/Crystal/None_Normal.png" emissive="data/model/Crystal/None_Emissive.png"/>
+  
+  <!-- Models of skill objects -->
+  <Model name="orb" src="data/model/Orb/orb_low.obj" texture="data/model/Orb/orb_low_fragment_BaseColor.png" normal="data/model/Orb/orb_low_fragment_Normal.png" emissive="data/model/Orb/orb_low_fragment_Emissive.png"/>
+  <Model name="fire-effect" src="data/model/PlaneObject.obj" texture="data/texture/fire/fire02.png" normal="data/texture/fire/noise01.png" emissive="data/texture/fire/alpha02.png"/>
+  <Model name="spear" src="data/model/Blade/MagicCeramicBlade.obj" texture="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg" normal="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg" emissive="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
+  <Model name="leg" src="data/model/Crystal/Crystals_low.obj" texture="data/model/Crystal/None_BaseColor.png" normal="data/model/Crystal/None_Normal.png"/>
+  <Model name="basic" src="data/model/Blade/MagicCeramicBlade.obj" texture="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg" normal="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg" emissive="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
+  <Model name="shield" src="data/model/Shield/shield.obj" texture="data/model/Shield/Sheld_LPFF_Sheld_BaseColor.png" normal="data/model/Shield/Sheld_LPFF_Sheld_Normal.png"/>
+  
+  <Texture name="rainbow" src="data/texture/skill_gauge_rainbow.png"/>
+  <Texture name="background" src="data/texture/background.jpg"/>
+
+  <Sound name="background" src="data/sound/background.wav"/>
+  <Sound name="character_damage" src="data/sound/character_damage.wav"/>
+  <Sound name="character_death" src="data/sound/character_death.wav"/>
+  <Sound name="skill_learn" src="data/sound/skill_learn.wav"/>
+  <Sound name="spell1" src="data/sound/spell1.wav"/>
+  <Sound name="spell2" src="data/sound/spell2.wav"/>
+  <Sound name="spell3" src="data/sound/spell3.wav"/>
+  <Sound name="heartbeat" src="data/sound/heartbeat.wav"/>
+  <Sound name="gameover" src="data/sound/gameover.wav"/>
+
+</Resources>

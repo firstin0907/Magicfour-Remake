@@ -4,6 +4,7 @@
 #include <utility>
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "core/global.hh"
 #include "core/RigidbodyClass.hh"
@@ -45,7 +46,7 @@ public:
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) = 0;
 
-	virtual class ModelClass* GetModel() = 0;
+	virtual std::string GetModelName() = 0;
 
 protected:
 

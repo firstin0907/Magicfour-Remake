@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <stdio.h>
 #include <wrl.h>
+#include <string>
 
 template<typename T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -20,6 +21,7 @@ class TextureClass
 {
 public:
     TextureClass(ID3D11Device* device, const wchar_t* filename);
+    TextureClass(ID3D11Device* device, const std::string& filename);
     TextureClass(const TextureClass& other) = delete;
     ~TextureClass();
 
@@ -29,7 +31,7 @@ public:
     int GetHeight();
 
 private:
-    ComPtr<ID3D11ShaderResourceView> textureView_; // texture Á¢±Ù¿ë
+    ComPtr<ID3D11ShaderResourceView> textureView_; // texture ï¿½ï¿½ï¿½Ù¿ï¿½
     int width_, height_;
 };
 

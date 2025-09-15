@@ -262,5 +262,13 @@
     <ClInclude Include="include\shader\FireShaderClass.hh">
       <Filter>헤더 파일\shader</Filter>
     </ClInclude>
+    <ClInclude Include="include\util\ResourceMap.hh">
+      <Filter>헤더 파일\util</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="data\resources.xml">
+      <Filter>리소스 파일</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

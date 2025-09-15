@@ -8,13 +8,13 @@
 using namespace std;
 using namespace DirectX;
 
-unique_ptr<class ModelClass> SkillObjectSpear::model_ = nullptr;
-unique_ptr<class ModelClass> SkillObjectBead::model_ = nullptr;
-unique_ptr<class ModelClass> SkillObjectBead::effect_model_ = nullptr;
-unique_ptr<class ModelClass> SkillObjectLeg::model_ = nullptr;
-unique_ptr<class ModelClass> SkillObjectBasic::model_ = nullptr;
-unique_ptr<class ModelClass> SkillObjectShield::model_ = nullptr;
-unique_ptr<class ModelClass> SkillObjectGuardian::model_ = nullptr;
+std::string SkillObjectSpear::model_name_;
+std::string SkillObjectBead::model_name_;
+std::string SkillObjectBead::effect_model_name_;
+std::string SkillObjectLeg::model_name_;
+std::string SkillObjectBasic::model_name_;
+std::string SkillObjectShield::model_name_;
+std::string SkillObjectGuardian::model_name_;
 
 SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y,
 	int vx, int vy, int skill_level, time_t created_time)
@@ -112,14 +112,14 @@ XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
 		* XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
-void SkillObjectSpear::initialize(ModelClass* model)
+void SkillObjectSpear::initialize(const std::string& model_name)
 {
-	model_ = unique_ptr<ModelClass>(model);
+	model_name_ = model_name;
 }
 
-ModelClass* SkillObjectSpear::GetModel()
+std::string SkillObjectSpear::GetModelName()
 {
-	return model_.get();
+	return model_name_;
 }
 
 SkillObjectBead::SkillObjectBead(int pos_x, int pos_y,
@@ -199,20 +199,20 @@ XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
 		* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
-void SkillObjectBead::initialize(class ModelClass* model, class ModelClass* effect_model)
+void SkillObjectBead::initialize(const std::string& model_name, const std::string& effect_model_name)
 {
-	model_ = unique_ptr<ModelClass>(model);
-	effect_model_ = unique_ptr<ModelClass>(effect_model);
+	model_name_ = model_name;
+	effect_model_name_ = effect_model_name;
 }
 
-ModelClass* SkillObjectBead::GetModel()
+std::string SkillObjectBead::GetModelName()
 {
-	return model_.get();
+	return model_name_;
 }
 
-ModelClass* SkillObjectBead::GetEffectModel()
+std::string SkillObjectBead::GetEffectModel()
 {
-	return effect_model_.get();
+	return effect_model_name_;
 }
 
 SkillObjectLeg::SkillObjectLeg(int pos_x, int skill_level, time_t created_time)
@@ -274,15 +274,15 @@ XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
 }
 
 
-void SkillObjectLeg::initialize(class ModelClass* model)
+void SkillObjectLeg::initialize(const std::string& model_name)
 {
-	model_ = unique_ptr<ModelClass>(model);
+	model_name_ = model_name;
 }
 
 
-ModelClass* SkillObjectLeg::GetModel()
+std::string SkillObjectLeg::GetModelName()
 {
-	return model_.get();
+	return model_name_;
 }
 
 
@@ -330,14 +330,14 @@ XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)
 	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
-void SkillObjectBasic::initialize(ModelClass* model)
+void SkillObjectBasic::initialize(const std::string& model_name)
 {
-	model_ = unique_ptr<ModelClass>(model);
+	model_name_ = model_name;
 }
 
-ModelClass* SkillObjectBasic::GetModel()
+std::string SkillObjectBasic::GetModelName()
 {
-	return model_.get();
+	return model_name_;
 }
 
 
@@ -403,14 +403,14 @@ XMMATRIX SkillObjectShield::GetGlobalShapeTransform(time_t curr_time)
 	}	
 }
 
-void SkillObjectShield::initialize(ModelClass* model)
+void SkillObjectShield::initialize(const std::string& model_name)
 {
-	model_ = unique_ptr<ModelClass>(model);
+	model_name_ = model_name;
 }
 
-ModelClass* SkillObjectShield::GetModel()
+std::string SkillObjectShield::GetModelName()
 {
-	return model_.get();
+	return model_name_;
 }
 
 SkillObjectGuardian::SkillObjectGuardian()
@@ -434,12 +434,12 @@ XMMATRIX SkillObjectGuardian::GetGlobalShapeTransform(time_t curr_time)
 	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
 
-void SkillObjectGuardian::initialize(ModelClass* model)
+void SkillObjectGuardian::initialize(const std::string& model_name)
 {
-	model_ = unique_ptr<ModelClass>(model);
+	model_name_ = model_name;
 }
 
-ModelClass* SkillObjectGuardian::GetModel()
+std::string SkillObjectGuardian::GetModelName()
 {
-	return model_.get();
+	return model_name_;
 }

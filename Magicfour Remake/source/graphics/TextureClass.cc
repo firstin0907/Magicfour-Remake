@@ -1,5 +1,7 @@
 #include "graphics/TextureClass.hh"
 
+#include <string>
+
 #include "core/GameException.hh"
 #include "../third-party/DirectXTex.h"
 
@@ -41,6 +43,12 @@ TextureClass::TextureClass(ID3D11Device* device, const wchar_t* filename)
 
 	hResult = CreateShaderResourceView(device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), textureView_.GetAddressOf());
 	if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to create Shader Resource View of " + std::wstring(filename));
+}
+
+TextureClass::TextureClass(ID3D11Device* device, const std::string& filename)
+	: TextureClass(device, std::wstring(filename.begin(), filename.end()).c_str())
+{
+
 }
 
 TextureClass::~TextureClass()
