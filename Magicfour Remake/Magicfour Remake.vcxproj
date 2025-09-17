@@ -155,8 +155,8 @@
     <ClCompile Include="source\shader\LightShaderClass.cc" />
     <ClCompile Include="source\shader\NormalMapShaderClass.cc" />
     <ClCompile Include="source\shader\ShaderClass.cc" />
+    <ClCompile Include="source\shader\ShaderManager.cc" />
     <ClCompile Include="source\shader\StoneShaderClass.cc" />
-    <ClCompile Include="source\shader\TextureShaderClass.cc" />
     <ClCompile Include="source\ui\UserInterfaceClass.cc" />
     <ClCompile Include="source\util\RandomClass.cc" />
     <ClCompile Include="source\util\TimerClass.cc" />
@@ -192,8 +192,8 @@
     <ClInclude Include="include\shader\LightShaderClass.hh" />
     <ClInclude Include="include\shader\NormalMapShaderClass.hh" />
     <ClInclude Include="include\shader\ShaderClass.hh" />
+    <ClInclude Include="include\shader\ShaderManager.hh" />
     <ClInclude Include="include\shader\StoneShaderClass.hh" />
-    <ClInclude Include="include\shader\TextureShaderClass.hh" />
     <ClInclude Include="include\ui\UserInterfaceClass.hh" />
     <ClInclude Include="include\util\CollisionProcessor.hh" />
     <ClInclude Include="include\util\RandomClass.hh" />

@@ -134,9 +134,6 @@
     <ClCompile Include="source\shader\StoneShaderClass.cc">
       <Filter>소스 파일\shader</Filter>
     </ClCompile>
-    <ClCompile Include="source\shader\TextureShaderClass.cc">
-      <Filter>소스 파일\shader</Filter>
-    </ClCompile>
     <ClCompile Include="source\map\FieldClass.cc">
       <Filter>소스 파일\map</Filter>
     </ClCompile>
@@ -147,6 +144,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="source\shader\FIreShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shader\ShaderManager.cc">
       <Filter>소스 파일\shader</Filter>
     </ClCompile>
   </ItemGroup>
@@ -173,9 +173,6 @@
       <Filter>헤더 파일\shader</Filter>
     </ClInclude>
     <ClInclude Include="include\shader\StoneShaderClass.hh">
-      <Filter>헤더 파일\shader</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shader\TextureShaderClass.hh">
       <Filter>헤더 파일\shader</Filter>
     </ClInclude>
     <ClInclude Include="include\map\FieldClass.hh">
@@ -264,6 +261,9 @@
     </ClInclude>
     <ClInclude Include="include\util\ResourceMap.hh">
       <Filter>헤더 파일\util</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shader\ShaderManager.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

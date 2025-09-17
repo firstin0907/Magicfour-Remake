@@ -56,31 +56,22 @@ public:
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture);
 
-	void ProcessRenderQueue(const XMMATRIX& vp_matrix,
-		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
-
-
-	void Render(
-		class ModelClass* model, XMMATRIX world_matrix, XMMATRIX vp_matrix,
-		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
-
-	void Render(ModelClass* model, XMMATRIX, XMMATRIX,
-		ID3D11ShaderResourceView* diffuse_texture,
-		ID3D11ShaderResourceView* normal_texture,
-		ID3D11ShaderResourceView* emissive_texture,
+	void ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
 
 private:
-	void InitializeShader(HWND hwnd,
+	void InitializeShader(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
-	void SetShaderParameters(XMMATRIX, XMMATRIX,
+	void SetShaderParameters(ID3D11DeviceContext* device_context,
+		XMMATRIX, XMMATRIX,
 		ID3D11ShaderResourceView* diffuse_texture,
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture,
 		XMFLOAT3, XMFLOAT4,
 		XMFLOAT3, XMFLOAT3, XMFLOAT3, XMFLOAT3);
-	void RenderShader(int index_count, int index_start = 0);
+
+	void RenderShader(ID3D11DeviceContext* device_context, int index_count, int index_start = 0);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;

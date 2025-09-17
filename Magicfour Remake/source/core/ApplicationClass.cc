@@ -77,18 +77,18 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 		});
 
 	// Create and initialize the light shader object.
-	light_shader_ = make_unique<LightShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
-
+	shader_manager_ = make_unique<ShaderManager>(
+		direct3D_->GetDevice(),
+		direct3D_->GetDeviceContext(),
+		hwnd
+	);
+	
 	// Create and initialize the light object.
 	light_ = make_unique<LightClass>();
 	light_->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light_->SetDirection(0.0f, 0.0f, 1.0f);
 
-	stone_shader_		= make_unique<StoneShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
-	texture_shader_		= make_unique<TextureShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
-	normalMap_shader_	= make_unique<NormalMapShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
-	fire_shader_		= make_unique<FireShaderClass>(direct3D_->GetDevice(), direct3D_->GetDeviceContext(), hwnd);
-
+	
 	// Set model of skill object to be rendered.
 	SkillObjectBead::initialize("orb", "fire-effect");
 	SkillObjectSpear::initialize("spear");
@@ -299,7 +299,7 @@ void ApplicationClass::Render()
 	XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
 	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);
-	light_shader_->PushRenderQueue(models_.get("plane"), kBackgroundMarix,
+	shader_manager_->light_shader_->PushRenderQueue(models_.get("plane"), kBackgroundMarix,
 		textures_.get("background")->GetTexture());
 
 	vector<XMMATRIX> char_model_matrices;
@@ -310,7 +310,7 @@ void ApplicationClass::Render()
 	if (curr_time <= character_->GetTimeInvincibleEnd()) char_texture = textures_.get("rainbow")->GetTexture();
 
 	for (auto& box : char_model_matrices) {
-		light_shader_->PushRenderQueue(models_.get("cube"),
+		shader_manager_->light_shader_->PushRenderQueue(models_.get("cube"),
 			box * character_->GetLocalWorldMatrix(), char_texture);
 	}
 
@@ -332,7 +332,7 @@ void ApplicationClass::Render()
 				skill_color.z += (1 - skill_color.z) * brightness * 0.6;
 				skill_color.w += (1 - skill_color.w) * brightness * 0.6;
 			}
-			this->stone_shader_->PushRenderQueue(models_.get("diamond"), shape, skill_color);
+			this->shader_manager_->stone_shader_->PushRenderQueue(models_.get("diamond"), shape, skill_color);
 		};
 
 	int sb_count = 0;
@@ -377,12 +377,12 @@ void ApplicationClass::Render()
 
 		if (obj_model->GetNormalTexture())
 		{
-			normalMap_shader_->PushRenderQueue(obj_model,
+			shader_manager_->normalMap_shader_->PushRenderQueue(obj_model,
 				skill_obj->GetGlobalShapeTransform(curr_time));
 		}
 		else
 		{			
-			light_shader_->PushRenderQueue(obj_model,
+			shader_manager_->light_shader_->PushRenderQueue(obj_model,
 				skill_obj->GetGlobalShapeTransform(curr_time), obj_model->GetDiffuseTexture());
 		}
 		
@@ -398,13 +398,13 @@ void ApplicationClass::Render()
 			SkillObjectGuardian* skill_obj = character_->GetGuardian(i);
 			if (obj_model->GetNormalTexture())
 			{
-				normalMap_shader_->PushRenderQueue(obj_model,
+				shader_manager_->normalMap_shader_->PushRenderQueue(obj_model,
 					skill_obj->GetGlobalShapeTransform(curr_time));
 			}
 			else
 			{
 
-				light_shader_->PushRenderQueue(obj_model,
+				shader_manager_->light_shader_->PushRenderQueue(obj_model,
 					skill_obj->GetGlobalShapeTransform(curr_time),
 					obj_model->GetDiffuseTexture());
 			}
@@ -417,7 +417,7 @@ void ApplicationClass::Render()
 	{
 		MonsterClass* monster = static_cast<MonsterClass*>(obj.get());
 
-		light_shader_->PushRenderQueue(models_.get("cube"),
+		shader_manager_->light_shader_->PushRenderQueue(models_.get("cube"),
 			monster->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
 	}
 
@@ -438,7 +438,7 @@ void ApplicationClass::Render()
 				XMMatrixTranslation(0.0f, 0.0f, -0.0001f) *
 				grass_section_range.toMatrix();
 
-			fire_shader_->PushRenderQueue(
+			shader_manager_->fire_shader_->PushRenderQueue(
 				models_.get("cube"),
 				grass_matrix,
 				models_.get("grass")->GetDiffuseTexture(),
@@ -463,16 +463,16 @@ void ApplicationClass::Render()
 			const long long next_x = ground_range.x1 + ground_range.get_w() * (i + 1) / ground_drawing_steps;
 			ground_display_range.x1 = curr_x, ground_display_range.x2 = next_x;
 
-			light_shader_->PushRenderQueue(models_.get("cube"),
+			shader_manager_->light_shader_->PushRenderQueue(models_.get("cube"),
 				ground_display_range.toMatrix(), models_.get("cube")->GetDiffuseTexture());
 		}
 	}
 
-	normalMap_shader_->PushRenderQueue(models_.get("gem"),
+	shader_manager_->normalMap_shader_->PushRenderQueue(models_.get("gem"),
 		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f),
 		models_.get("gem")->GetDiffuseTexture(), models_.get("gem")->GetNormalTexture(), models_.get("gem")->GetEmissiveTexture());
 	
-	normalMap_shader_->PushRenderQueue(models_.get("gem"),
+	shader_manager_->normalMap_shader_->PushRenderQueue(models_.get("gem"),
 		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000)* kScope, 0.0f),
 		models_.get("gem")->GetDiffuseTexture(), models_.get("gem")->GetNormalTexture(), models_.get("gem")->GetEmissiveTexture());
 
@@ -489,7 +489,7 @@ void ApplicationClass::Render()
 
 #endif
 
-	fire_shader_->PushRenderQueue(
+	shader_manager_->fire_shader_->PushRenderQueue(
 		models_.get("plane"),
 		XMMatrixScaling(2.0f, 2.0f, 1),
 		models_.get("fire")->GetDiffuseTexture(),
@@ -503,12 +503,12 @@ void ApplicationClass::Render()
 		0.8f, 0.0f);
 
 
-	light_shader_	 ->ProcessRenderQueue(vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
-	normalMap_shader_->ProcessRenderQueue(vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
-	stone_shader_	 ->ProcessRenderQueue(vp_matrix, light_->GetDirection(), camera_->GetPosition());
+	shader_manager_->light_shader_	 ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
+	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+	shader_manager_->stone_shader_	 ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
 
 	direct3D_->EnableAlphaBlending(); // Turn on alpha blending for the fire transparency.
-	fire_shader_	 ->ProcessRenderQueue(vp_matrix, curr_time * 0.0004f);
+	shader_manager_->fire_shader_	 ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
 	direct3D_->DisableAlphaBlending();
 
 	// Turn off the Z buffer to begin all 2D rendering.

@@ -9,6 +9,8 @@
 #include <DirectXMath.h>
 
 #include "GameObjectList.hh"
+
+#include "shader/ShaderManager.hh"
 #include "util/ResourceMap.hh"
 
 const bool FULL_SCREEN = false;
@@ -61,12 +63,7 @@ private:
 	ResourceMap<class TextureClass>		textures_;
 
 	unique_ptr<class LightClass>		light_;
-
-	unique_ptr<class LightShaderClass>	light_shader_;
-	unique_ptr<class StoneShaderClass>	stone_shader_;
-	unique_ptr<class TextureShaderClass>	texture_shader_;
-	unique_ptr<class NormalMapShaderClass>	normalMap_shader_;
-	unique_ptr<class FireShaderClass>	fire_shader_;
+	unique_ptr<class ShaderManager>		shader_manager_;
 
 	unique_ptr<class CharacterClass>	character_;
 

@@ -5,10 +5,9 @@
 #include "graphics/ModelClass.hh"
 
 FireShaderClass::FireShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
-	: ShaderClass(device, device_context)
 {
 	// Initialize the vertex and pixel shaders.
-	InitializeShader(hwnd, L"shader/fire.vs", L"shader/fire.ps");
+	InitializeShader(device, device_context, hwnd, L"shader/fire.vs", L"shader/fire.ps");
 }
 
 FireShaderClass::~FireShaderClass()
@@ -42,12 +41,13 @@ void FireShaderClass::PushRenderQueue(class ModelClass* model,
 	render_queue_[model].push_back(render_command);
 }
 
-void FireShaderClass::ProcessRenderQueue(XMMATRIX vp_matrix, float frame_time)
+void FireShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
+	XMMATRIX vp_matrix, float frame_time)
 {
 	for (auto& [model, params] : render_queue_)
 	{
 		// Batch processing for draw calls with same model
-		model->Render(device_context_);
+		model->Render(device_context);
 		for (const auto& param : params)
 		{
 			MatrixBufferType matrix_data;
@@ -67,47 +67,20 @@ void FireShaderClass::ProcessRenderQueue(XMMATRIX vp_matrix, float frame_time)
 			distortion_data.distortion_bias = param.distortion_bias;
 
 			// Set the shader parameters that it will use for rendering.
-			SetShaderParameters(matrix_data, noise_data, distortion_data,
+			SetShaderParameters(device_context, matrix_data, noise_data, distortion_data,
 				param.fire_texture, param.noise_texture, param.alpha_texture);
 
 			// Now render the prepared buffers with the shader.
-			RenderShader(model->GetIndexCount());
+			RenderShader(device_context, model->GetIndexCount());
 		}
 	}
 
 	render_queue_.clear();
 }
 
-void FireShaderClass::Render(ModelClass* model,  XMMATRIX mvp_matrix, ID3D11ShaderResourceView* fire_texture,
-	ID3D11ShaderResourceView* noise_texture, ID3D11ShaderResourceView* alpha_texture,
-	float frame_time, XMFLOAT3 scroll_speeds, XMFLOAT3 scales,
-	XMFLOAT2 distortion1, XMFLOAT2 distortion2, XMFLOAT2 distortion3,
-	float distortion_scale, float distortion_bias)
-{
-	MatrixBufferType matrix_data;
-	matrix_data.mvp = mvp_matrix;
-
-	NoiseBufferType noise_data;
-	noise_data.frame_time = frame_time;
-	noise_data.scroll_speeds = scroll_speeds;
-	noise_data.scales = scales;
-	noise_data.padding = 0.0f;
-
-	DistortionBuffer distortion_data;
-	distortion_data.distortion1 = distortion1;
-	distortion_data.distortion2 = distortion2;
-	distortion_data.distortion3 = distortion3;
-	distortion_data.distortion_scale = distortion_scale;
-	distortion_data.distortion_bias = distortion_bias;
-
-	SetShaderParameters(matrix_data, noise_data, distortion_data,
-		fire_texture, noise_texture, alpha_texture);
-
-	// Now render the prepared buffers with the shader.
-	RenderShader(model->GetIndexCount());
-}
-
-void FireShaderClass::InitializeShader(HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename)
+void FireShaderClass::InitializeShader(ID3D11Device* device,
+	ID3D11DeviceContext* device_context, HWND hwnd,
+	const WCHAR* vs_filename, const WCHAR* ps_filename)
 {
 	constexpr int kNumOfElements = 2;
 	D3D11_INPUT_ELEMENT_DESC polygon_layout[kNumOfElements];
@@ -130,23 +103,25 @@ void FireShaderClass::InitializeShader(HWND hwnd, const WCHAR* vs_filename, cons
 	polygon_layout[1].SemanticName = "TEXCOORD";
 	polygon_layout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 
-	CreateShaderObject(hwnd, vs_filename, ps_filename, polygon_layout, kNumOfElements);
+	ShaderClass::CreateShaderObject(device, device_context, hwnd,
+		vs_filename, ps_filename, polygon_layout, kNumOfElements);
 
 	// Create the texture sampler state.
-	sample_state_clamp_ = CreateSamplerState(D3D11_TEXTURE_ADDRESS_CLAMP);
-	sample_state_wrap_ = CreateSamplerState(D3D11_TEXTURE_ADDRESS_WRAP);
+	sample_state_clamp_ = ShaderClass::CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_CLAMP);
+	sample_state_wrap_ = ShaderClass::CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_WRAP);
 
-	matrix_buffer_ = CreateBasicConstantBuffer<MatrixBufferType>();
+	matrix_buffer_ = CreateBasicConstantBuffer<MatrixBufferType>(device);
 	if (!matrix_buffer_) throw GAME_EXCEPTION(L"Failed to create matrix buffer");
 
-	noise_buffer_ = CreateBasicConstantBuffer<NoiseBufferType>();
+	noise_buffer_ = CreateBasicConstantBuffer<NoiseBufferType>(device);
 	if (!noise_buffer_) throw GAME_EXCEPTION(L"Failed to create noise buffer");
 
-	distortion_buffer_ = CreateBasicConstantBuffer<DistortionBuffer>();
+	distortion_buffer_ = CreateBasicConstantBuffer<DistortionBuffer>(device);
 	if (!distortion_buffer_) throw GAME_EXCEPTION(L"Failed to create noise buffer");
 }
 
-void FireShaderClass::SetShaderParameters(const MatrixBufferType& matrix_buffer_data,
+void FireShaderClass::SetShaderParameters(ID3D11DeviceContext* device_context,
+	const MatrixBufferType& matrix_buffer_data,
 	const NoiseBufferType& noise_buffer_data, const DistortionBuffer& distortion_buffer_data,
 	ID3D11ShaderResourceView* fire_texture, ID3D11ShaderResourceView* noise_texture,
 	ID3D11ShaderResourceView* alpha_texture)
@@ -157,7 +132,7 @@ void FireShaderClass::SetShaderParameters(const MatrixBufferType& matrix_buffer_
 	
 
 	// Lock the constant buffer so it can be written to.
-	result = device_context_->Map(matrix_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = device_context->Map(matrix_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock matrix buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
@@ -167,62 +142,62 @@ void FireShaderClass::SetShaderParameters(const MatrixBufferType& matrix_buffer_
 	*dataPtr = matrix_buffer_data;
 	dataPtr->mvp = XMMatrixTranspose(matrix_buffer_data.mvp);
 
-	device_context_->Unmap(matrix_buffer_.Get(), 0);
+	device_context->Unmap(matrix_buffer_.Get(), 0);
 
 	// Now set the constant buffer in the vertex shader with the updated bufferNumber values.
-	device_context_->VSSetConstantBuffers(bufferNumber++, 1, matrix_buffer_.GetAddressOf());
+	device_context->VSSetConstantBuffers(bufferNumber++, 1, matrix_buffer_.GetAddressOf());
 
 
 	// Lock the constant buffer so it can be written to.
-	result = device_context_->Map(noise_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = device_context->Map(noise_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock noise buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
 	NoiseBufferType* dataPtr2 = (NoiseBufferType*)mappedResource.pData;
 	*dataPtr2 = noise_buffer_data;
 
-	device_context_->Unmap(noise_buffer_.Get(), 0);
+	device_context->Unmap(noise_buffer_.Get(), 0);
 
 	// Now set the constant buffer in the vertex shader with the updated bufferNumber values.
-	device_context_->VSSetConstantBuffers(bufferNumber++, 1, noise_buffer_.GetAddressOf());
+	device_context->VSSetConstantBuffers(bufferNumber++, 1, noise_buffer_.GetAddressOf());
 	
 
 	bufferNumber = 0; // initialize for pixel shader buffer
 
 	// Set shader texture resource in the pixel shader.
-	device_context_->PSSetShaderResources(0, 1, &fire_texture);
-	device_context_->PSSetShaderResources(1, 1, &noise_texture);
-	device_context_->PSSetShaderResources(2, 1, &alpha_texture);
+	device_context->PSSetShaderResources(0, 1, &fire_texture);
+	device_context->PSSetShaderResources(1, 1, &noise_texture);
+	device_context->PSSetShaderResources(2, 1, &alpha_texture);
 
-	result = device_context_->Map(distortion_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = device_context->Map(distortion_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock noise buffer to set shader parameter.");
 
 	// Get a pointer to the data in the constant buffer.
 	DistortionBuffer* dataPtr3 = (DistortionBuffer*)mappedResource.pData;
 	*dataPtr3 = distortion_buffer_data;
 
-	device_context_->Unmap(distortion_buffer_.Get(), 0);
+	device_context->Unmap(distortion_buffer_.Get(), 0);
 
 	// Now set the constant buffer in the vertex shader with the updated bufferNumber values.
-	device_context_->PSSetConstantBuffers(bufferNumber++, 1, distortion_buffer_.GetAddressOf());
+	device_context->PSSetConstantBuffers(bufferNumber++, 1, distortion_buffer_.GetAddressOf());
 
 }
 
-void FireShaderClass::RenderShader(int indexCount)
+void FireShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount)
 {
 	// Set the vertex input layout.
-	device_context_->IASetInputLayout(input_layout_.Get());
+	device_context->IASetInputLayout(input_layout_.Get());
 
 	// Set the vertex and pixel shaders that will be used to render this triangle.
-	device_context_->VSSetShader(vertex_shader_.Get(), NULL, 0);
-	device_context_->PSSetShader(pixel_shader_.Get(), NULL, 0);
+	device_context->VSSetShader(vertex_shader_.Get(), NULL, 0);
+	device_context->PSSetShader(pixel_shader_.Get(), NULL, 0);
 
 	// Set the sampler state in the pixel shader.
-	device_context_->PSSetSamplers(0, 1, sample_state_wrap_.GetAddressOf());
-	device_context_->PSSetSamplers(1, 1, sample_state_clamp_.GetAddressOf());
+	device_context->PSSetSamplers(0, 1, sample_state_wrap_.GetAddressOf());
+	device_context->PSSetSamplers(1, 1, sample_state_clamp_.GetAddressOf());
 
 	// Render the triangle.
-	device_context_->DrawIndexed(indexCount, 0, 0);
+	device_context->DrawIndexed(indexCount, 0, 0);
 
 	return;
 }

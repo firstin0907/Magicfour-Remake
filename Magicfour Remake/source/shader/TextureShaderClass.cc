@@ -3,15 +3,14 @@
 #include "core/GameException.hh"
 #include "graphics/ModelClass.hh"
 
-TextureShaderClass::TextureShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
-	: ShaderClass(device, device_context_)
+TextureShaderClass::TextureShaderClass(HWND hwnd)
 {
 	// Initialize the vertex and pixel shaders.
 	InitializeShader(hwnd, L"shader/texture.vs", L"shader/texture.ps");
 }
 
 
-void TextureShaderClass::Render(class ModelClass* model,
+void TextureShaderClass::Render(ID3D11DeviceContext* device_context, class ModelClass* model,
 	XMMATRIX world_matrix, XMMATRIX vp_matrix, ID3D11ShaderResourceView* texture)
 {
 	SetShaderParameters(world_matrix, vp_matrix, texture);
@@ -52,15 +51,15 @@ void TextureShaderClass::InitializeShader(HWND hwnd,
 	if (!matrix_buffer_) throw GAME_EXCEPTION(L"Failed to create matrix buffer");
 }
 
-void TextureShaderClass::SetShaderParameters(
+void TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* device_context,
 	XMMATRIX world_matrix, XMMATRIX vp_matrix, ID3D11ShaderResourceView* texture)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 	// Lock Matrix Buffer
-	// (Á¤±âÀûÀ¸·Î[ex) ÇÁ·¹ÀÓ¸¶´Ù] °»½ÅÇÒ ¾Öµé¿¡°Ô¸¸ Map, UnmapÀ» ¾²°í
-	// ±×°Ô ¾Æ´Ï¸é UpdateSubresource¸¦ ½á¶ó(at. 5[texture])
+	// (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ex) ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Öµé¿¡ï¿½Ô¸ï¿½ Map, Unmapï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	// ï¿½×°ï¿½ ï¿½Æ´Ï¸ï¿½ UpdateSubresourceï¿½ï¿½ ï¿½ï¿½ï¿½(at. 5[texture])
 	result = device_context_->Map(matrix_buffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD,
 		0, &mappedResource);
 	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to lock matrix buffer to set shader parameter.");
@@ -80,7 +79,7 @@ void TextureShaderClass::SetShaderParameters(
 	device_context_->PSSetShaderResources(0, 1, &texture);
 }
 
-void TextureShaderClass::RenderShader(int indexCount)
+void TextureShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount)
 {
 	// Set the vertex input layout.
 	device_context_->IASetInputLayout(input_layout_.Get());

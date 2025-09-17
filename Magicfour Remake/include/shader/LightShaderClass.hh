@@ -44,16 +44,17 @@ public:
 	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix,
 		ID3D11ShaderResourceView* texture);
 
-	void ProcessRenderQueue(const XMMATRIX& vp_matrix,
+	void ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color);
 
-	void Render(class ModelClass*, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
-
 private:
-	void InitializeShader(HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename);
+	void InitializeShader(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd,
+		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
-	void SetShaderParameters(XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
-	void RenderShader(int);
+	void SetShaderParameters(ID3D11DeviceContext* device_context,
+		XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
+
+	void RenderShader(ID3D11DeviceContext* device_context, int);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;

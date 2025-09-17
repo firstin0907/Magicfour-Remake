@@ -65,26 +65,15 @@ public:
 		float distortion_scale,
 		float distortion_bias);
 
-	void ProcessRenderQueue(XMMATRIX vp_matrix, float frame_time);
-
-	void Render(class ModelClass* model,
-		XMMATRIX mvp_matrix,
-		ID3D11ShaderResourceView* fire_texture,
-		ID3D11ShaderResourceView* noise_texture,
-		ID3D11ShaderResourceView* alpha_texture,
-		float frame_time,
-		XMFLOAT3 scroll_speeds,
-		XMFLOAT3 scales,
-		XMFLOAT2 distortion1,
-		XMFLOAT2 distortion2,
-		XMFLOAT2 distortion3,
-		float distortion_scale,
-		float distortion_bias);
+	void ProcessRenderQueue(ID3D11DeviceContext* device_context,
+		XMMATRIX vp_matrix, float frame_time);
 
 private:
-	void InitializeShader(HWND hwnd, const WCHAR* vs_filename, const WCHAR* ps_filename);
+	void InitializeShader(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd,
+		const WCHAR* vs_filename, const WCHAR* ps_filename);
 
 	void SetShaderParameters(
+		ID3D11DeviceContext* device_context,
 		const MatrixBufferType& matrix_buffer,
 		const NoiseBufferType& noise_buffer,
 		const DistortionBuffer& distortion_buffer,
@@ -93,7 +82,7 @@ private:
 		ID3D11ShaderResourceView* alpha_texture
 	);
 	
-	void RenderShader(int);
+	void RenderShader(ID3D11DeviceContext* device_context, int index_count);
 
 
 private:
