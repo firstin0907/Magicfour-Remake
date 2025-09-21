@@ -4,6 +4,7 @@
 #include <ctime>
 
 #include "core/global.hh"
+#include "util/ResourceMap.hh"
 
 class IGameObject
 {
@@ -22,4 +23,8 @@ public:
 
 	// Check if this instance is on collidable state.
 	virtual bool IsColliable() const = 0;
+
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const {};
 };

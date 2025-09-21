@@ -13,10 +13,10 @@ public:
 		Point2d() : x(0), y(0) {};
 		Point2d(int x, int y) : x(x), y(y) {};
 
-		Point2d operator+(const Point2d& rhs) { return Point2d(x + rhs.x, y + rhs.y); }
-		Point2d operator-(const Point2d& rhs) { return Point2d(x - rhs.x, y - rhs.y); }
-		Point2d operator*(int scalar) { return Point2d(x * scalar, y * scalar); }
-		Point2d operator/(int scalar) { return Point2d(x / scalar, y / scalar); }
+		Point2d operator+(const Point2d& rhs) const { return Point2d(x + rhs.x, y + rhs.y); }
+		Point2d operator-(const Point2d& rhs) const { return Point2d(x - rhs.x, y - rhs.y); }
+		Point2d operator*(int scalar) const { return Point2d(x * scalar, y * scalar); }
+		Point2d operator/(int scalar) const { return Point2d(x / scalar, y / scalar); }
 
 		Point2d& operator+=(const Point2d& rhs)
 		{
@@ -33,7 +33,7 @@ public:
 		: position_(position), range_(range),
 		direction_(direction), velocity_(velocity), accel_(accel) {};
 
-	inline XMMATRIX GetLocalWorldMatrix()
+	inline XMMATRIX GetLocalWorldMatrix() const
 	{
 		return DirectX::XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0);
 	}
@@ -43,17 +43,17 @@ public:
 		return range_.add(position_.x, position_.y);
 	}
 
-	inline XMMATRIX GetRangeRepresentMatrix()
+	inline XMMATRIX GetRangeRepresentMatrix() const
 	{
 		return range_.add(position_.x, position_.y).toMatrix();
 	}
 
 	// Returns position_ field.
-	inline Point2d GetPosition() { return position_; }
-	inline Point2d GetVelocity() { return velocity_; }
-	inline Point2d GetAccel() { return accel_; }
+	inline Point2d GetPosition() const { return position_; }
+	inline Point2d GetVelocity() const { return velocity_; }
+	inline Point2d GetAccel() const { return accel_; }
 
-	inline STATE_TYPE GetState()
+	inline STATE_TYPE GetState() const
 	{
 		return state_;
 	}
@@ -80,14 +80,14 @@ public:
 	}
 
 	// Returns how long this instance is on this state.
-	inline time_t GetStateTime(time_t curr_time)
+	inline time_t GetStateTime(time_t curr_time) const
 	{
 		return curr_time - state_start_time_;
 	}
 
 	// Returns which position this instance locates after 'time_delta' milliseconds goes by
 	// based on current position and velocity.
-	inline Point2d GetPositionAfterMove(time_t time_delta)
+	inline Point2d GetPositionAfterMove(time_t time_delta) const
 	{
 		return position_ + (velocity_ - accel_ * time_delta / 2) * time_delta;
 	}

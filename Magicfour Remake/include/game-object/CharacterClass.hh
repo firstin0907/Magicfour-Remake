@@ -8,6 +8,7 @@
 #include "core/global.hh"
 #include "core/RigidbodyClass.hh"
 #include "core/Skill.hh"
+#include "util/ResourceMap.hh"
 
 enum class CharacterState
 {
@@ -41,31 +42,34 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool IsColliable() const override final { return true; };
 
+	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const override final;
 	
-	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices);
-	inline time_t GetTimeInvincibleEnd() { return time_invincible_end_; }
+	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices) const;
+	inline time_t GetTimeInvincibleEnd() const { return time_invincible_end_; }
 
 
 	// If character have been actually damanged because of this collision,
 	// this function returns true. Otherwise, it returns false.
 	bool OnCollided(time_t curr_time, int vx);
 
-	float GetCooltimeGaugeRatio(time_t curr_time);
-	float GetInvincibleGaugeRatio(time_t curr_time);
+	float GetCooltimeGaugeRatio(time_t curr_time) const;
+	float GetInvincibleGaugeRatio(time_t curr_time) const;
+	XMMATRIX GetSkillStonePos(time_t curr_time) const;
 
 	SkillBonus LearnSkill(int skill_id, time_t curr_time);
-	inline const SkillType& GetSkill(const int index)
+	inline const SkillType& GetSkill(const int index) const
 	{
 		assert(0 <= index && index <= 3);
 		return skill_[index];
 	}
 
-	inline unsigned int GetScore()
+	inline unsigned int GetScore() const
 	{
 		return score_;
 
 	}
-	inline unsigned int GetCombo()
+	inline unsigned int GetCombo() const
 	{
 		return combo_;
 	}
@@ -77,11 +81,11 @@ public:
 
 	void AddCombo(time_t curr_time);
 
-	inline SkillBonus GetSkillBonus()
+	inline SkillBonus GetSkillBonus() const
 	{
 		return skill_bonus_;
 	}
-	inline time_t GetSkillBonusElapsedTime(time_t curr_time)
+	inline time_t GetSkillBonusElapsedTime(time_t curr_time) const
 	{
 		return curr_time - time_skill_bonus_get_;
 	}

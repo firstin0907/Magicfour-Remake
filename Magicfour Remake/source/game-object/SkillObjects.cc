@@ -5,6 +5,9 @@
 #include "graphics/ModelClass.hh"
 #include "map/GroundClass.hh"
 
+#include "shader/ShaderManager.hh"
+#include "shader/NormalMapShaderClass.hh"
+
 using namespace std;
 using namespace DirectX;
 
@@ -106,6 +109,14 @@ bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 	return true;
 }
 
+void SkillObjectSpear::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	const XMMATRIX shape = XMMatrixRotationY(XM_PI / 2) * XMMatrixRotationZ(XM_PI - angle_)
+		* XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	shader_manager->normalMap_shader_->PushRenderQueue(models.get("spear"), shape);
+}
+
 XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
 {
 	return XMMatrixRotationY(XM_PI / 2) * XMMatrixRotationZ(XM_PI - angle_)
@@ -115,11 +126,6 @@ XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
 void SkillObjectSpear::initialize(const std::string& model_name)
 {
 	model_name_ = model_name;
-}
-
-std::string SkillObjectSpear::GetModelName()
-{
-	return model_name_;
 }
 
 SkillObjectBead::SkillObjectBead(int pos_x, int pos_y,
@@ -192,6 +198,14 @@ bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta)
 	return true;
 }
 
+void SkillObjectBead::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	const XMMATRIX shape = XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
+		* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	shader_manager->normalMap_shader_->PushRenderQueue(models.get("orb"), shape);
+}
+
 XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
 {
 	return 
@@ -203,11 +217,6 @@ void SkillObjectBead::initialize(const std::string& model_name, const std::strin
 {
 	model_name_ = model_name;
 	effect_model_name_ = effect_model_name;
-}
-
-std::string SkillObjectBead::GetModelName()
-{
-	return model_name_;
 }
 
 std::string SkillObjectBead::GetEffectModel()
@@ -268,6 +277,13 @@ bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta)
 	return state_start_time_ + 1200 > curr_time;
 }
 
+void SkillObjectLeg::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	shader_manager->normalMap_shader_->PushRenderQueue(models.get("leg"), shape);
+}
+
 XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
 {
 	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
@@ -278,13 +294,6 @@ void SkillObjectLeg::initialize(const std::string& model_name)
 {
 	model_name_ = model_name;
 }
-
-
-std::string SkillObjectLeg::GetModelName()
-{
-	return model_name_;
-}
-
 
 
 SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx,
@@ -325,6 +334,13 @@ bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
 	return created_time_ + lifetime > curr_time;
 }
 
+void SkillObjectBasic::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	shader_manager->normalMap_shader_->PushRenderQueue(models.get("basic"), shape);
+}
+
 XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)
 {
 	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
@@ -334,12 +350,6 @@ void SkillObjectBasic::initialize(const std::string& model_name)
 {
 	model_name_ = model_name;
 }
-
-std::string SkillObjectBasic::GetModelName()
-{
-	return model_name_;
-}
-
 
 SkillObjectShield::SkillObjectShield(int pos_x, int pos_y,
 	int vx, int vy, int skill_level, time_t created_time)
@@ -385,6 +395,29 @@ bool SkillObjectShield::Frame(time_t curr_time, time_t time_delta)
 	return state_start_time_ + lifetime > curr_time;
 }
 
+
+void SkillObjectShield::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	XMMATRIX shape;
+	if (velocity_.x > 0)
+	{
+		shape = XMMatrixRotationZ(-XM_PI / 2) * XMMatrixScaling(0.7f, 0.7f, 0.7f)
+			* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	}
+	else if (velocity_.x == 0)
+	{
+		shape = XMMatrixScaling(0.7f, 0.7f, 0.7f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	}
+	else //(velocity_.x < 0)
+	{
+		shape = XMMatrixRotationZ(XM_PI / 2) * XMMatrixScaling(0.7f, 0.7f, 0.7f)
+			* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	}
+
+	shader_manager->normalMap_shader_->PushRenderQueue(models.get("shield"), shape);
+}
+
 XMMATRIX SkillObjectShield::GetGlobalShapeTransform(time_t curr_time)
 {
 	if (velocity_.x > 0)
@@ -408,16 +441,18 @@ void SkillObjectShield::initialize(const std::string& model_name)
 	model_name_ = model_name;
 }
 
-std::string SkillObjectShield::GetModelName()
-{
-	return model_name_;
-}
-
 SkillObjectGuardian::SkillObjectGuardian()
 	: SkillObjectClass(0, 0, rect_t{ -30000, -30000, 30000, 30000 },
 		0, 0, 0, 0)
 {
 	SetState(SkillObjectState::kNormal, 0);
+}
+
+void SkillObjectGuardian::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	shader_manager->normalMap_shader_->PushRenderQueue(models.get("orb"), shape);
 }
 
 bool SkillObjectGuardian::OnCollided(MonsterClass* monster, time_t collided_time)
@@ -439,7 +474,3 @@ void SkillObjectGuardian::initialize(const std::string& model_name)
 	model_name_ = model_name;
 }
 
-std::string SkillObjectGuardian::GetModelName()
-{
-	return model_name_;
-}

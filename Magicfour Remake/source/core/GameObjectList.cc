@@ -1,6 +1,8 @@
 #include "core/GameObjectList.hh"
 
 #include "core/IGameObject.hh"
+#include "shader/ShaderManager.hh"
+#include "util/ResourceMap.hh"
 
 GameObjectList::~GameObjectList()
 {
@@ -34,5 +36,14 @@ void GameObjectList::Frame(time_t curr_time, time_t delta_time, std::function<vo
 			swap(elements[i], elements.back());
 			elements.pop_back();
 		}
+	}
+}
+
+void GameObjectList::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	for (auto& element : elements)
+	{
+		element->Draw(curr_time, time_delta, shader_manager, models, textures);
 	}
 }

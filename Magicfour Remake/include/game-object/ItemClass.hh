@@ -28,9 +28,13 @@ public:
 	// Check if this instance is on collidable state.
 	virtual bool IsColliable() const override final;
 
-	XMMATRIX GetShapeMatrix(time_t curr_time);
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const override final;
 
-	inline int GetType() { return type_; }
+	XMMATRIX GetShapeMatrix(time_t curr_time) const;
+
+	inline int GetType() const { return type_; };
 
 private:
 	int type_;

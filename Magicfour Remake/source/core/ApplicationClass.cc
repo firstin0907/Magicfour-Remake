@@ -236,7 +236,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 			{
 				game_state_ = GameState::kGameOver;
 				state_start_time_ = curr_time;
-				sound_->PlayEffect("die");
+				sound_->PlayEffect("character_death");
 				timer_->SetGameSpeed(250);
 			}
 			else
@@ -284,6 +284,7 @@ void ApplicationClass::Render()
 
 	XMMATRIX viewMatrix, projectionMatrix, orthoMatrix;
 	time_t curr_time = timer_->GetTime();
+	time_t time_delta = timer_->GetElapsedTime();
 
 	// Clear the buffers to begin the scene.
 	direct3D_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
@@ -296,130 +297,26 @@ void ApplicationClass::Render()
 	direct3D_->GetProjectionMatrix(projectionMatrix);
 	direct3D_->GetOrthoMatrix(orthoMatrix);
 
-	XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
+	const XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
 	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);
 	shader_manager_->light_shader_->PushRenderQueue(models_.get("plane"), kBackgroundMarix,
 		textures_.get("background")->GetTexture());
 
-	vector<XMMATRIX> char_model_matrices;
-	character_->GetShapeMatrices(curr_time, char_model_matrices);
 
-
-	ID3D11ShaderResourceView* char_texture = models_.get("cube")->GetDiffuseTexture();
-	if (curr_time <= character_->GetTimeInvincibleEnd()) char_texture = textures_.get("rainbow")->GetTexture();
-
-	for (auto& box : char_model_matrices) {
-		shader_manager_->light_shader_->PushRenderQueue(models_.get("cube"),
-			box * character_->GetLocalWorldMatrix(), char_texture);
-	}
-
-
-	constexpr float kBoxSize = 0.32f;
-	XMMATRIX skill_stone_pos =
-		XMMatrixRotationX(XM_PI / 18) * XMMatrixRotationY(curr_time * 0.001f) * XMMatrixRotationX(-XM_PI / 10) *
-		XMMatrixScaling(kBoxSize, kBoxSize * 1.2f, kBoxSize) * XMMatrixTranslation(-1.3f, 4.0f, 0.f) *
-		character_->GetLocalWorldMatrix();
-
-	
-	auto drawStone = [this, &vp_matrix](const XMMATRIX& shape, int type, float brightness = 0.0f)
-		{
-			XMFLOAT4 skill_color = kSkillColor[type];
-			if (brightness > 0.0f)
-			{
-				skill_color.x += (1 - skill_color.x) * brightness * 0.6;
-				skill_color.y += (1 - skill_color.y) * brightness * 0.6;
-				skill_color.z += (1 - skill_color.z) * brightness * 0.6;
-				skill_color.w += (1 - skill_color.w) * brightness * 0.6;
-			}
-			this->shader_manager_->stone_shader_->PushRenderQueue(models_.get("diamond"), shape, skill_color);
-		};
-
-	int sb_count = 0;
-	time_t elapsed_time_for_sb = curr_time - character_->GetSkill(3).learned_time;
-	for (int i = 0; i < 4; i++)
-	{
-		const int type = character_->GetSkill(i).skill_type;
-		const int power = character_->GetSkill(i).skill_power;
-		if (type == 0) break;
-
-		const float scale = (power + 13) * 0.04f;
-		float brightness = 0.0f;
-
-		if (character_->GetSkill(i).is_part_of_skillbonus)
-		{
-			const time_t local_time = (elapsed_time_for_sb + 5'000 - 400 * ++sb_count) % 5'000;
-			if(local_time <= 800.0f) brightness = max(0.0f, sin(local_time / 200.0f));
-
-			const time_t global_time = (elapsed_time_for_sb + 5'000 - 2'000) % 5'000;
-			if(global_time <= 1200.0f) brightness = max(0.0f, sin(global_time / 300.0f));
-		}
-
-		drawStone(XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
-			type, brightness);
-	}
+	character_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
 	// Draw Items
-	for (auto& obj : items_.elements)
+	items_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
+	skillObjectList_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
+
+	for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
 	{
-		auto item = static_cast<ItemClass*>(obj.get());
-		drawStone(item->GetShapeMatrix(curr_time) * item->GetLocalWorldMatrix(), item->GetType());
+		character_->GetGuardian(i)->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 	}
 
+	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
-	// Draw skill object
-	for (auto& obj : skillObjectList_.elements)
-	{		
-		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
-		auto obj_model = models_.get(skill_obj->GetModelName());
-
-		if (obj_model == nullptr) throw GAME_EXCEPTION(L"Failed to read object model");
-
-		if (obj_model->GetNormalTexture())
-		{
-			shader_manager_->normalMap_shader_->PushRenderQueue(obj_model,
-				skill_obj->GetGlobalShapeTransform(curr_time));
-		}
-		else
-		{			
-			shader_manager_->light_shader_->PushRenderQueue(obj_model,
-				skill_obj->GetGlobalShapeTransform(curr_time), obj_model->GetDiffuseTexture());
-		}
-		
-	}
-	if (character_->GetSkillBonus() == SkillBonus::BONUS_ONE_PAIR ||
-		character_->GetSkillBonus() == SkillBonus::BONUS_TWO_PAIR)
-	{
-		ModelClass* obj_model = models_.get(character_->GetGuardian(0)->GetModelName());
-		if (obj_model == nullptr) throw GAME_EXCEPTION(L"Failed to read object model");
-
-		for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
-		{
-			SkillObjectGuardian* skill_obj = character_->GetGuardian(i);
-			if (obj_model->GetNormalTexture())
-			{
-				shader_manager_->normalMap_shader_->PushRenderQueue(obj_model,
-					skill_obj->GetGlobalShapeTransform(curr_time));
-			}
-			else
-			{
-
-				shader_manager_->light_shader_->PushRenderQueue(obj_model,
-					skill_obj->GetGlobalShapeTransform(curr_time),
-					obj_model->GetDiffuseTexture());
-			}
-
-		}
-	}
-
-
-	for (auto& obj: monsters_.elements)
-	{
-		MonsterClass* monster = static_cast<MonsterClass*>(obj.get());
-
-		shader_manager_->light_shader_->PushRenderQueue(models_.get("cube"),
-			monster->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
-	}
 
 	for (auto& ground : field_->GetGrounds())
 	{
@@ -503,12 +400,12 @@ void ApplicationClass::Render()
 		0.8f, 0.0f);
 
 
-	shader_manager_->light_shader_	 ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
+	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
 	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
-	shader_manager_->stone_shader_	 ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
+	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
 
 	direct3D_->EnableAlphaBlending(); // Turn on alpha blending for the fire transparency.
-	shader_manager_->fire_shader_	 ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
+	shader_manager_->fire_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
 	direct3D_->DisableAlphaBlending();
 
 	// Turn off the Z buffer to begin all 2D rendering.
@@ -544,6 +441,7 @@ void ApplicationClass::Render()
 	user_interface_->DrawCharacterInfo(direct2D_.get(), character_.get(),
 		screen_x, screen_y, curr_time);
 
+	XMMATRIX skill_stone_pos = character_->GetSkillStonePos(curr_time);
 	// Get the coordinate of stone with respect to screen coordinate.
 	for (int i = 0; i < 4; i++)
 	{

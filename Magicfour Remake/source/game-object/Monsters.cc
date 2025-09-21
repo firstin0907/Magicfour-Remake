@@ -3,6 +3,10 @@
 #include "core/global.hh"
 #include "map/GroundClass.hh"
 #include "util/RandomClass.hh"
+#include "util/ResourceMap.hh"
+#include "graphics/ModelClass.hh"
+#include "shader/ShaderManager.hh"
+#include "shader/LightShaderClass.hh"
 
 using namespace std;
 
@@ -169,6 +173,13 @@ bool MonsterDuck::Frame(time_t curr_time, time_t time_delta)
 	return true;
 }
 
+void MonsterDuck::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
+}
+
 int MonsterDuck::GetVx()
 {
 	return DIR_WEIGHT(direction_, 1000);
@@ -250,6 +261,13 @@ bool MonsterOctopus::Frame(time_t curr_time, time_t time_delta)
 	}
 
 	return true;
+}
+
+void MonsterOctopus::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
 }
 
 int MonsterOctopus::GetVx()
@@ -388,6 +406,13 @@ bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 	return true;
 }
 
+void MonsterBird::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
+}
+
 int MonsterBird::GetVx()
 {
 	return DIR_WEIGHT(direction_, 1500);
@@ -480,6 +505,13 @@ bool MonsterStop::Frame(time_t curr_time, time_t time_delta)
 	}
 
 	return true;
+}
+
+void MonsterStop::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+{
+	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
 }
 
 int MonsterStop::GetVx()

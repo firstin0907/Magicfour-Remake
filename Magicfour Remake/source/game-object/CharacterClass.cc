@@ -11,6 +11,13 @@
 #include "core/SoundClass.hh"
 #include "util/RandomClass.hh"
 
+#include "graphics/ModelClass.hh"
+#include "graphics/TextureClass.hh"
+#include "shader/ShaderManager.hh"
+#include "shader/LightShaderClass.hh"
+#include "shader/StoneShaderClass.hh"
+#include "util/ResourceMap.hh"
+
 using namespace DirectX;
 using namespace std;
 
@@ -262,8 +269,67 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time)
 	return true;
 }
 
+void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const 
+{
+	vector<XMMATRIX> char_model_matrices;
+	GetShapeMatrices(curr_time, char_model_matrices);
 
-void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& shape_matrices)
+	ID3D11ShaderResourceView* char_texture = models.get("cube")->GetDiffuseTexture();
+	if (curr_time <= GetTimeInvincibleEnd()) char_texture = textures.get("rainbow")->GetTexture();
+
+	for (auto& box : char_model_matrices) {
+		shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+			box * GetLocalWorldMatrix(), char_texture);
+	}
+
+	XMMATRIX skill_stone_pos = GetSkillStonePos(curr_time);
+
+	int sb_count = 0;
+	time_t elapsed_time_for_sb = curr_time - GetSkill(3).learned_time;
+	for (int i = 0; i < 4; i++)
+	{
+		const int type = GetSkill(i).skill_type;
+		const int power = GetSkill(i).skill_power;
+		if (type == 0) break;
+
+		const float scale = (power + 13) * 0.04f;
+		float brightness = 0.0f;
+
+		if (GetSkill(i).is_part_of_skillbonus)
+		{
+			const time_t local_time = (elapsed_time_for_sb + 5'000 - 400 * ++sb_count) % 5'000;
+			if (local_time <= 800.0f) brightness = max(0.0f, sin(local_time / 200.0f));
+
+			const time_t global_time = (elapsed_time_for_sb + 5'000 - 2'000) % 5'000;
+			if (global_time <= 1200.0f) brightness = max(0.0f, sin(global_time / 300.0f));
+		}
+
+		constexpr XMFLOAT4 kSkillColor[5] =
+		{
+			{0, 0, 0, 1.0f},
+			{0.9f, 0.1f, 0.3f, 1.0f},
+			{0.2f, 0.8f, 0.1f, 1.0f},
+			{0.1f, 0.3f, 0.9f, 1.0f},
+			{0.2f, 0.1f, 0.1f, 1.0f}
+		};
+
+		XMFLOAT4 skill_color = kSkillColor[type];
+		if (brightness > 0.0f)
+		{
+			skill_color.x += (1 - skill_color.x) * brightness * 0.6;
+			skill_color.y += (1 - skill_color.y) * brightness * 0.6;
+			skill_color.z += (1 - skill_color.z) * brightness * 0.6;
+			skill_color.w += (1 - skill_color.w) * brightness * 0.6;
+		}
+
+		shader_manager->stone_shader_->PushRenderQueue(models.get("diamond"), 
+			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
+			skill_color);
+	}
+}
+
+void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& shape_matrices) const
 {
 	XMMATRIX root_transform = XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PI * 0.65f));
 	//XMMATRIX root_transform = XMMatrixIdentity();
@@ -355,14 +421,25 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 	return false;
 }
 
-float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time)
+float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time) const
 {
 	return SATURATE(-0.3f, (time_skill_available_ - (long long)curr_time) / (float)kSkillCooltime, 1.0f);
 }
 
-float CharacterClass::GetInvincibleGaugeRatio(time_t curr_time)
+float CharacterClass::GetInvincibleGaugeRatio(time_t curr_time) const
 {
 	return SATURATE(-0.3f, (time_invincible_end_ - (long long)curr_time) / (float)kInvincibleDuration, 1.0f);
+}
+
+XMMATRIX CharacterClass::GetSkillStonePos(time_t curr_time) const
+{
+	constexpr float kBoxSize = 0.32f;
+	XMMATRIX skill_stone_pos =
+		XMMatrixRotationX(XM_PI / 18) * XMMatrixRotationY(curr_time * 0.001f) * XMMatrixRotationX(-XM_PI / 10) *
+		XMMatrixScaling(kBoxSize, kBoxSize * 1.2f, kBoxSize) * XMMatrixTranslation(-1.3f, 4.0f, 0.f) *
+		GetLocalWorldMatrix();
+
+	return skill_stone_pos;
 }
 
 

@@ -3,6 +3,9 @@
 #include <algorithm>
 
 #include "map/GroundClass.hh"
+#include "shader/ShaderManager.hh"
+#include "shader/StoneShaderClass.hh"
+#include "util/ResourceMap.hh"
 
 using namespace std;
 using namespace DirectX;
@@ -85,7 +88,26 @@ bool ItemClass::IsColliable() const
 	}
 }
 
-XMMATRIX ItemClass::GetShapeMatrix(time_t curr_time)
+
+void ItemClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
+	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const 
+{
+	constexpr XMFLOAT4 kSkillColor[5] =
+	{
+		{0, 0, 0, 1.0f},
+		{0.9f, 0.1f, 0.3f, 1.0f},
+		{0.2f, 0.8f, 0.1f, 1.0f},
+		{0.1f, 0.3f, 0.9f, 1.0f},
+		{0.2f, 0.1f, 0.1f, 1.0f}
+	};
+
+	shader_manager->stone_shader_->PushRenderQueue(
+		models.get("diamond"),
+		GetShapeMatrix(curr_time) * GetLocalWorldMatrix(),
+		kSkillColor[type_]);
+}
+
+XMMATRIX ItemClass::GetShapeMatrix(time_t curr_time) const
 {
 	constexpr float box_size = 0.3f;
 	const time_t age = curr_time - createTime_;

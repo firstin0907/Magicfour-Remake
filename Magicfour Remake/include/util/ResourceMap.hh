@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <string>
 #include <fstream>
+#include <functional>
 
 #include "core/GameException.hh"
 #include "../third-party/rapidxml-1.13/rapidxml.hpp"

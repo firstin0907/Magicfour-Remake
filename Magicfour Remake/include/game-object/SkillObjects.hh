@@ -16,14 +16,16 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const final;
+
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 	
 	static void initialize(const std::string& model_name);
-
-	virtual std::string GetModelName();
 
 private:
 	static std::string model_name_;
@@ -43,6 +45,10 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const final;
+
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
@@ -50,7 +56,6 @@ public:
 
 	static void initialize(const std::string& model_name, const std::string& effect_model_name);
 
-	virtual std::string GetModelName();
 	virtual std::string GetEffectModel();
 private:
 
@@ -70,14 +75,16 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const final;
+
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
 	static void initialize(const std::string& model_name);
-
-	virtual std::string GetModelName();
 
 private:
 	static std::string model_name_;
@@ -96,14 +103,17 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const final;
+
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
 	static void initialize(const std::string& model_name);
-
-	virtual std::string GetModelName();
+	
 
 private:
 	static std::string model_name_;
@@ -122,14 +132,17 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const final;
+
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
 	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
 
 	static void initialize(const std::string& model_name);
-
-	virtual std::string GetModelName();
+	
 
 private:
 	static std::string model_name_;
@@ -148,6 +161,10 @@ public:
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final { return true;  };
 
+	// Render this instance to game scene.
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const final;
+
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
@@ -155,7 +172,6 @@ public:
 
 	static void initialize(const std::string& model_name);
 
-	virtual std::string GetModelName();
 
 	inline void SetPosition(int x, int y)
 	{
