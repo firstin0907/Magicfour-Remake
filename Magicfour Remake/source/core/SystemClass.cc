@@ -48,36 +48,48 @@ void SystemClass::Run()
 	MSG msg;
 	bool done, result;
 
-
-	// Initialize the message structure.
-	ZeroMemory(&msg, sizeof(MSG));
-
-	// Loop until there is a quit message from the window or the user.
-	done = false;
-	while (!done)
+	try
 	{
-		// Handle the windows messages.
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+		// Initialize the message structure.
+		ZeroMemory(&msg, sizeof(MSG));
 
-		// If windows signals to end the application then exit out.
-		if (msg.message == WM_QUIT)
+		// Loop until there is a quit message from the window or the user.
+		done = false;
+		while (!done)
 		{
-			done = true;
-		}
-		else
-		{
-			// Otherwise do the frame processing.
-			result = Frame();
-			if (!result)
+			// Handle the windows messages.
+			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			// If windows signals to end the application then exit out.
+			if (msg.message == WM_QUIT)
 			{
 				done = true;
 			}
-		}
+			else
+			{
+				// Otherwise do the frame processing.
+				result = Frame();
+				if (!result)
+				{
+					done = true;
+				}
+			}
 
+		}
+	}
+	catch (const wchar_t* message)
+	{
+		MessageBox(hwnd_, message, L"Error", MB_OK);
+		throw;
+	}
+	catch (const GameException& e)
+	{
+		MessageBox(hwnd_, e.to_wstring().c_str(), L"Game Error", MB_OK);
+		throw;
 	}
 
 	return;
