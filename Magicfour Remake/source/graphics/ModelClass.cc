@@ -317,25 +317,41 @@ void ModelClass::LoadModel(const char* filename)
 				face_v.back().y = v_list[num].y;
 				face_v.back().z = v_list[num].z;
 
-				if (getline(point_iss, buffer, '/'))
+				if (getline(point_iss, buffer, '/') && !buffer.empty())
 				{
-					if (!buffer.empty())
-					{
-						int num = stoi(buffer) - 1;
-						face_v.back().tu = vt_list[num].x;
-						face_v.back().tv = vt_list[num].y;
-					}
+					int num = stoi(buffer) - 1;
+					face_v.back().tu = vt_list[num].x;
+					face_v.back().tv = vt_list[num].y;
 				}
 
-				if (getline(point_iss, buffer, '/'))
+				if (getline(point_iss, buffer, '/') && !buffer.empty())
 				{
-					if (!buffer.empty())
+					int num = stoi(buffer) - 1;
+					face_v.back().nx = vn_list[num].x;
+					face_v.back().ny = vn_list[num].y;
+					face_v.back().nz = vn_list[num].z;
+				}
+				else
+				{
+					if (face_v.size() >= 3)
 					{
-						int num = stoi(buffer) - 1;
-						face_v.back().nx = vn_list[num].x;
-						face_v.back().ny = vn_list[num].y;
-						face_v.back().nz = vn_list[num].z;
+						// If normal vector is not defined, calculate it from first three points.
+						VectorType v1 = { face_v[1].x - face_v[0].x , face_v[1].y - face_v[0].y, face_v[1].z - face_v[0].z };
+						VectorType v2 = { face_v[2].x - face_v[0].x , face_v[2].y - face_v[0].y, face_v[2].z - face_v[0].z };
+						VectorType normal = {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x };
+
+						const float length = sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+						if (length <= 0.001f) normal = { 0, 1, 0 };
+						else normal.x /= length, normal.y /= length, normal.z /= length;
+
+						// And insert it.
+						for (auto& fv : face_v) fv.nx = normal.x, fv.ny = normal.y, fv.nz = normal.z;
 					}
+					else
+					{
+						for (auto& fv : face_v) fv.nx = 0, fv.ny = 1, fv.nz = 0;
+					}
+
 				}
 			}
 

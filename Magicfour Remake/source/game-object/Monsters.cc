@@ -1,5 +1,7 @@
 #include "game-object/Monsters.hh"
 
+#include <DirectXMath.h>
+
 #include "core/global.hh"
 #include "map/GroundClass.hh"
 #include "util/RandomClass.hh"
@@ -9,6 +11,7 @@
 #include "shader/LightShaderClass.hh"
 
 using namespace std;
+using namespace DirectX;
 
 MonsterDuck::MonsterDuck(direction_t direction, time_t created_time)
 	: MonsterClass(
@@ -510,8 +513,11 @@ bool MonsterStop::Frame(time_t curr_time, time_t time_delta)
 void MonsterStop::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
 	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
 {
-	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
-		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
+	const XMMATRIX shape = XMMatrixRotationY((curr_time - state_start_time_) * 0.001f)
+		* XMMatrixTranslation(kScope * position_.x, kScope * position_.y + 0.5f, 0);
+
+	shader_manager->light_shader_->PushRenderQueue(models.get("stop"),
+		shape, models.get("stop")->GetDiffuseTexture());
 }
 
 int MonsterStop::GetVx()

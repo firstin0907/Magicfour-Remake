@@ -13,6 +13,9 @@
   <Model name="leg" src="data/model/Crystal/Crystals_low.obj" texture="data/model/Crystal/None_BaseColor.png" normal="data/model/Crystal/None_Normal.png"/>
   <Model name="basic" src="data/model/Blade/MagicCeramicBlade.obj" texture="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg" normal="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg" emissive="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
   <Model name="shield" src="data/model/Shield/shield.obj" texture="data/model/Shield/Sheld_LPFF_Sheld_BaseColor.png" normal="data/model/Shield/Sheld_LPFF_Sheld_Normal.png"/>
+
+  <!-- Models of Monsters -->
+  <Model name="stop" src="data/model/Stop/StopSign.obj" texture="data/model/Stop/StopSign.png"/>
   
   <Texture name="rainbow" src="data/texture/skill_gauge_rainbow.png"/>
   <Texture name="background" src="data/texture/background.jpg"/>

@@ -31,7 +31,7 @@
 #include "util/CollisionProcessor.hh"
 #include "map/FieldClass.hh"
 
-//#define DEBUG_RANGE
+#define DEBUG_RANGE
 
 using namespace std;
 using namespace DirectX;
@@ -101,7 +101,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skillObjectList_.elements);
 
 	// Temporary
-	//monsters_.emplace_back(new MonsterDuck(LEFT_FORWARD, 1000));
+	monsters_.Insert(new MonsterStop(1000));
 	//monsters_.emplace_back(new MonsterOctopus(RIGHT_FORWARD, 1000));
 	//for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(RIGHT_FORWARD, 1000));
 
@@ -376,12 +376,21 @@ void ApplicationClass::Render()
 
 #ifdef DEBUG_RANGE
 
-	light_shader_->PushRenderQueue(models_.get("plane").get(), character_->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
+	shader_manager_->light_shader_->PushRenderQueue(
+		models_.get("plane"), character_->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
 
 	for (auto& obj : skillObjectList_.elements)
 	{
 		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
-		light_shader_->PushRenderQueue(models_.get("plane").get(), skill_obj->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
+		shader_manager_->light_shader_->PushRenderQueue(
+			models_.get("plane"), skill_obj->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
+	}
+
+	for (auto& obj : monsters_.elements)
+	{
+		auto skill_obj = static_cast<MonsterClass*>(obj.get());
+		shader_manager_->light_shader_->PushRenderQueue(
+			models_.get("plane"), skill_obj->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
 	}
 
 #endif
