@@ -9,7 +9,7 @@ StoneShaderClass::StoneShaderClass(ID3D11Device* device, ID3D11DeviceContext* de
 	InitializeShader(device, device_context, hwnd, L"shader/stone.vs", L"shader/stone.ps");
 }
 
-void StoneShaderClass::PushRenderQueue(ModelClass* model, XMMATRIX world_matrix, XMFLOAT4 color)
+void StoneShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix, XMFLOAT4 color)
 {
 	RenderCommand render_command;
 

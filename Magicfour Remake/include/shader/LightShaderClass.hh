@@ -12,6 +12,7 @@
 #include <vector>
 
 class D3DClass;
+class ModelClass;
 
 class LightShaderClass : public ShaderClass
 {
@@ -41,7 +42,7 @@ public:
 	LightShaderClass(const LightShaderClass&) = delete;
 	~LightShaderClass();
 
-	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix,
+	void PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix,
 		ID3D11ShaderResourceView* texture);
 
 	void ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix,
@@ -60,13 +61,13 @@ private:
 	ComPtr<ID3D11SamplerState>	sample_state_;
 	ComPtr<ID3D11Buffer>		matrix_buffer_;
 	ComPtr<ID3D11Buffer>		light_buffer_;
-
+	
 	struct RenderCommand
 	{
-		class ModelClass*			model;
-		XMMATRIX					world_matrix;
-		ID3D11ShaderResourceView*	texture;
+		std::shared_ptr<ModelClass>	model;
+		XMMATRIX						world_matrix;
+		ID3D11ShaderResourceView*		texture;
 	};
 
-	std::unordered_map<ModelClass*, std::vector<RenderCommand> > render_queue_;
+	std::unordered_map<std::shared_ptr<ModelClass>, std::vector<RenderCommand> > render_queue_;
 };

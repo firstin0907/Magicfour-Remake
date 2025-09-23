@@ -13,6 +13,7 @@
 
 
 class D3DClass;
+class ModelClass;
 
 class FireShaderClass : public ShaderClass
 {
@@ -52,7 +53,7 @@ public:
 	FireShaderClass(const FireShaderClass&) = delete;
 	~FireShaderClass();
 
-	void PushRenderQueue(class ModelClass* model,
+	void PushRenderQueue(std::shared_ptr<ModelClass> model,
 		XMMATRIX mvp_matrix,
 		ID3D11ShaderResourceView* fire_texture,
 		ID3D11ShaderResourceView* noise_texture,
@@ -95,7 +96,7 @@ private:
 
 	struct RenderCommand
 	{
-		class ModelClass*	model;
+		std::shared_ptr<ModelClass> model;
 		
 		XMMATRIX	world_matrix;
 		ID3D11ShaderResourceView* fire_texture;
@@ -113,5 +114,5 @@ private:
 		float		distortion_bias;
 	};
 
-	std::unordered_map<ModelClass*, std::vector<RenderCommand> > render_queue_;
+	std::unordered_map<std::shared_ptr<ModelClass>, std::vector<RenderCommand> > render_queue_;
 };

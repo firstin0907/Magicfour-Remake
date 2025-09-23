@@ -11,6 +11,9 @@
 #include <unordered_map>
 #include <vector>
 
+class D3DClass;
+class ModelClass;
+
 class StoneShaderClass : public ShaderClass
 {
 private:
@@ -50,7 +53,7 @@ public:
 	StoneShaderClass(const StoneShaderClass&) = delete;
 	~StoneShaderClass() = default;
 
-	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix, XMFLOAT4 diffuse_color);
+	void PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix, XMFLOAT4 diffuse_color);
 
 	void ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT3 camera_pos);
@@ -80,16 +83,16 @@ private:
 
 	struct RenderCommand
 	{
-		class ModelClass*	model;
-		XMMATRIX			world_matrix;
-		XMFLOAT4 			diffuse_color;
+		std::shared_ptr<ModelClass>	model;
+		XMMATRIX					world_matrix;
+		XMFLOAT4 					diffuse_color;
 
-		XMFLOAT3 			ambient_weight;
-		XMFLOAT3			diffuse_weight;
-		XMFLOAT3			specular_weight;
+		XMFLOAT3 					ambient_weight;
+		XMFLOAT3					diffuse_weight;
+		XMFLOAT3					specular_weight;
 		
 		int index_count, index_start;
 	};
 
-	std::unordered_map<ModelClass*, std::vector<RenderCommand> > render_queue_;
+	std::unordered_map<std::shared_ptr<ModelClass>, std::vector<RenderCommand> > render_queue_;
 };

@@ -59,9 +59,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	camera_->SetPosition(0.0f, 0.0f, kCameraZPosition);
 
 	models_.loadFromXML("data/resources.xml", "Model",
-		[this](xml_node_wrapper node) -> std::unique_ptr<ModelClass>
+		[this](xml_node_wrapper node) -> std::shared_ptr<ModelClass>
 		{
-			return make_unique<ModelClass>(this->direct3D_->GetDevice(),
+			return make_shared<ModelClass>(this->direct3D_->GetDevice(),
 				node.get_required_attr("src"),
 				node.get_required_attr("texture"),
 				node.get_attr("normal"),
@@ -70,9 +70,9 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 		});
 
 	textures_.loadFromXML("data/resources.xml", "Texture",
-		[this](xml_node_wrapper node) -> std::unique_ptr<TextureClass>
+		[this](xml_node_wrapper node) -> std::shared_ptr<TextureClass>
 		{
-			return make_unique<TextureClass>(this->direct3D_->GetDevice(),
+			return make_shared<TextureClass>(this->direct3D_->GetDevice(),
 				node.get_required_attr("src"));
 		});
 

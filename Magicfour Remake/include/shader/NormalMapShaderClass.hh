@@ -11,6 +11,9 @@
 
 #include "ShaderClass.hh"
 
+class D3DClass;
+class ModelClass;
+
 class NormalMapShaderClass : public ShaderClass
 {
 private:
@@ -50,8 +53,8 @@ public:
 	NormalMapShaderClass(const NormalMapShaderClass&) = delete;
 	~NormalMapShaderClass() = default;
 
-	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix);
-	void PushRenderQueue(class ModelClass* model, XMMATRIX world_matrix,
+	void PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix);
+	void PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix,
 		ID3D11ShaderResourceView* diffuse_texture,
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture);
@@ -82,19 +85,19 @@ private:
 
 	struct RenderCommand
 	{
-		class ModelClass*			model;
+		std::shared_ptr<ModelClass>	model;
 		XMMATRIX					world_matrix;
 
 		ID3D11ShaderResourceView*	diffuse_texture;
 		ID3D11ShaderResourceView*	normal_texture;
 		ID3D11ShaderResourceView*	emissive_texture;
 
-		XMFLOAT3 					ambient_weight;
+		XMFLOAT3					ambient_weight;
 		XMFLOAT3					diffuse_weight;
 		XMFLOAT3					specular_weight;
 
 		int index_count, index_start;
 	};
 
-	std::unordered_map<ModelClass*, std::vector<RenderCommand> > render_queue_;
+	std::unordered_map<std::shared_ptr<ModelClass>, std::vector<RenderCommand> > render_queue_;
 };

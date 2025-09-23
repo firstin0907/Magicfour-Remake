@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <functional>
+#include <memory>
 
 #include "core/GameException.hh"
 #include "../third-party/rapidxml-1.13/rapidxml.hpp"
@@ -31,9 +32,9 @@ template <typename T>
 class ResourceMap
 {
 public:
-	std::unordered_map<std::string, std::unique_ptr<T> > resources;
+	std::unordered_map<std::string, std::shared_ptr<T> > resources;
 
-	inline T* get(const char* resource_name)
+	inline std::shared_ptr<T> get(const char* resource_name)
 	{
 		auto item = resources.find(resource_name);
 		if (item == resources.end())
@@ -42,10 +43,10 @@ public:
 			err_msg += std::wstring(resource_name, resource_name + strlen(resource_name));
 			throw GAME_EXCEPTION(err_msg);
 		}
-		else return item->second.get();
+		else return item->second;
 	}
 
-	inline T* get(const std::string resource_name)
+	inline std::shared_ptr<T> get(const std::string& resource_name)
 	{
 		auto item = resources.find(resource_name);
 		if (item == resources.end())
@@ -54,18 +55,17 @@ public:
 			err_msg += std::wstring(resource_name.begin(), resource_name.end());
 			throw GAME_EXCEPTION(err_msg);
 		}
-		else return item->second.get();
+		else return item->second;
 	}
 
-	inline void insert(const char* resource_name, std::unique_ptr<T> resource)
+	inline void insert(const char* resource_name, std::shared_ptr<T> resource)
 	{
 		auto item = resources.find(resource_name);
 		resources[resource_name] = std::move(resource);
 	}
-
 	
 
-	void loadFromXML(const char* xml_file_path, const char* resource_type, std::function<std::unique_ptr<T> (xml_node_wrapper)> loader)
+	void loadFromXML(const char* xml_file_path, const char* resource_type, std::function<std::shared_ptr<T> (xml_node_wrapper)> loader)
 	{
 		std::ifstream file(xml_file_path);
 		if (!file) throw GAME_EXCEPTION(L"Failed to open resource map XML file.");
@@ -99,7 +99,7 @@ public:
 				continue;
 			}
 
-			std::unique_ptr<T> resource;
+			std::shared_ptr<T> resource;
 			try
 			{
 				resource = loader(node);

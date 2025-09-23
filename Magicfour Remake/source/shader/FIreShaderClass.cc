@@ -15,7 +15,7 @@ FireShaderClass::~FireShaderClass()
 
 }
 
-void FireShaderClass::PushRenderQueue(class ModelClass* model,
+void FireShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model,
 	XMMATRIX world_matrix,
 	ID3D11ShaderResourceView* fire_texture,
 	ID3D11ShaderResourceView* noise_texture,

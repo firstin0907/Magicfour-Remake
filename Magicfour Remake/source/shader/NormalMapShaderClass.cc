@@ -14,7 +14,7 @@ NormalMapShaderClass::NormalMapShaderClass(ID3D11Device* device, ID3D11DeviceCon
 
 }
 
-void NormalMapShaderClass::PushRenderQueue(ModelClass* model, XMMATRIX world_matrix)
+void NormalMapShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix)
 {
 	RenderCommand render_command;
 	render_command.model			  = model;
@@ -46,7 +46,7 @@ void NormalMapShaderClass::PushRenderQueue(ModelClass* model, XMMATRIX world_mat
 }
 
 void NormalMapShaderClass::PushRenderQueue(
-	ModelClass* model, XMMATRIX world_matrix,
+	std::shared_ptr<ModelClass> model, XMMATRIX world_matrix,
 	ID3D11ShaderResourceView* diffuse_texture,
 	ID3D11ShaderResourceView* normal_texture,
 	ID3D11ShaderResourceView* emissive_texture)
