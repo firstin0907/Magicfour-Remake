@@ -300,8 +300,7 @@ void ApplicationClass::Render()
 	const XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
 	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);
-	shader_manager_->light_shader_->PushRenderQueue(models_.get("plane"), kBackgroundMarix,
-		textures_.get("background")->GetTexture());
+	shader_manager_->light_shader_->PushRenderQueue(models_.get("background"), kBackgroundMarix);
 
 
 	character_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
@@ -336,11 +335,8 @@ void ApplicationClass::Render()
 				grass_section_range.toMatrix();
 
 			shader_manager_->fire_shader_->PushRenderQueue(
-				models_.get("cube"),
+				models_.get("grass"),
 				grass_matrix,
-				models_.get("grass")->GetDiffuseTexture(),
-				models_.get("grass")->GetNormalTexture(),
-				models_.get("grass")->GetEmissiveTexture(),
 				{ -0.3f, -0.1f, -0.3f },
 				{ 1.0f, 2.0f, 3.0f },
 				{ 0.1f, 0.2f },
@@ -361,46 +357,41 @@ void ApplicationClass::Render()
 			ground_display_range.x1 = curr_x, ground_display_range.x2 = next_x;
 
 			shader_manager_->light_shader_->PushRenderQueue(models_.get("cube"),
-				ground_display_range.toMatrix(), models_.get("cube")->GetDiffuseTexture());
+				ground_display_range.toMatrix());
 		}
 	}
 
 	shader_manager_->normalMap_shader_->PushRenderQueue(models_.get("gem"),
-		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f),
-		models_.get("gem")->GetDiffuseTexture(), models_.get("gem")->GetNormalTexture(), models_.get("gem")->GetEmissiveTexture());
+		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f));
 	
 	shader_manager_->normalMap_shader_->PushRenderQueue(models_.get("gem"),
-		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000)* kScope, 0.0f),
-		models_.get("gem")->GetDiffuseTexture(), models_.get("gem")->GetNormalTexture(), models_.get("gem")->GetEmissiveTexture());
+		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000)* kScope, 0.0f));
 
 
 #ifdef DEBUG_RANGE
 
 	shader_manager_->light_shader_->PushRenderQueue(
-		models_.get("plane"), character_->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
+		models_.get("plane"), character_->GetRangeRepresentMatrix());
 
 	for (auto& obj : skillObjectList_.elements)
 	{
 		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
 		shader_manager_->light_shader_->PushRenderQueue(
-			models_.get("plane"), skill_obj->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
+			models_.get("plane"), skill_obj->GetRangeRepresentMatrix());
 	}
 
 	for (auto& obj : monsters_.elements)
 	{
 		auto skill_obj = static_cast<MonsterClass*>(obj.get());
 		shader_manager_->light_shader_->PushRenderQueue(
-			models_.get("plane"), skill_obj->GetRangeRepresentMatrix(), models_.get("cube")->GetDiffuseTexture());
+			models_.get("plane"), skill_obj->GetRangeRepresentMatrix());
 	}
 
 #endif
 
 	shader_manager_->fire_shader_->PushRenderQueue(
-		models_.get("plane"),
+		models_.get("fire"),
 		XMMatrixScaling(2.0f, 2.0f, 1),
-		models_.get("fire")->GetDiffuseTexture(),
-		models_.get("fire")->GetNormalTexture(),
-		models_.get("fire")->GetEmissiveTexture(),
 		{ 1.3f, 2.1f, 2.3f },
 		{ 1.0f, 2.0f, 3.0f },
 		{ 0.1f, 0.2f },

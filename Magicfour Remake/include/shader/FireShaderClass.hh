@@ -66,6 +66,16 @@ public:
 		float distortion_scale,
 		float distortion_bias);
 
+	void PushRenderQueue(std::shared_ptr<ModelClass> model,
+		XMMATRIX mvp_matrix,
+		XMFLOAT3 scroll_speeds,
+		XMFLOAT3 scales,
+		XMFLOAT2 distortion1,
+		XMFLOAT2 distortion2,
+		XMFLOAT2 distortion3,
+		float distortion_scale,
+		float distortion_bias);
+
 	void ProcessRenderQueue(ID3D11DeviceContext* device_context,
 		XMMATRIX vp_matrix, float frame_time);
 

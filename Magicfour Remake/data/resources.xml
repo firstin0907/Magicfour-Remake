@@ -5,6 +5,7 @@
   <Model name="plane" src="data/model/PlaneObject.obj" texture="data/texture/stone01.tga" normal="data/texture/normal01.tga"/>
   <Model name="diamond" src="data/model/diamond.obj" texture="data/texture/stone01.tga"/>
   <Model name="gem" src="data/model/Crystal/Crystals_low.obj" texture="data/model/Crystal/None_BaseColor.png" normal="data/model/Crystal/None_Normal.png" emissive="data/model/Crystal/None_Emissive.png"/>
+  <Model name="background" src="data/model/PlaneObject.obj" texture="data/texture/background.jpg"/>
   
   <!-- Models of skill objects -->
   <Model name="orb" src="data/model/Orb/orb_low.obj" texture="data/model/Orb/orb_low_fragment_BaseColor.png" normal="data/model/Orb/orb_low_fragment_Normal.png" emissive="data/model/Orb/orb_low_fragment_Emissive.png"/>

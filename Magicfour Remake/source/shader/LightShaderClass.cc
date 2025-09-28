@@ -18,13 +18,23 @@ LightShaderClass::~LightShaderClass()
 
 }
 
+void LightShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix)
+{
+	RenderCommand render_command;
+	render_command.model = model;
+	render_command.world_matrix = world_matrix;
+	render_command.texture = model->GetDiffuseTexture();
+
+	render_queue_[model].push_back(render_command);
+}
+
 void LightShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix,
 	ID3D11ShaderResourceView* texture)
 {
 	RenderCommand render_command;
-	render_command.model		= model;
-	render_command.world_matrix	= world_matrix;
-	render_command.texture		= texture;
+	render_command.model = model;
+	render_command.world_matrix = world_matrix;
+	render_command.texture = texture;
 
 	render_queue_[model].push_back(render_command);
 }

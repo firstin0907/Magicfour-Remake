@@ -17,6 +17,30 @@ FireShaderClass::~FireShaderClass()
 
 void FireShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model,
 	XMMATRIX world_matrix,
+	XMFLOAT3 scroll_speeds, XMFLOAT3 scales,
+	XMFLOAT2 distortion1, XMFLOAT2 distortion2, XMFLOAT2 distortion3,
+	float distortion_scale, float distortion_bias)
+{
+	RenderCommand render_command;
+	render_command.model = model;
+	render_command.world_matrix = world_matrix;
+	render_command.fire_texture = model->GetDiffuseTexture();
+	render_command.noise_texture = model->GetNormalTexture();
+	render_command.alpha_texture = model->GetEmissiveTexture();
+	render_command.scroll_speeds = scroll_speeds;
+	render_command.scales = scales;
+	render_command.distortion1 = distortion1;
+	render_command.distortion2 = distortion2;
+	render_command.distortion3 = distortion3;
+	render_command.distortion_scale = distortion_scale;
+	render_command.distortion_bias = distortion_bias;
+
+	render_queue_[model].push_back(render_command);
+}
+
+
+void FireShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model,
+	XMMATRIX world_matrix,
 	ID3D11ShaderResourceView* fire_texture,
 	ID3D11ShaderResourceView* noise_texture,
 	ID3D11ShaderResourceView* alpha_texture,

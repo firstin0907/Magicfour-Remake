@@ -180,7 +180,7 @@ void MonsterDuck::Draw(time_t curr_time, time_t time_delta, ShaderManager* shade
 	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
 {
 	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
-		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
+		GetRangeRepresentMatrix());
 }
 
 int MonsterDuck::GetVx()
@@ -270,7 +270,7 @@ void MonsterOctopus::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
 {
 	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
-		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
+		GetRangeRepresentMatrix());
 }
 
 int MonsterOctopus::GetVx()
@@ -413,7 +413,7 @@ void MonsterBird::Draw(time_t curr_time, time_t time_delta, ShaderManager* shade
 	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
 {
 	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
-		GetRangeRepresentMatrix(), models.get("cube")->GetDiffuseTexture());
+		GetRangeRepresentMatrix());
 }
 
 int MonsterBird::GetVx()
@@ -516,8 +516,7 @@ void MonsterStop::Draw(time_t curr_time, time_t time_delta, ShaderManager* shade
 	const XMMATRIX shape = XMMatrixRotationY((curr_time - state_start_time_) * 0.001f)
 		* XMMatrixTranslation(kScope * position_.x, kScope * position_.y + 0.5f, 0);
 
-	shader_manager->light_shader_->PushRenderQueue(models.get("stop"),
-		shape, models.get("stop")->GetDiffuseTexture());
+	shader_manager->light_shader_->PushRenderQueue(models.get("stop"), shape);
 }
 
 int MonsterStop::GetVx()

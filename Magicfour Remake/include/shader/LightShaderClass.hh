@@ -42,6 +42,7 @@ public:
 	LightShaderClass(const LightShaderClass&) = delete;
 	~LightShaderClass();
 
+	void PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix);
 	void PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix,
 		ID3D11ShaderResourceView* texture);
 
