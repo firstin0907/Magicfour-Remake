@@ -7,6 +7,8 @@
 #include "shader/StoneShaderClass.hh"
 #include "util/ResourceMap.hh"
 
+#include "graphics/FrustumCuller.hh"
+
 using namespace std;
 using namespace DirectX;
 

@@ -4,6 +4,8 @@
 #include <fstream>
 #include <wrl.h>
 #include <vector>
+#include <directxcollision.h>
+#include <variant>
 
 class ModelClass
 {
@@ -93,6 +95,11 @@ public:
 	ID3D11ShaderResourceView* GetNormalTexture();
 	ID3D11ShaderResourceView* GetEmissiveTexture();
 
+	const std::variant<DirectX::BoundingBox, DirectX::BoundingSphere>& GetBoundingVolume() const
+	{
+		return bounding_volume_;
+	}
+
 
 private:
 	void InitializeBuffers(ID3D11Device*);
@@ -120,6 +127,8 @@ private:
 	vector<ModelType> model_;
 
 	vector<std::pair<MaterialType, int> > materialList_;
+	
+	std::variant<DirectX::BoundingBox, DirectX::BoundingSphere> bounding_volume_;
 
 	static ModelClass* lastRenderedModel_;
 };

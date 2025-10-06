@@ -265,6 +265,9 @@
     <ClInclude Include="include\shader\ShaderManager.hh">
       <Filter>헤더 파일\shader</Filter>
     </ClInclude>
+    <ClInclude Include="include\graphics\FrustumCuller.hh">
+      <Filter>헤더 파일\graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="data\resources.xml">

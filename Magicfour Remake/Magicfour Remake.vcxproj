@@ -183,6 +183,7 @@
     <ClInclude Include="include\game-object\SkillObjectClass.hh" />
     <ClInclude Include="include\game-object\SkillObjects.hh" />
     <ClInclude Include="include\graphics\BitmapClass.hh" />
+    <ClInclude Include="include\graphics\FrustumCuller.hh" />
     <ClInclude Include="include\graphics\LightClass.hh" />
     <ClInclude Include="include\graphics\ModelClass.hh" />
     <ClInclude Include="include\graphics\TextureClass.hh" />

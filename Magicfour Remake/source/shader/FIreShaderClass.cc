@@ -3,6 +3,7 @@
 #include "core/GameException.hh"
 #include "core/D3DClass.hh"
 #include "graphics/ModelClass.hh"
+#include "graphics/FrustumCuller.hh"
 
 FireShaderClass::FireShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
 {
@@ -68,8 +69,12 @@ void FireShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model,
 void FireShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 	XMMATRIX vp_matrix, float frame_time)
 {
+	FrustumCuller fruster_culler(vp_matrix);
 	for (auto& [model, params] : render_queue_)
 	{
+		// Check if the model is in the view frustum
+		if (!fruster_culler.IsInFrustum(model->GetBoundingVolume())) continue;
+
 		// Batch processing for draw calls with same model
 		model->Render(device_context);
 		for (const auto& param : params)

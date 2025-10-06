@@ -2,6 +2,7 @@
 
 #include "graphics/ModelClass.hh"
 #include "core/GameException.hh"
+#include "graphics/FrustumCuller.hh"
 
 StoneShaderClass::StoneShaderClass(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
 {
@@ -44,12 +45,17 @@ void StoneShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATR
 void StoneShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 	const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT3 camera_pos)
 {
+	FrustumCuller fruster_culler(vp_matrix);
+
 	for (auto& [model, params] : render_queue_)
 	{
 		// Batch processing for draw calls with same model
 		model->Render(device_context);
 		for (const auto& param : params)
 		{
+			// Check if the model is in the view frustum
+			if (!fruster_culler.IsInFrustum(model->GetBoundingVolume())) continue;
+
 			SetShaderParameters(device_context, param.world_matrix, vp_matrix,
 				light_direction, param.diffuse_color, camera_pos,
 				param.ambient_weight, param.diffuse_weight, param.specular_weight);

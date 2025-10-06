@@ -3,6 +3,8 @@
 #include "graphics/TextureClass.hh"
 #include "core/GameException.hh"
 
+#include "core/global.hh"
+
 #include <sstream>
 #include <algorithm>
 
@@ -270,7 +272,11 @@ void ModelClass::LoadModel(const char* filename)
 		}
 	};
 
-	
+
+	// The bounding volume will be a box by default.
+	// To calculate the bounding box, we need to find the min and max coordinates.
+	DirectX::XMFLOAT3 min = { FLT_MAX, FLT_MAX, FLT_MAX };
+	DirectX::XMFLOAT3 max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
 	ifstream fin(filename);
 	if (fin.fail()) throw filenotfound_error(filename, WFILE, __LINE__);
@@ -288,6 +294,10 @@ void ModelClass::LoadModel(const char* filename)
 			float x, y, z;
 			iss >> x >> y >> z;
 			v_list.push_back({ x, y, z });
+
+			// Update the min and max coordinates.
+			min.x = min(min.x, x); min.y = min(min.y, y); min.z = min(min.z, z);
+			max.x = max(max.x, x); max.y = max(max.y, y); max.z = max(max.z, z);
 		}
 		else if (buffer == "vt")
 		{
@@ -383,6 +393,12 @@ void ModelClass::LoadModel(const char* filename)
 			XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) }, 0);
 
 	indexCount_ = vertexCount_ = model_.size();
+
+	// Set the bounding volume to a box by default.
+	bounding_volume_ = DirectX::BoundingBox(
+		{ (min.x + max.x) / 2, (min.y + max.y) / 2, (min.z + max.z) / 2 },
+		{ (max.x - min.x) / 2, (max.y - min.y) / 2, (max.z - min.z) / 2 }
+	);
 }
 
 void ModelClass::CalculateModelVectors()
