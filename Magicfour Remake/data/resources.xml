@@ -1,22 +1,80 @@
 <Resources>
-  <Model name="cube" src="data/model/abox.obj" texture="data/texture/stone01.tga" normal="data/texture/normal01.tga"/>
-  <Model name="fire" src="data/model/PlaneObject.obj" texture="data/texture/fire/fire02.png" normal="data/texture/fire/noise01.png" emissive="data/texture/fire/alpha02.png"/>
-  <Model name="grass" src="data/model/abox.obj" texture="data/texture/grass/diffuse.png" normal="data/texture/fire/noise01.png" emissive="data/texture/fire/alpha03.png"/>
-  <Model name="plane" src="data/model/PlaneObject.obj" texture="data/texture/stone01.tga" normal="data/texture/normal01.tga"/>
-  <Model name="diamond" src="data/model/diamond.obj" texture="data/texture/stone01.tga"/>
-  <Model name="gem" src="data/model/Crystal/Crystals_low.obj" texture="data/model/Crystal/None_BaseColor.png" normal="data/model/Crystal/None_Normal.png" emissive="data/model/Crystal/None_Emissive.png"/>
-  <Model name="background" src="data/model/PlaneObject.obj" texture="data/texture/background.jpg"/>
-  
-  <!-- Models of skill objects -->
-  <Model name="orb" src="data/model/Orb/orb_low.obj" texture="data/model/Orb/orb_low_fragment_BaseColor.png" normal="data/model/Orb/orb_low_fragment_Normal.png" emissive="data/model/Orb/orb_low_fragment_Emissive.png"/>
-  <Model name="fire-effect" src="data/model/PlaneObject.obj" texture="data/texture/fire/fire02.png" normal="data/texture/fire/noise01.png" emissive="data/texture/fire/alpha02.png"/>
-  <Model name="spear" src="data/model/Blade/MagicCeramicBlade.obj" texture="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg" normal="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg" emissive="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
-  <Model name="leg" src="data/model/Crystal/Crystals_low.obj" texture="data/model/Crystal/None_BaseColor.png" normal="data/model/Crystal/None_Normal.png"/>
-  <Model name="basic" src="data/model/Blade/MagicCeramicBlade.obj" texture="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg" normal="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg" emissive="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
-  <Model name="shield" src="data/model/Shield/shield.obj" texture="data/model/Shield/Sheld_LPFF_Sheld_BaseColor.png" normal="data/model/Shield/Sheld_LPFF_Sheld_Normal.png"/>
+  <Model name="cube" model_path="data/model/abox.obj">
+    <Texture type="diffuse" src="data/texture/stone01.tga"/>
+    <Texture type="normal" src="data/texture/normal01.tga"/>
+  </Model>
 
+  <Model name="fire" model_path="data/model/PlaneObject.obj">
+    <Texture type="diffuse" src="data/texture/fire/fire02.png"/>
+    <Texture type="normal" src="data/texture/fire/noise01.png"/>
+    <Texture type="emissive" src="data/texture/fire/alpha02.png"/>
+  </Model>
+
+  <Model name="grass" model_path="data/model/abox.obj">
+    <Texture type="diffuse" src="data/texture/grass/diffuse.png"/>
+    <Texture type="normal" src="data/texture/fire/noise01.png"/>
+    <Texture type="emissive" src="data/texture/fire/alpha03.png"/>
+  </Model>
+
+  <Model name="plane" model_path="data/model/PlaneObject.obj">
+    <Texture type="diffuse" src="data/texture/stone01.tga"/>
+    <Texture type="normal" src="data/texture/normal01.tga"/>
+  </Model>
+
+  <Model name="diamond" model_path="data/model/diamond.obj">
+    <Texture type="diffuse" src="data/texture/stone01.tga"/>
+  </Model>
+
+  <Model name="gem" model_path="data/model/Crystal/Crystals_low.obj">
+    <Texture type="diffuse" src="data/model/Crystal/None_BaseColor.png"/>
+    <Texture type="normal" src="data/model/Crystal/None_Normal.png"/>
+    <Texture type="emissive" src="data/model/Crystal/None_Emissive.png"/>
+  </Model>
+
+  <Model name="background" model_path="data/model/PlaneObject.obj">
+    <Texture type="diffuse" src="data/texture/background.jpg"/>
+  </Model>
+
+  <!-- Models of skill objects -->
+  <Model name="orb" model_path="data/model/Orb/orb_low.obj">
+    <Texture type="diffuse" src="data/model/Orb/orb_low_fragment_BaseColor.png"/>
+    <Texture type="normal" src="data/model/Orb/orb_low_fragment_Normal.png"/>
+    <Texture type="emissive" src="data/model/Orb/orb_low_fragment_Emissive.png"/>
+  </Model>
+
+  <Model name="fire-effect" model_path="data/model/PlaneObject.obj">
+    <Texture type="diffuse" src="data/texture/fire/fire02.png"/>
+    <Texture type="normal" src="data/texture/fire/noise01.png"/>
+    <Texture type="emissive" src="data/texture/fire/alpha02.png"/>
+  </Model>
+
+  <Model name="spear" model_path="data/model/Blade/MagicCeramicBlade.obj">
+    <Texture type="diffuse" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg"/>
+    <Texture type="normal" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg"/>
+    <Texture type="emissive" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
+  </Model>
+
+  <Model name="leg" model_path="data/model/Crystal/Crystals_low.obj">
+    <Texture type="diffuse" src="data/model/Crystal/None_BaseColor.png"/>
+    <Texture type="normal" src="data/model/Crystal/None_Normal.png"/>
+  </Model>
+
+  <Model name="basic" model_path="data/model/Blade/MagicCeramicBlade.obj">
+    <Texture type="diffuse" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg"/>
+    <Texture type="normal" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg"/>
+    <Texture type="emissive" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
+  </Model>
+
+  <Model name="shield" model_path="data/model/Shield/shield.obj">
+    <Texture type="diffuse" src="data/model/Shield/Sheld_LPFF_Sheld_BaseColor.png"/>
+    <Texture type="normal" src="data/model/Shield/Sheld_LPFF_Sheld_Normal.png"/>
+  </Model>
+  
   <!-- Models of Monsters -->
-  <Model name="stop" src="data/model/Stop/StopSign.obj" texture="data/model/Stop/StopSign.png"/>
+  <Model name="stop" model_path="data/model/Stop/StopSign.obj" >
+    <Texture type="diffuse" src="data/model/Stop/StopSign.png"/>
+  </Model>
+
   
   <Texture name="rainbow" src="data/texture/skill_gauge_rainbow.png"/>
   <Texture name="background" src="data/texture/background.jpg"/>

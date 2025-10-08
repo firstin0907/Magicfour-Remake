@@ -78,6 +78,13 @@ public:
 		const std::string& emissive_filename = ""
 	);
 
+	ModelClass(ID3D11Device* device,
+		const std::string& model_filename,
+		const std::shared_ptr<class TextureClass>& diffuse_texture,
+		const std::shared_ptr<class TextureClass>& normal_texture = nullptr,
+		const std::shared_ptr<class TextureClass>& emissive_texture = nullptr
+	);
+
 
 	ModelClass(const ModelClass&) = delete;
 	~ModelClass();
@@ -87,7 +94,7 @@ public:
 
 	inline const vector<std::pair<MaterialType, int> >& GetMaterial()
 	{
-		return materialList_; 
+		return material_list_; 
 	}
 
 	int GetIndexCount();
@@ -121,14 +128,14 @@ private:
 private:
 	ComPtr<ID3D11Buffer> vertexBuffer_, indexBuffer_;
 	int vertexCount_, indexCount_;
-	unique_ptr<class TextureClass> diffuseTexture_;
-	unique_ptr<class TextureClass> normalTexture_;
-	unique_ptr<class TextureClass> emissiveTexture_;
+
+	std::shared_ptr<class TextureClass> diffuse_texture_;
+	std::shared_ptr<class TextureClass> normal_texture_;
+	std::shared_ptr<class TextureClass> emissive_texture_;
+
 	vector<ModelType> model_;
 
-	vector<std::pair<MaterialType, int> > materialList_;
+	vector<std::pair<MaterialType, int> > material_list_;
 	
 	std::variant<DirectX::BoundingBox, DirectX::BoundingSphere> bounding_volume_;
-
-	static ModelClass* lastRenderedModel_;
 };

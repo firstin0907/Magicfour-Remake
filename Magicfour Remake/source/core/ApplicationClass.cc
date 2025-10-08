@@ -58,23 +58,51 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	camera_ = make_unique<CameraClass>();
 	camera_->SetPosition(0.0f, 0.0f, kCameraZPosition);
 
-	models_.loadFromXML("data/resources.xml", "Model",
-		[this](xml_node_wrapper node) -> std::shared_ptr<ModelClass>
-		{
-			return make_shared<ModelClass>(this->direct3D_->GetDevice(),
-				node.get_required_attr("src"),
-				node.get_required_attr("texture"),
-				node.get_attr("normal"),
-				node.get_attr("emissive")
-			);
-		});
 
-	textures_.loadFromXML("data/resources.xml", "Texture",
-		[this](xml_node_wrapper node) -> std::shared_ptr<TextureClass>
+	auto texture_loader = [this](xml_node_wrapper node) -> std::shared_ptr<TextureClass>
 		{
 			return make_shared<TextureClass>(this->direct3D_->GetDevice(),
 				node.get_required_attr("src"));
-		});
+		};
+
+	auto model_loader = [this](xml_node_wrapper node) -> std::shared_ptr<ModelClass>
+		{
+			std::unordered_map<std::string, std::string> textures;
+			
+			for (auto texture_node = node.first_node("Texture"); texture_node; texture_node = texture_node.next_sibling("Texture"))
+			{
+				std::string type = texture_node.get_required_attr("type");
+				std::string src = texture_node.get_required_attr("src");
+				textures[type] = src;
+			}
+
+			std::shared_ptr<TextureClass> diffuse_texture = nullptr;
+			std::shared_ptr<TextureClass> normal_texture = nullptr;
+			std::shared_ptr<TextureClass> emissive_texture = nullptr;
+
+			if (textures.find("diffuse") != textures.end())
+				diffuse_texture = textures_.get_by_path(textures["diffuse"]);
+			else
+				throw GAME_EXCEPTION(L"Diffuse texture is required for model: " + std::wstring(node.get_required_attr("name").begin(), node.get_required_attr("name").end()));
+
+			if (textures.find("normal") != textures.end())
+				normal_texture = textures_.get_by_path(textures["normal"]);
+
+			if (textures.find("emissive") != textures.end())
+				emissive_texture = textures_.get_by_path(textures["emissive"]);
+			
+			return make_shared<ModelClass>(this->direct3D_->GetDevice(),
+				node.get_required_attr("model_path").c_str(),
+				diffuse_texture,
+				normal_texture,
+				emissive_texture
+			);
+		};
+
+
+	textures_.loadFromXML("data/resources.xml", "Texture", texture_loader);
+	models_.loadFromXML("data/resources.xml", "Model", model_loader);
+
 
 	// Create and initialize the light shader object.
 	shader_manager_ = make_unique<ShaderManager>(

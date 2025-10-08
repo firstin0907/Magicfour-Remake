@@ -14,7 +14,6 @@
 
 using namespace std;
 
-ModelClass* ModelClass::lastRenderedModel_ = nullptr;
 
 ModelClass::ModelClass(ID3D11Device* device,
 	const std::string& modelFilename,
@@ -47,6 +46,25 @@ ModelClass::ModelClass(ID3D11Device* device,
 }
 
 
+ModelClass::ModelClass(ID3D11Device* device,
+	const std::string& model_filename,
+	const std::shared_ptr<class TextureClass>& diffuse_texture,
+	const std::shared_ptr<class TextureClass>& normal_texture,
+	const std::shared_ptr<class TextureClass>& emissive_texture)
+	: diffuse_texture_(diffuse_texture),
+	  normal_texture_(normal_texture),
+	  emissive_texture_(emissive_texture)
+{
+	// Load in the model_ data.
+	LoadModel(model_filename.c_str());
+
+	// Calculate the tangent and binormal vectors for the model.
+	CalculateModelVectors();
+
+	// Initialize the vertex and index buffers.
+	InitializeBuffers(device);
+}
+
 
 ModelClass::~ModelClass()
 {
@@ -61,10 +79,6 @@ void ModelClass::Shutdown()
 
 void ModelClass::Render(ID3D11DeviceContext* deviceContext)
 {
-	if (lastRenderedModel_ == this) return;
-
-	lastRenderedModel_ = this;
-
 	// Put the vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	RenderBuffers(deviceContext);
 
@@ -79,20 +93,20 @@ int ModelClass::GetIndexCount()
 
 ID3D11ShaderResourceView* ModelClass::GetDiffuseTexture()
 {
-	if (diffuseTexture_) return diffuseTexture_->GetTexture();
+	if (diffuse_texture_) return diffuse_texture_->GetTexture();
 	else return nullptr;
 }
 
 
 ID3D11ShaderResourceView* ModelClass::GetNormalTexture()
 {
-	if (normalTexture_) return normalTexture_->GetTexture();
+	if (normal_texture_) return normal_texture_->GetTexture();
 	else return nullptr;
 }
 
 ID3D11ShaderResourceView* ModelClass::GetEmissiveTexture()
 {
-	if (emissiveTexture_) return emissiveTexture_->GetTexture();
+	if (emissive_texture_) return emissive_texture_->GetTexture();
 	return nullptr;
 }
 
@@ -192,21 +206,21 @@ void ModelClass::LoadTextures(ID3D11Device* device,
 	const wchar_t* diffuse_filename, const wchar_t* normal_filename, const wchar_t* emissive_filename)
 {
 	// Create and initialize the diffuse texture object.
-	diffuseTexture_ = make_unique<TextureClass>(device, diffuse_filename);
+	diffuse_texture_ = make_unique<TextureClass>(device, diffuse_filename);
 
 	if (normal_filename)
 	{
 		// Create and initialize the diffuse texture object.
-		normalTexture_ = make_unique<TextureClass>(device, normal_filename);
+		normal_texture_ = make_unique<TextureClass>(device, normal_filename);
 	}
-	else normalTexture_ = nullptr;
+	else normal_texture_ = nullptr;
 
 
 	if (emissive_filename)
 	{
-		emissiveTexture_ = make_unique<TextureClass>(device, emissive_filename);
+		emissive_texture_ = make_unique<TextureClass>(device, emissive_filename);
 	}
-	else emissiveTexture_ = make_unique<TextureClass>(device, L"data/texture/black.png");
+	else emissive_texture_ = make_unique<TextureClass>(device, L"data/texture/black.png");
 }
 
 
@@ -385,11 +399,11 @@ void ModelClass::LoadModel(const char* filename)
 		{
 			iss >> buffer;
 			if (meterial.find(buffer) == meterial.end()) continue;
-			materialList_.emplace_back(meterial[buffer], (int)model_.size());
+			material_list_.emplace_back(meterial[buffer], (int)model_.size());
 		}
 	}
 
-	if (materialList_.empty()) materialList_.emplace_back(MaterialType{
+	if (material_list_.empty()) material_list_.emplace_back(MaterialType{
 			XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) }, 0);
 
 	indexCount_ = vertexCount_ = model_.size();
