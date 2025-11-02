@@ -3,6 +3,7 @@
 #include <d2d1.h>
 #include <wincodec.h>
 #include <dwrite.h>
+#include <xstring>
 
 #include "core/D2DClass.hh"
 #include "core/GameException.hh"
@@ -40,4 +41,10 @@ BitmapClass::BitmapClass(D2DClass* direct2d, const wchar_t* filename)
 
 	width_ = bitmap_->GetSize().width;
 	height_ = bitmap_->GetSize().height;
+}
+
+BitmapClass::BitmapClass(D2DClass* direct2d, const std::string& filename)
+	: BitmapClass(direct2d, std::wstring(filename.begin(), filename.end()).c_str())
+{
+
 }

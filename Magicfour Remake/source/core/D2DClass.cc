@@ -1,6 +1,7 @@
 #include "core/D2DClass.hh"
 
 #include "graphics/BitmapClass.hh"
+#include "graphics/FontClass.hh"
 #include "core/GameException.hh"
 
 D2DClass::D2DClass(IDXGISwapChain* swapChain, HWND hwnd)
@@ -108,6 +109,15 @@ void D2DClass::RenderText(IDWriteTextFormat* format,
 
 	render_target_->DrawText(contents, static_cast<UINT32>(wcslen(contents)),
 		format, layoutRect, brush_.Get());
+}
+
+void D2DClass::RenderText(FontClass* format,
+	const wchar_t* contents, float left, float top, float right, float bottom)
+{
+	D2D1_RECT_F layoutRect = D2D1::RectF(left, top, right, bottom);
+
+	render_target_->DrawText(contents, static_cast<UINT32>(wcslen(contents)),
+		format->get(), layoutRect, brush_.Get());
 }
 
 void D2DClass::RenderTextWithInstantFormat(IDWriteTextFormat* format,

@@ -1,4 +1,5 @@
 #include <wrl.h>
+#include <string>
 
 class BitmapClass
 {
@@ -8,6 +9,7 @@ private:
 
 public:
 	BitmapClass(class D2DClass* direct2d, const wchar_t* filename);
+	BitmapClass(class D2DClass* direct2d, const std::string& filename);
 	~BitmapClass() = default;
 	
 	inline float GetWidth() { return width_; }

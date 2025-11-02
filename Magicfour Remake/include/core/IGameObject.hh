@@ -5,8 +5,9 @@
 
 #include "core/global.hh"
 #include "util/ResourceMap.hh"
+#include "core/interface/IDrawable.hh"
 
-class IGameObject
+class IGameObject : public IDrawable
 {
 public:
 	virtual ~IGameObject() {};

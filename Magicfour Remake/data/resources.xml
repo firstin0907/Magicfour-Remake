@@ -79,6 +79,25 @@
   <Texture name="rainbow" src="data/texture/skill_gauge_rainbow.png"/>
   <Texture name="background" src="data/texture/background.jpg"/>
 
+  <!-- Bitmap for UI -->
+  <Bitmap name="monster_hp_gauge" src="data/texture/user_interface/monster_hp_frame.png"/>
+  <Bitmap name="skill_gauge_gray" src="data/texture/user_interface/skill_gauge_gray.png"/>
+  <Bitmap name="skill_gauge_rainbow" src="data/texture/user_interface/skill_gauge_rainbow.png"/>
+  
+  <!-- Fonts for UI -->
+  <Fonts>
+    <Font name="score_text_format" family="Arial" size="40"
+          textAlignment="trailing" paragraphAlignment="near" />
+    <Font name="fps_text_format" family="Arial" size="20"
+          textAlignment="trailing" paragraphAlignment="near" />
+    <Font name="pause_text_format" family="Cambria" size="35"
+          textAlignment="center" paragraphAlignment="near" />
+    <Font name="pause_description_format" family="Cambria" size="20"
+          textAlignment="center" paragraphAlignment="near" />
+    <Font name="gameover_text_format" family="Cambria" size="70"
+          textAlignment="center" paragraphAlignment="center" />
+  </Fonts>
+  
   <Sound name="background" src="data/sound/background.wav"/>
   <Sound name="character_damage" src="data/sound/character_damage.wav"/>
   <Sound name="character_death" src="data/sound/character_death.wav"/>

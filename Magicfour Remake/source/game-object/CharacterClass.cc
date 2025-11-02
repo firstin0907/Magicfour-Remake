@@ -327,6 +327,13 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
 			skill_color);
 	}
+
+
+	// Draw Gaurdian bead
+	for (int i = 0; GetGuardian(i) != nullptr; i++)
+	{
+		GetGuardian(i)->Draw(curr_time, time_delta, shader_manager, models, textures);
+	}
 }
 
 void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& shape_matrices) const

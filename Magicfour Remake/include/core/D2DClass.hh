@@ -33,6 +33,8 @@ public:
 	void RenderRect(float left, float top, float right, float bottom);
 	void RenderText(IDWriteTextFormat* format, const wchar_t* contents,
 		float left, float top, float right, float bottom);
+	void RenderText(class FontClass* format, const wchar_t* contents,
+		float left, float top, float right, float bottom);
 	void RenderTextWithInstantFormat(IDWriteTextFormat* format,
 		const wchar_t* contents, float left, float top, float right, float bottom);
 

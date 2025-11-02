@@ -54,6 +54,15 @@
     <Filter Include="헤더 파일\shader">
       <UniqueIdentifier>{12d0f442-b232-4773-8ae4-1b7538d7d475}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\core\interface">
+      <UniqueIdentifier>{73081896-4711-412a-ae0d-c0f0781a4f5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\ui\interface">
+      <UniqueIdentifier>{6aa59726-e6b5-49ca-a489-46b2098f3925}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\ui\common">
+      <UniqueIdentifier>{fc67f6e5-61af-4c91-8d62-cfb501a5caa5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\core\AnimatedObjectClass.cc">
@@ -148,6 +157,18 @@
     </ClCompile>
     <ClCompile Include="source\shader\ShaderManager.cc">
       <Filter>소스 파일\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ui\MonsterUI.cc">
+      <Filter>소스 파일\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ui\CharacterUI.cc">
+      <Filter>소스 파일\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\graphics\FontClass.cc">
+      <Filter>소스 파일\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ui\SystemUI.cc">
+      <Filter>소스 파일\ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -267,6 +288,27 @@
     </ClInclude>
     <ClInclude Include="include\graphics\FrustumCuller.hh">
       <Filter>헤더 파일\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\interface\IDrawable.hh">
+      <Filter>헤더 파일\core\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ui\interface\IGameObjectUI.hh">
+      <Filter>헤더 파일\ui\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ui\MonsterUI.hh">
+      <Filter>헤더 파일\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ui\common\UIContext.hh">
+      <Filter>헤더 파일\ui\common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ui\CharacterUI.hh">
+      <Filter>헤더 파일\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\FontClass.hh">
+      <Filter>헤더 파일\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ui\SystemUI.hh">
+      <Filter>헤더 파일\ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -23,13 +23,15 @@
 #include "util/TimerClass.hh"
 #include "shader/TextureShaderClass.hh"
 #include "graphics/TextureClass.hh"
-#include "ui/UserInterfaceClass.hh"
 #include "game-object/ItemClass.hh"
 #include "util/RandomClass.hh"
 #include "core/GameException.hh"
 #include "core/SoundClass.hh"
 #include "util/CollisionProcessor.hh"
 #include "map/FieldClass.hh"
+
+#include "ui/UserInterfaceClass.hh"
+#include "ui/MonsterUI.hh"
 
 #define DEBUG_RANGE
 
@@ -98,6 +100,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 				emissive_texture
 			);
 		};
+
 
 
 	textures_.loadFromXML("data/resources.xml", "Texture", texture_loader);
@@ -314,9 +317,6 @@ void ApplicationClass::Render()
 	time_t curr_time = timer_->GetTime();
 	time_t time_delta = timer_->GetElapsedTime();
 
-	// Clear the buffers to begin the scene.
-	direct3D_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
-
 	// Generate the view matrix based on the camera's position.
 	camera_->Render();
 
@@ -327,73 +327,14 @@ void ApplicationClass::Render()
 
 	const XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
-	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);
-	shader_manager_->light_shader_->PushRenderQueue(models_.get("background"), kBackgroundMarix);
-
-
 	character_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
 	// Draw Items
 	items_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 	skillObjectList_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
-	for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
-	{
-		character_->GetGuardian(i)->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
-	}
-
 	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
-
-
-	for (auto& ground : field_->GetGrounds())
-	{
-		// for grass
-		rect_t grass_range = ground.GetRange();
-		const int grass_drawing_steps = grass_range.get_w() / 100000 + 1;
-		for (long long i = 0; i < grass_drawing_steps; i++)
-		{
-			rect_t grass_section_range = grass_range;
-
-			const long long curr_x = grass_range.x1 + grass_range.get_w() * i / grass_drawing_steps;
-			const long long next_x = grass_range.x1 + grass_range.get_w() * (i + 1) / grass_drawing_steps;
-			grass_section_range.x1 = curr_x, grass_section_range.x2 = next_x;
-
-			const XMMATRIX&& grass_matrix = XMMatrixRotationY(3 * M_PI_2) * XMMatrixRotationZ(3 * M_PI_2) *
-				XMMatrixTranslation(0.0f, 0.0f, -0.0001f) *
-				grass_section_range.toMatrix();
-
-			shader_manager_->fire_shader_->PushRenderQueue(
-				models_.get("grass"),
-				grass_matrix,
-				{ -0.3f, -0.1f, -0.3f },
-				{ 1.0f, 2.0f, 3.0f },
-				{ 0.1f, 0.2f },
-				{ 0.1f, 0.3f },
-				{ 0.1f, 0.1f },
-				0.4f, 0.0f);
-		}
-
-		rect_t ground_range = ground.GetRange();
-		const int ground_drawing_steps = grass_range.get_w() / 420000 + 1;
-		for (long long i = 0; i < ground_drawing_steps; i++)
-		{
-			// for ground
-			rect_t ground_display_range = ground_range;
-
-			const long long curr_x = ground_range.x1 + ground_range.get_w() * i / ground_drawing_steps;
-			const long long next_x = ground_range.x1 + ground_range.get_w() * (i + 1) / ground_drawing_steps;
-			ground_display_range.x1 = curr_x, ground_display_range.x2 = next_x;
-
-			shader_manager_->light_shader_->PushRenderQueue(models_.get("cube"),
-				ground_display_range.toMatrix());
-		}
-	}
-
-	shader_manager_->normalMap_shader_->PushRenderQueue(models_.get("gem"),
-		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f));
-	
-	shader_manager_->normalMap_shader_->PushRenderQueue(models_.get("gem"),
-		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000)* kScope, 0.0f));
+	field_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
 
 #ifdef DEBUG_RANGE
@@ -428,6 +369,9 @@ void ApplicationClass::Render()
 		0.8f, 0.0f);
 
 
+	// Clear the buffers to begin the scene.
+	direct3D_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
+
 	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
 	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
@@ -439,72 +383,19 @@ void ApplicationClass::Render()
 	// Turn off the Z buffer to begin all 2D rendering.
 	direct3D_->TurnZBufferOff();
 		
-	user_interface_->Begin2dDraw(direct2D_.get());
+	user_interface_->Begin2dDraw(direct2D_.get(), vp_matrix, orthoMatrix);
 
-	const XMMATRIX ortho_inv = XMMatrixInverse(nullptr, orthoMatrix);
-	float screen_x, screen_y;
-	for (auto& object : monsters_.elements)
-	{
-		MonsterClass* monster = static_cast<MonsterClass*>(object.get());
+	user_interface_->DrawMonsterUI(direct2D_.get(), monsters_, curr_time);
 
-		user_interface_->CalculateScreenPos(monster->GetLocalWorldMatrix() * vp_matrix,
-			ortho_inv, screen_x, screen_y);
-
-
-		if (monster->GetState() == MonsterState::kStopEmbryo)
-		{
-			user_interface_->DrawWarningVerticalRect(direct2D_.get(), screen_x, 50, monster->GetStateTime(curr_time) / 700.0f);
-		}
-		else
-		{
-			user_interface_->DrawMonsterHp(direct2D_.get(), screen_x, screen_y - 23,
-				monster->GetHpRatio(), monster->GetPrevHpRatio());
-		}
-
-
-	}
-
-	user_interface_->CalculateScreenPos(character_->GetLocalWorldMatrix() * vp_matrix,
-		ortho_inv, screen_x, screen_y);
-	user_interface_->DrawCharacterInfo(direct2D_.get(), character_.get(),
-		screen_x, screen_y, curr_time);
-
-	XMMATRIX skill_stone_pos = character_->GetSkillStonePos(curr_time);
-	// Get the coordinate of stone with respect to screen coordinate.
-	for (int i = 0; i < 4; i++)
-	{
-		user_interface_->CalculateScreenPos(skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0) * vp_matrix, ortho_inv, screen_x, screen_y);
-		if (character_->GetSkill(i).skill_type)
-		{
-			user_interface_->DrawSkillPower(direct2D_.get(),
-				character_->GetSkill(i).skill_type,
-				character_->GetSkill(i).skill_power,
-				curr_time - character_->GetSkill(i).learned_time,
-				screen_x, screen_y);
-		}
-	}
-	user_interface_->DrawFps(direct2D_.get(),
-		timer_->GetActualTime(), timer_->GetActualElapsedTime());
-
-
-	switch (game_state_)
-	{
-	case GameState::kGamePause:
-		user_interface_->DrawPauseMark(direct2D_.get());
-		break;
-	case GameState::kGameOver:
-		user_interface_->DrawGameoverScreen(direct2D_.get(),
-			character_->GetStateTime(curr_time));
-		break;
-	}
+	user_interface_->DrawCharacterUI(direct2D_.get(), character_.get(), curr_time);
+	
+	user_interface_->DrawSystemUI(direct2D_.get(), game_state_, timer_->GetActualTime());
 
 	user_interface_->End2dDraw(direct2D_.get());
 
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	direct3D_->TurnZBufferOn();
-
-
 
 	// Present the rendered scene to the screen.
 	direct3D_->EndScene();

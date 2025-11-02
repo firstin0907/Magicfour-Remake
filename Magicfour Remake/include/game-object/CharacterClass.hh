@@ -95,7 +95,7 @@ public:
 	* @param[in] index
 	* @returns if the guardian is activated and valid, return the pointer. If not, return nullptr.
 	*/
-	inline class SkillObjectGuardian* GetGuardian(int index)
+	inline class SkillObjectGuardian* GetGuardian(int index) const
 	{
 		if (index == 1)
 		{

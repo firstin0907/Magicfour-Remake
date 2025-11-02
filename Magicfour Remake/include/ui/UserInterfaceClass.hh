@@ -10,6 +10,10 @@
 
 #include <DirectXMath.h>
 
+#include "util/ResourceMap.hh"
+#include "ui/common/UIContext.hh"
+#include "core/global.hh"
+
 class UserInterfaceClass
 {
 private:
@@ -27,61 +31,25 @@ public:
 	~UserInterfaceClass();
 
 	void CalculateScreenPos(const XMMATRIX& mvp_matrix,
-		const XMMATRIX& ortho_inv, float& x, float& y);
+		const XMMATRIX& ortho_inv, float& x, float& y) const;
 
-	void DrawCharacterInfo(class D2DClass* direct2D,
-		class CharacterClass* character,
-		float char_screen_x, float char_screen_y,
-		time_t curr_time);
+	void CalculateScreenPos(const XMMATRIX& world_matrix, float& x, float& y) const;
 
-
-	void Begin2dDraw(class D2DClass* direct2D);
+	void Begin2dDraw(class D2DClass* direct2D, const XMMATRIX& vp_matrix, const XMMATRIX& ortho_matrix);
 	void End2dDraw(class D2DClass* direct2D);
 
+	void DrawMonsterUI(class D2DClass* direct2D, class GameObjectList& monsters, time_t curr_time);
+	void DrawCharacterUI(class D2DClass* direct2D, class CharacterClass* character, time_t curr_time);
+	void DrawSystemUI(class D2DClass* direct2D, GameState game_state, time_t actual_curr_time);
 
-	void DrawWarningVerticalRect(
-		D2DClass* direct2D, float center_x, float width, float progress);
+	inline const UIContext& GetContext() { return context; }
 
-	void DrawMonsterHp(class D2DClass* direct2D,
-		int center_x, int top, float hp_ratio, float hp_white_ratio);
-	void DrawSkillPower(D2DClass* direct2D,
-		int skill_type, int skill_power, time_t skill_learned_elapsed_time,
-		float skill_stone_screen_x,
-		float skill_stone_screen_y);
-
-	void DrawFps(D2DClass* direct2D,
-		time_t actual_curr_time, time_t actual_time_delta);
-
-
-	void DrawPauseMark(class D2DClass* direct2D);
-	void DrawGameoverScreen(class D2DClass* direct2D,
-		time_t gameover_elapsed_time);
 
 private:
-	void DrawScoreAndCombo(class D2DClass* direct2D,
-		class CharacterClass* character, time_t curr_time);
-	void DrawSkillGauge(D2DClass* direct2D,
-		float char_screen_x, float char_screen_y,
-		float skill_charge_ratio);
-	void DrawInvincibleGauge(D2DClass* direct2D,
-		float char_screen_x, float char_screen_y,
-		float invincible_ratio);
-	void DrawSkillBonus(D2DClass* direct2D, unsigned int skill_bonus,
-		time_t learn_elapsed_time);
+	UIContext context;
 
-private:
-	int screen_width_, screen_height_;
-	float f_screen_width_, f_screen_height_;
+	XMMATRIX vp_matrix;
+	XMMATRIX ortho_inverse;
 
 	std::pair<unsigned int, time_t> bonus_effect_;
-
-	unique_ptr<class BitmapClass> monster_hp_gauge_bitmap_;
-	unique_ptr<class BitmapClass> skill_gauge_gray_bitmap_;
-	unique_ptr<class BitmapClass> invincible_gauge_bitmap_;
-
-	ComPtr<struct IDWriteTextFormat> score_text_format_;
-	ComPtr<struct IDWriteTextFormat> fps_text_format_;
-	ComPtr<struct IDWriteTextFormat> pause_text_format_;
-	ComPtr<struct IDWriteTextFormat> pause_description_format_;
-	ComPtr<struct IDWriteTextFormat> gameover_text_format_;
 };
