@@ -3,6 +3,8 @@
 #include "core/global.hh"
 #include "IGameObject.hh"
 
+#include <cmath>
+
 template <typename STATE_TYPE>
 class RigidbodyClass : public IGameObject
 {
@@ -21,6 +23,11 @@ public:
 		Point2d& operator+=(const Point2d& rhs)
 		{
 			x += rhs.x, y += rhs.y; return *this;
+		}
+
+		inline double length() const
+		{
+			return std::sqrt(x * x + y * y);
 		}
 	};
 	using Vector2d = Point2d;

@@ -7,6 +7,7 @@
 
 #include "shader/ShaderManager.hh"
 #include "shader/NormalMapShaderClass.hh"
+#include "shader/FireShaderClass.hh"
 
 using namespace std;
 using namespace DirectX;
@@ -201,9 +202,24 @@ bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta)
 void SkillObjectBead::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
 	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
 {
-	const XMMATRIX shape = XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
-		* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("orb"), shape);
+	const XMMATRIX orb_shape = XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
+		;//* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+
+	const XMMATRIX fire_shape =
+		XMMatrixTranslation(0, 1.0f, 0)
+		* XMMatrixScaling(0.5f, 1.3f * (velocity_.length() / 1'200), 1.0f)
+		* XMMatrixRotationZ(XM_PI / 2 + atan2(velocity_.y, velocity_.x))
+		* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, (velocity_.y / 1'200'000.0f));
+	
+	//shader_manager->normalMap_shader_->PushRenderQueue(models.get("orb"), orb_shape);
+	shader_manager->fire_shader_->PushRenderQueue(models.get("fire"),
+		fire_shape,
+		{ 1.3f, 2.1f, 2.3f },
+		{ 1.0f, 2.0f, 3.0f },
+		{ 0.1f, 0.2f },
+		{ 0.1f, 0.3f },
+		{ 0.1f, 0.1f },
+		0.8f, 0.0f);
 }
 
 XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)

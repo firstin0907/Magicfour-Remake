@@ -547,33 +547,40 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 		break;
 
 	case 2:
-		if (skill_bonus_ == SkillBonus::BONUS_FLUSH || skill_bonus_ == SkillBonus::BONUS_STRAIGHT_FLUSH)
+	{
+		constexpr int kBeadSpeed = 1'200;
+		constexpr time_t kFirstBeadTime = 40;
+		constexpr time_t kLastBeadTime = 300;
+
+		int bead_cnt = (skill_bonus_ == SkillBonus::BONUS_FLUSH
+			|| skill_bonus_ == SkillBonus::BONUS_STRAIGHT_FLUSH) ? 6 : 4;
+		time_t bead_interval = (kLastBeadTime - kFirstBeadTime) / (bead_cnt - 1);
+
+		if (kFirstBeadTime < state_time)
 		{
-			for (time_t i = min(1, state_time / 40); i <= 6; i++)
+			time_t target_bead = (state_time - kFirstBeadTime) / bead_interval + 1;
+			time_t prev_bead = (prev_state_time < kFirstBeadTime) ? 0 : ((prev_state_time - kFirstBeadTime) / bead_interval + 1);
+
+			for (time_t i = prev_bead + 1; i <= target_bead; i++)
 			{
-				if (prev_state_time < i * 40 && i * 40 <= state_time)
-				{
-					skill_objs.emplace_back(new SkillObjectBead(
-						position_.x, position_.y + 300000, DIR_WEIGHT(direction_, 1200),
-						(i - 1) * 200, skill_currently_used_.skill_power,
-						state_start_time_ + i * 40));
-				}
-			}
-		}
-		else
-		{
-			for (time_t i = min(1, state_time / 70); i <= 4; i++)
-			{
-				if (prev_state_time < i * 70 && i * 70 <= state_time)
-				{
-					skill_objs.emplace_back(new SkillObjectBead(
-						position_.x, position_.y + 300000, DIR_WEIGHT(direction_, 1200),
-						(i - 1) * 200, skill_currently_used_.skill_power,
-						state_start_time_ + i * 70));
-				}
+				double angle = M_PI_4 / 6 * (i - 1);
+
+				double cos_angle = cos(angle), sin_angle = sin(angle);
+
+				const int position_x = position_.x + static_cast<int>(DIR_WEIGHT(direction_, cos_angle * 100000 + 200000));
+				const int position_y = position_.y + static_cast<int>(sin_angle * 100000) + 300000;
+
+				const int velocity_x = static_cast<int>(DIR_WEIGHT(direction_, kBeadSpeed * cos_angle));
+				const int velocity_y = static_cast<int>(kBeadSpeed * sin_angle);
+
+				skill_objs.emplace_back(new SkillObjectBead(
+					position_x, position_y,
+					velocity_x, velocity_y, skill_currently_used_.skill_power,
+					state_start_time_ + i * 40));
 			}
 		}
 		break;
+	}
 
 	case 3:
 		if (prev_state_time < 50 && 50 <= state_time)

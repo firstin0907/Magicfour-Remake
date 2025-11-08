@@ -33,7 +33,7 @@
 #include "ui/UserInterfaceClass.hh"
 #include "ui/MonsterUI.hh"
 
-#define DEBUG_RANGE
+//#define DEBUG_RANGE
 
 using namespace std;
 using namespace DirectX;
@@ -256,7 +256,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 			if (!skill_obj->OnCollided(monster, curr_time)) return;				
 			character_->AddCombo(curr_time);
 		});
-
+	/*
 
 	CollisionProcessor::Process<CharacterClass, MonsterClass>(
 		character_.get(), monsters_, [this, curr_time](CharacterClass* character, MonsterClass* monster)
@@ -279,7 +279,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 				}
 			}
 		});
-
+		*/
 
 	CollisionProcessor::Process<CharacterClass, ItemClass>(
 		character_.get(), items_, [this, curr_time](CharacterClass* character, ItemClass* item)
@@ -357,32 +357,21 @@ void ApplicationClass::Render()
 	}
 
 #endif
-
-	shader_manager_->fire_shader_->PushRenderQueue(
-		models_.get("fire"),
-		XMMatrixScaling(2.0f, 2.0f, 1),
-		{ 1.3f, 2.1f, 2.3f },
-		{ 1.0f, 2.0f, 3.0f },
-		{ 0.1f, 0.2f },
-		{ 0.1f, 0.3f },
-		{ 0.1f, 0.1f },
-		0.8f, 0.0f);
-
-
 	// Clear the buffers to begin the scene.
 	direct3D_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
 
+	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Default3D); 
 	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
 	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
-
+	
+	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Transparent3D);
 	direct3D_->EnableAlphaBlending(); // Turn on alpha blending for the fire transparency.
 	shader_manager_->fire_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
 	direct3D_->DisableAlphaBlending();
 
-	// Turn off the Z buffer to begin all 2D rendering.
-	direct3D_->TurnZBufferOff();
-		
+	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Disabled2D);
+
 	user_interface_->Begin2dDraw(direct2D_.get(), vp_matrix, orthoMatrix);
 
 	user_interface_->DrawMonsterUI(direct2D_.get(), monsters_, curr_time);
@@ -392,10 +381,6 @@ void ApplicationClass::Render()
 	user_interface_->DrawSystemUI(direct2D_.get(), game_state_, timer_->GetActualTime());
 
 	user_interface_->End2dDraw(direct2D_.get());
-
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	direct3D_->TurnZBufferOn();
 
 	// Present the rendered scene to the screen.
 	direct3D_->EndScene();

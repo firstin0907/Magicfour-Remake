@@ -19,6 +19,14 @@ private:
 	using XMMATRIX = DirectX::XMMATRIX;
 
 public:
+	enum class DepthStencilMode
+	{
+		Default3D,
+		Transparent3D,
+		Disabled2D
+	};
+
+public:
 	D3DClass(int, int, bool, HWND, bool, float, float);
 	D3DClass(const D3DClass&) = delete;
 	~D3DClass();
@@ -36,8 +44,7 @@ public:
 
 	void GetVideoCardInfo(char*, int&);
 
-	void TurnZBufferOn();
-	void TurnZBufferOff();
+	void SetDepthStencilState(DepthStencilMode mode);
 
 	void EnableAlphaBlending();
 	void DisableAlphaBlending();
@@ -53,6 +60,7 @@ private:
 	ComPtr<ID3D11RenderTargetView> renderTargetView_;
 	ComPtr<ID3D11Texture2D> depthStencilBuffer_;
 
+	ComPtr<ID3D11DepthStencilState> depthNonWriteStencilState_; // for 3d transparent
 	ComPtr<ID3D11DepthStencilState> depthDisabledStencilState_; // for 2d
 	ComPtr<ID3D11DepthStencilState> depthStencilState_;
 	ComPtr<ID3D11DepthStencilView> depthStencilView_;

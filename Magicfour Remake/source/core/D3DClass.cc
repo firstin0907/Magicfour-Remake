@@ -249,6 +249,11 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	orthoMatrix_ = XMMatrixOrthographicLH(
 		static_cast<float>(screenWidth), static_cast<float>(screenHeight), -1, 1);
 
+	// 반투명 랜더링용 --> depth에 맞게 그리되, depth 값 갱신은 하지 않기
+	D3D11_DEPTH_STENCIL_DESC depthNonWriteStencilDesc = depthStencilDesc;
+	depthNonWriteStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	result = device_->CreateDepthStencilState(&depthNonWriteStencilDesc, depthNonWriteStencilState_.GetAddressOf());
+	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 	// 기존 desc에서 DepthEnable만 false로 바꾸기!
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc = depthStencilDesc;
@@ -354,15 +359,20 @@ void D3DClass::GetVideoCardInfo(char* cardName, int& memory)
 	memory = videoCardMemory_;
 }
 
-void D3DClass::TurnZBufferOn()
+void D3DClass::SetDepthStencilState(DepthStencilMode mode)
 {
-	deviceContext_->OMSetDepthStencilState(depthStencilState_.Get(), 1);
-}
-
-
-void D3DClass::TurnZBufferOff()
-{
-	deviceContext_->OMSetDepthStencilState(depthDisabledStencilState_.Get(), 1);
+	switch (mode)
+	{
+	case DepthStencilMode::Default3D:
+		deviceContext_->OMSetDepthStencilState(depthStencilState_.Get(), 1);
+		break;
+	case DepthStencilMode::Transparent3D:
+		deviceContext_->OMSetDepthStencilState(depthNonWriteStencilState_.Get(), 1);
+		break;
+	case DepthStencilMode::Disabled2D:
+		deviceContext_->OMSetDepthStencilState(depthDisabledStencilState_.Get(), 1);
+		break;
+	}
 }
 
 void D3DClass::EnableAlphaBlending()

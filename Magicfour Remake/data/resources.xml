@@ -7,7 +7,7 @@
   <Model name="fire" model_path="data/model/PlaneObject.obj">
     <Texture type="diffuse" src="data/texture/fire/fire02.png"/>
     <Texture type="normal" src="data/texture/fire/noise01.png"/>
-    <Texture type="emissive" src="data/texture/fire/alpha02.png"/>
+    <Texture type="emissive" src="data/texture/fire/alpha04.png"/>
   </Model>
 
   <Model name="grass" model_path="data/model/abox.obj">
