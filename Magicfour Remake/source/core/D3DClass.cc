@@ -278,11 +278,28 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 		alphaEnableBlendingState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
+	// 에디티브 블랜딩
+	// Create an alpha enabled blend state description.
+	blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+	result = device_->CreateBlendState(&blendStateDescription,
+		alphaAdditiveBlendingState_.GetAddressOf());
+	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
+
+
 	// 알파값 미적용
 	blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 	result = device_->CreateBlendState(&blendStateDescription,
 		alphaDisableBlendingState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
+
+
 
 	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	if (FAILED(hr)) throw GAME_EXCEPTION(L"Failed to initialize DirectXTex library.");
@@ -375,14 +392,19 @@ void D3DClass::SetDepthStencilState(DepthStencilMode mode)
 	}
 }
 
-void D3DClass::EnableAlphaBlending()
+void D3DClass::SetAlphaBlending(BlendStateMode blend_state_mode)
 {
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	deviceContext_->OMSetBlendState(alphaEnableBlendingState_.Get(), blendFactor, 0xffffffff);
-}
-
-void D3DClass::DisableAlphaBlending()
-{
-	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	deviceContext_->OMSetBlendState(alphaDisableBlendingState_.Get(), blendFactor, 0xffffffff);
+	switch (blend_state_mode)
+	{
+	case BlendStateMode::AlphaEnable:
+		deviceContext_->OMSetBlendState(alphaEnableBlendingState_.Get(), blendFactor, 0xffffffff);
+		break;
+	case BlendStateMode::AlphaDisable:
+		deviceContext_->OMSetBlendState(alphaDisableBlendingState_.Get(), blendFactor, 0xffffffff);
+		break;
+	case BlendStateMode::AlphaAdditive:
+		deviceContext_->OMSetBlendState(alphaAdditiveBlendingState_.Get(), blendFactor, 0xffffffff);
+		break;
+	}
 }

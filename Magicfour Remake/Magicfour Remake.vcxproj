@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -149,12 +149,16 @@
     <ClCompile Include="source\graphics\FontClass.cc" />
     <ClCompile Include="source\graphics\LightClass.cc" />
     <ClCompile Include="source\graphics\ModelClass.cc" />
+    <ClCompile Include="source\graphics\particle-system\LinearMoveParticleSystem.cc" />
+    <ClCompile Include="source\graphics\particle-system\RadialSpreadParticleSystem.cc" />
+    <ClCompile Include="source\graphics\ParticleSystemBaseClass.cc" />
     <ClCompile Include="source\graphics\TextureClass.cc" />
     <ClCompile Include="source\main.cc" />
     <ClCompile Include="source\map\FieldClass.cc" />
     <ClCompile Include="source\shader\FIreShaderClass.cc" />
     <ClCompile Include="source\shader\LightShaderClass.cc" />
     <ClCompile Include="source\shader\NormalMapShaderClass.cc" />
+    <ClCompile Include="source\shader\ParticleShaderClass.cc" />
     <ClCompile Include="source\shader\ShaderClass.cc" />
     <ClCompile Include="source\shader\ShaderManager.cc" />
     <ClCompile Include="source\shader\StoneShaderClass.cc" />
@@ -169,6 +173,7 @@
     <ClInclude Include="include\core\AnimatedObjectClass.hh" />
     <ClInclude Include="include\core\ApplicationClass.hh" />
     <ClInclude Include="include\core\CameraClass.hh" />
+    <ClInclude Include="include\core\common\GameContext.hh" />
     <ClInclude Include="include\core\D2DClass.hh" />
     <ClInclude Include="include\core\D3DClass.hh" />
     <ClInclude Include="include\core\GameException.hh" />
@@ -192,12 +197,17 @@
     <ClInclude Include="include\graphics\FrustumCuller.hh" />
     <ClInclude Include="include\graphics\LightClass.hh" />
     <ClInclude Include="include\graphics\ModelClass.hh" />
+    <ClInclude Include="include\graphics\particle-system\LinearMoveParticleSystem.hh" />
+    <ClInclude Include="include\graphics\particle-system\ParticleType.hh" />
+    <ClInclude Include="include\graphics\particle-system\RadialSpreadParticleSystem.hh" />
+    <ClInclude Include="include\graphics\ParticleSystemBaseClass.hh" />
     <ClInclude Include="include\graphics\TextureClass.hh" />
     <ClInclude Include="include\map\FieldClass.hh" />
     <ClInclude Include="include\map\GroundClass.hh" />
     <ClInclude Include="include\shader\FireShaderClass.hh" />
     <ClInclude Include="include\shader\LightShaderClass.hh" />
     <ClInclude Include="include\shader\NormalMapShaderClass.hh" />
+    <ClInclude Include="include\shader\ParticleShaderClass.hh" />
     <ClInclude Include="include\shader\ShaderClass.hh" />
     <ClInclude Include="include\shader\ShaderManager.hh" />
     <ClInclude Include="include\shader\StoneShaderClass.hh" />

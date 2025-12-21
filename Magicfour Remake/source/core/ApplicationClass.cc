@@ -9,6 +9,7 @@
 #include "shader/LightShaderClass.hh"
 #include "shader/NormalMapShaderClass.hh"
 #include "shader/FireShaderClass.hh"
+#include "shader/ParticleShaderClass.hh"
 #include "graphics/LightClass.hh"
 #include "shader/StoneShaderClass.hh"
 #include "game-object/CharacterClass.hh"
@@ -23,6 +24,9 @@
 #include "util/TimerClass.hh"
 #include "shader/TextureShaderClass.hh"
 #include "graphics/TextureClass.hh"
+#include "graphics/ParticleSystemBaseClass.hh"
+#include "graphics/particle-system/RadialSpreadParticleSystem.hh"
+#include "graphics/particle-system/LinearMoveParticleSystem.hh"
 #include "game-object/ItemClass.hh"
 #include "util/RandomClass.hh"
 #include "core/GameException.hh"
@@ -70,7 +74,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	auto model_loader = [this](xml_node_wrapper node) -> std::shared_ptr<ModelClass>
 		{
 			std::unordered_map<std::string, std::string> textures;
-			
+
 			for (auto texture_node = node.first_node("Texture"); texture_node; texture_node = texture_node.next_sibling("Texture"))
 			{
 				std::string type = texture_node.get_required_attr("type");
@@ -92,7 +96,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 			if (textures.find("emissive") != textures.end())
 				emissive_texture = textures_.get_by_path(textures["emissive"]);
-			
+
 			return make_shared<ModelClass>(this->direct3D_->GetDevice(),
 				node.get_required_attr("model_path").c_str(),
 				diffuse_texture,
@@ -101,11 +105,34 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 			);
 		};
 
-
+	auto particle_loader = [this](xml_node_wrapper node) -> std::shared_ptr<ParticleSystemBaseClass>
+		{
+			return std::make_shared<RadialSpreadParticleSystem>(
+				this->direct3D_->GetDevice(),
+				node.get_required_attr("src").c_str(),
+				std::stof(node.get_required_attr("particleSize")),
+				std::stof(node.get_required_attr("particlePerSecond")),
+				std::stof(node.get_required_attr("velocity")),
+				std::stof(node.get_required_attr("degree")),
+				std::stoull(node.get_required_attr("lifetime")));
+		};
 
 	textures_.loadFromXML("data/resources.xml", "Texture", texture_loader);
 	models_.loadFromXML("data/resources.xml", "Model", model_loader);
+	particle_system_.loadFromXML("data/resources.xml", "RadialSpreadParticleSystem", particle_loader);
 
+	particle_system_.insert("star-spread2",
+		make_unique<LinearMoveParticleSystem>(
+			direct3D_->GetDevice(),
+			"data/texture/particle/star1.png",
+			0.2f,
+			100.0f,
+			200,
+			DirectX::XMFLOAT3(-1, -1, -1),
+			DirectX::XMFLOAT3(1, 1, 1),
+			0.005f,
+			0.005f
+		));
 
 	// Create and initialize the light shader object.
 	shader_manager_ = make_unique<ShaderManager>(
@@ -336,6 +363,11 @@ void ApplicationClass::Render()
 	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 	field_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
+	particle_system_.get("star-spread")->Frame(curr_time, time_delta, direct3D_->GetDeviceContext());
+	particle_system_.get("star-spread2")->Frame(curr_time, time_delta, direct3D_->GetDeviceContext());
+
+	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread"), DirectX::XMMatrixScaling(1, 1, 1));
+	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread2"), DirectX::XMMatrixScaling(1, 1, 1));
 
 #ifdef DEBUG_RANGE
 
@@ -366,11 +398,14 @@ void ApplicationClass::Render()
 	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
 	
 	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Transparent3D);
-	direct3D_->EnableAlphaBlending(); // Turn on alpha blending for the fire transparency.
+	direct3D_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaEnable); // Turn on alpha blending for the fire transparency.
 	shader_manager_->fire_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
-	direct3D_->DisableAlphaBlending();
+
+	direct3D_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaAdditive);
+	shader_manager_->particle_shader_ ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix);
 
 	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Disabled2D);
+	direct3D_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaDisable); 
 
 	user_interface_->Begin2dDraw(direct2D_.get(), vp_matrix, orthoMatrix);
 

@@ -108,4 +108,9 @@
   <Sound name="heartbeat" src="data/sound/heartbeat.wav"/>
   <Sound name="gameover" src="data/sound/gameover.wav"/>
 
+  <RadialSpreadParticleSystem name="star-spread"
+       src="data/texture/particle/star1.png" particleSize="0.2" particlePerSecond="100" velocity="0.004" degree="30" lifetime="1000">
+    
+  </RadialSpreadParticleSystem>
+
 </Resources>

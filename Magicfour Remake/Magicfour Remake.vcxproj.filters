@@ -63,6 +63,15 @@
     <Filter Include="헤더 파일\ui\common">
       <UniqueIdentifier>{fc67f6e5-61af-4c91-8d62-cfb501a5caa5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\graphics\particle-system">
+      <UniqueIdentifier>{296671e5-39cc-4f51-b73d-413636a97df9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\graphics\particle-system">
+      <UniqueIdentifier>{fb7abdbb-f06a-4df1-9e0d-16d5791b6a88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\core\common">
+      <UniqueIdentifier>{afb76118-62f1-4526-8833-a2ac1d4c179e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\core\AnimatedObjectClass.cc">
@@ -169,6 +178,18 @@
     </ClCompile>
     <ClCompile Include="source\ui\SystemUI.cc">
       <Filter>소스 파일\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\graphics\ParticleSystemBaseClass.cc">
+      <Filter>소스 파일\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shader\ParticleShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="source\graphics\particle-system\RadialSpreadParticleSystem.cc">
+      <Filter>소스 파일\graphics\particle-system</Filter>
+    </ClCompile>
+    <ClCompile Include="source\graphics\particle-system\LinearMoveParticleSystem.cc">
+      <Filter>소스 파일\graphics\particle-system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -309,6 +330,24 @@
     </ClInclude>
     <ClInclude Include="include\ui\SystemUI.hh">
       <Filter>헤더 파일\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\ParticleSystemBaseClass.hh">
+      <Filter>헤더 파일\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shader\ParticleShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\particle-system\RadialSpreadParticleSystem.hh">
+      <Filter>헤더 파일\graphics\particle-system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\particle-system\ParticleType.hh">
+      <Filter>헤더 파일\graphics\particle-system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\particle-system\LinearMoveParticleSystem.hh">
+      <Filter>헤더 파일\graphics\particle-system</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\common\GameContext.hh">
+      <Filter>헤더 파일\core\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

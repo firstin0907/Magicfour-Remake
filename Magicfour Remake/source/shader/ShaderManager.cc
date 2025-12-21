@@ -4,6 +4,7 @@
 #include "shader/StoneShaderClass.hh"
 #include "shader/NormalMapShaderClass.hh"
 #include "shader/FireShaderClass.hh"
+#include "shader/ParticleShaderClass.hh"
 
 ShaderManager::ShaderManager(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
 {
@@ -12,4 +13,7 @@ ShaderManager::ShaderManager(ID3D11Device* device, ID3D11DeviceContext* device_c
 	stone_shader_		= std::make_unique<StoneShaderClass>(device, device_context, hwnd);
 	normalMap_shader_	= std::make_unique<NormalMapShaderClass>(device, device_context, hwnd);
 	fire_shader_		= std::make_unique<FireShaderClass>(device, device_context, hwnd);
+	particle_shader_	= std::make_unique<ParticleShaderClass>(device, device_context, hwnd);
 }
+
+ShaderManager::~ShaderManager() = default;

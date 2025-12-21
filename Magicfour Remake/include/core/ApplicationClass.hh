@@ -52,6 +52,7 @@ private:
 
 	ResourceMap<class ModelClass>		models_;
 	ResourceMap<class TextureClass>		textures_;
+	ResourceMap<class ParticleSystemBaseClass> particle_system_;
 
 	unique_ptr<class LightClass>		light_;
 	unique_ptr<class ShaderManager>		shader_manager_;

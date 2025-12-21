@@ -26,6 +26,13 @@ public:
 		Disabled2D
 	};
 
+	enum class BlendStateMode
+	{
+		AlphaEnable,
+		AlphaDisable,
+		AlphaAdditive
+	};
+
 public:
 	D3DClass(int, int, bool, HWND, bool, float, float);
 	D3DClass(const D3DClass&) = delete;
@@ -45,9 +52,7 @@ public:
 	void GetVideoCardInfo(char*, int&);
 
 	void SetDepthStencilState(DepthStencilMode mode);
-
-	void EnableAlphaBlending();
-	void DisableAlphaBlending();
+	void SetAlphaBlending(BlendStateMode blend_state_mode);
 
 private:
 	bool	m_vsync_enabled;		// 수직 동기화 설정
@@ -69,6 +74,7 @@ private:
 
 	ComPtr<ID3D11BlendState> alphaEnableBlendingState_;
 	ComPtr<ID3D11BlendState> alphaDisableBlendingState_;
+	ComPtr<ID3D11BlendState> alphaAdditiveBlendingState_;
 
 	XMMATRIX projectionMatrix_;
 	XMMATRIX worldMatrix_;
