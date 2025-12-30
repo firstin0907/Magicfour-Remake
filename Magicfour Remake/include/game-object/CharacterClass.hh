@@ -142,6 +142,8 @@ private:
 	unique_ptr<class AnimatedObjectClass> walk_animation_data_;
 	unique_ptr<class AnimatedObjectClass> run_animation_data_;
 	unique_ptr<class AnimatedObjectClass> skill_animation_data_;
+	unique_ptr<class AnimatedObjectClass> idle_animation_data_;
+	unique_ptr<class AnimatedObjectClass> stumble_animation_data_;
 
 private:
 	class InputClass* input;

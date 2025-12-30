@@ -39,6 +39,8 @@ CharacterClass::CharacterClass(int pos_x, int pos_y,
 	walk_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\walk_motion.txt");
 	run_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt");
 	skill_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh");
+	idle_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\idle_motion.bvh");
+	stumble_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\stumble_motion.bvh");
 
 	SetState(CharacterState::kNormal, 0);
 
@@ -347,7 +349,9 @@ void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& s
 	{
 	case CharacterState::kNormal:
 	case CharacterState::kStop:
-		run_animation_data_->UpdateGlobalMatrices(0, root_transform, shape_matrices);
+		root_transform *= XMMatrixRotationY(-XM_PI * 0.5f);
+		idle_animation_data_->UpdateGlobalMatrices(
+			state_elapsed_seconds / 0.01333333, root_transform, shape_matrices);
 		break;
 
 	case CharacterState::kWalk:
@@ -371,9 +375,18 @@ void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& s
 		break;
 		
 	case CharacterState::kSpell:
-		root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
-		skill_animation_data_->UpdateGlobalMatrices(
-			state_elapsed_seconds / 0.00133333, root_transform, shape_matrices);
+		if (skill_currently_used_.skill_type == 1)
+		{
+			root_transform *= XMMatrixRotationY(-XM_PI);
+			stumble_animation_data_->UpdateGlobalMatrices(
+				50 + state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
+		}
+		else
+		{
+			root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
+			skill_animation_data_->UpdateGlobalMatrices(
+				state_elapsed_seconds / 0.00133333, root_transform, shape_matrices);
+		}
 		break;
 
 	case CharacterState::kHit:
@@ -512,10 +525,11 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 			}
 			
 		}
+		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 300);
 		break;
 
 	case 1:
-		if (prev_state_time < 100 && 100 <= state_time)
+		if (prev_state_time < 200 && 200 <= state_time)
 		{
 			constexpr int object_vx[9] = { 6000, 6000, 4000, 2000, 0, -2000, -4000, -6000, -6000 };
 			constexpr int object_vy[9] = { 0, -2000, -3000, -4000, -4000, -4000, -3000, -2000, 0 };
@@ -528,7 +542,7 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 					skill_objs.emplace_back(
 						new SkillObjectSpear(position_.x, position_.y,
 							object_vx[i], object_vy[i],
-							skill_currently_used_.skill_power, state_start_time_ + 100));
+							skill_currently_used_.skill_power, state_start_time_ + 200));
 				}
 			}
 			else
@@ -538,12 +552,13 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 					skill_objs.emplace_back(
 						new SkillObjectSpear(position_.x, position_.y,
 							object_vx[i], object_vy[i],
-							skill_currently_used_.skill_power, state_start_time_ + 100));
+							skill_currently_used_.skill_power, state_start_time_ + 200));
 				}
 			}
 
 			
-		}			
+		}
+		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 800);
 		break;
 
 	case 2:
@@ -579,6 +594,7 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 					state_start_time_ + i * 40));
 			}
 		}
+		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 300);
 		break;
 	}
 
@@ -602,17 +618,16 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 					skill_currently_used_.skill_power, state_start_time_ + 50));
 			}
 		}
+		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 300);
 		break;
 
 	case 4:
+		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 300);
 		break;
-
 	}
-
-
-	// When Skill Ended, return to normal state_.
-	SetStateIfTimeOver(CharacterState::kNormal, curr_time, 300);
 }
+
+	
 
 bool CharacterClass::UseSkill(time_t curr_time,
 	vector<unique_ptr<class IGameObject> >& skill_objs,
