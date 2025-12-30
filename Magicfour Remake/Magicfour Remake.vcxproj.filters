@@ -349,6 +349,9 @@
     <ClInclude Include="include\core\common\GameContext.hh">
       <Filter>헤더 파일\core\common</Filter>
     </ClInclude>
+    <ClInclude Include="include\core\common\Stateful.hh">
+      <Filter>헤더 파일\core\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="data\resources.xml">

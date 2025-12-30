@@ -1,12 +1,13 @@
 #pragma once
 
 #include "core/global.hh"
+#include "core/common/Stateful.hh"
 #include "IGameObject.hh"
 
 #include <cmath>
 
 template <typename STATE_TYPE>
-class RigidbodyClass : public IGameObject
+class RigidbodyClass : public IGameObject, public Stateful<STATE_TYPE>
 {
 public:
 	struct Point2d
@@ -60,38 +61,6 @@ public:
 	inline Point2d GetVelocity() const { return velocity_; }
 	inline Point2d GetAccel() const { return accel_; }
 
-	inline STATE_TYPE GetState() const
-	{
-		return state_;
-	}
-
-	// Sets variable state_ and state_start_time_.
-	// NOTE: NEVER set state_start_time as future.
-	inline void SetState(STATE_TYPE state, time_t start_time)
-	{
-		state_ = state;
-		state_start_time_ = start_time;
-	}
-
-	// Sets variable state_ and state_start_time_
-	// if state is sustained as long as 'state_elapsed_time' parameter.
-	// Otherwise, does nothing.
-	inline void SetStateIfTimeOver(STATE_TYPE state,
-		time_t curr_time, time_t state_elapsed_time)
-	{
-		if (curr_time - state_start_time_ >= state_elapsed_time)
-		{
-			state_ = state;
-			state_start_time_ += state_elapsed_time;
-		}
-	}
-
-	// Returns how long this instance is on this state.
-	inline time_t GetStateTime(time_t curr_time) const
-	{
-		return curr_time - state_start_time_;
-	}
-
 	// Returns which position this instance locates after 'time_delta' milliseconds goes by
 	// based on current position and velocity.
 	inline Point2d GetPositionAfterMove(time_t time_delta) const
@@ -106,7 +75,4 @@ protected:
 
 	rect_t			range_;
 	direction_t		direction_;
-
-	STATE_TYPE		state_;
-	time_t			state_start_time_;
 };
