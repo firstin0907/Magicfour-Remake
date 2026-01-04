@@ -6,7 +6,7 @@ class Stateful
 protected:
     STATE_TYPE prev_state_;
     STATE_TYPE state_;
-    time_t state_start_time_;
+    time_t state_start_time_ = 0;
 
 public:
     inline STATE_TYPE GetState() const

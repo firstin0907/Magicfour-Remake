@@ -34,13 +34,13 @@ CharacterClass::CharacterClass(int pos_x, int pos_y,
 		rect_t{ -50000, 0, 50000, 400000 }, LEFT_FORWARD
 	), jump_cnt(0), score_(0), input(input), sound(sound), skill_objs(skill_objs)
 {
-	jump_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt");
-	fall_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh");
-	walk_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\walk_motion.txt");
-	run_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt");
-	skill_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh");
-	idle_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\idle_motion.bvh");
-	stumble_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\stumble_motion.bvh");
+	jump_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt", true);
+	fall_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh", true);
+	walk_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\walk_motion.txt", true);
+	run_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt", true);
+	skill_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh", true);
+	idle_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\idle_motion.bvh", true);
+	stumble_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\stumble_motion.bvh", true);
 
 	SetState(CharacterState::kNormal, 0);
 
@@ -340,67 +340,70 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 
 void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& shape_matrices) const
 {
-	XMMATRIX root_transform = XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PI * 0.65f));
-	//XMMATRIX root_transform = XMMatrixIdentity();
-
-	float state_elapsed_seconds = (GetStateTime(curr_time)) / 1000.0f;
-
-	switch (state_)
+	auto nam = [&](CharacterState state, float state_elapsed_seconds) -> AnimatedObjectClass::FrameShape
 	{
-	case CharacterState::kNormal:
-	case CharacterState::kStop:
-		root_transform *= XMMatrixRotationY(-XM_PI * 0.5f);
-		idle_animation_data_->UpdateGlobalMatrices(
-			state_elapsed_seconds / 0.01333333, root_transform, shape_matrices);
-		break;
-
-	case CharacterState::kWalk:
-		walk_animation_data_->UpdateGlobalMatrices(
-			state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
-		break;
-
-	case CharacterState::kRun:
-		run_animation_data_->UpdateGlobalMatrices(
-			state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
-		break;
-
-	case CharacterState::kJump:
-	case CharacterState::kRunJump:
-		if(GetStateTime(curr_time) > 90)
-			jump_animation_data_->UpdateGlobalMatrices(
-				20 + state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
-		else
-			jump_animation_data_->UpdateGlobalMatrices(
-				43 + state_elapsed_seconds / 0.00833333, root_transform, shape_matrices);
-		break;
-		
-	case CharacterState::kSpell:
-		if (skill_currently_used_.skill_type == 1)
+		XMMATRIX root_transform = XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PI * 0.65f));
+		//XMMATRIX root_transform = XMMatrixIdentity();
+		switch (state)
 		{
-			root_transform *= XMMatrixRotationY(-XM_PI);
-			stumble_animation_data_->UpdateGlobalMatrices(
-				50 + state_elapsed_seconds / 0.00333333, root_transform, shape_matrices);
+		case CharacterState::kNormal:
+		case CharacterState::kStop:
+			root_transform *= XMMatrixRotationY(-XM_PI * 0.5f);
+			return idle_animation_data_->UpdateAndGetShapeMatrix(
+				state_elapsed_seconds / 0.01333333, root_transform);
+
+		case CharacterState::kWalk:
+			return walk_animation_data_->UpdateAndGetShapeMatrix(
+				state_elapsed_seconds / 0.00333333, root_transform);
+
+		case CharacterState::kRun:
+			return run_animation_data_->UpdateAndGetShapeMatrix(
+				state_elapsed_seconds / 0.00333333, root_transform);
+
+		case CharacterState::kJump:
+		case CharacterState::kRunJump:
+			if(GetStateTime(curr_time) > 90)
+				return jump_animation_data_->UpdateAndGetShapeMatrix(
+					20 + state_elapsed_seconds / 0.00333333, root_transform);
+			else
+				return jump_animation_data_->UpdateAndGetShapeMatrix(
+					43 + state_elapsed_seconds / 0.00833333, root_transform);
+			break;
+			
+		case CharacterState::kSpell:
+			if (skill_currently_used_.skill_type == 1)
+			{
+				root_transform *= XMMatrixRotationY(-XM_PI);
+				return stumble_animation_data_->UpdateAndGetShapeMatrix(
+					50 + state_elapsed_seconds / 0.00333333, root_transform);
+			}
+			else
+			{
+				root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
+				return skill_animation_data_->UpdateAndGetShapeMatrix(
+					state_elapsed_seconds / 0.00133333, root_transform);
+			}
+			break;
+
+		case CharacterState::kHit:
+		case CharacterState::kSlip:
+			return fall_animation_data_->UpdateAndGetShapeMatrix(
+				50 + state_elapsed_seconds / 0.00433333, root_transform);
+
+		case CharacterState::kDie:
+			return fall_animation_data_->UpdateAndGetShapeMatrix(
+				min(394, 50 + state_elapsed_seconds / 0.01433333), root_transform);
+
 		}
-		else
-		{
-			root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
-			skill_animation_data_->UpdateGlobalMatrices(
-				state_elapsed_seconds / 0.00133333, root_transform, shape_matrices);
-		}
-		break;
+	};
 
-	case CharacterState::kHit:
-	case CharacterState::kSlip:
-		fall_animation_data_->UpdateGlobalMatrices(
-			50 + state_elapsed_seconds / 0.00433333, root_transform, shape_matrices);
-		break;
+	auto current_shape = nam(state_, (float)GetStateTime(curr_time) / 1000.0f);
+	auto previous_shape = nam(prev_state_, (float)GetStateTime(curr_time) / 1000.0f);
 
-	case CharacterState::kDie:
-		fall_animation_data_->UpdateGlobalMatrices(
-			min(394, 50 + state_elapsed_seconds / 0.01433333), root_transform, shape_matrices);
-		break;
-
-	}
+	auto lerp_shape = AnimatedObjectClass::MergeFrameShapes(
+		previous_shape, current_shape,
+		min(1.0f, (float)GetStateTime(curr_time) / 100.0f));
+	for (auto& [name, matrix] : lerp_shape) shape_matrices.push_back(matrix);
 }
 
 bool CharacterClass::OnCollided(time_t curr_time, int vx)

@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include <DirectXMath.h>
 
@@ -17,6 +18,9 @@ enum channel_t
 
 class AnimatedObjectClass
 {
+public:
+	using FrameShape = std::unordered_map<std::string, DirectX::XMMATRIX>;
+
 private:
 	using XMMATRIX = DirectX::XMMATRIX;
 
@@ -60,9 +64,22 @@ private:
 		AnimationNode* curr_node, std::ifstream& fin);
 
 public:
-	void UpdateGlobalMatrices(const int frame, XMMATRIX, vector<XMMATRIX>& result);
+	/// @brief Merges two frame shapes with linear interpolation.
+	/// @param first The first frame shape.
+	/// @param second The second frame shape.
+	/// @param alpha The interpolation factor (0.0 to 1.0). Alpha = 0.0 returns the first shape, alpha = 1.0 returns the second shape.
+	/// @return The merged frame shape.
+	static AnimatedObjectClass::FrameShape MergeFrameShapes(
+		const AnimatedObjectClass::FrameShape& first,
+		const AnimatedObjectClass::FrameShape& second,
+		float alpha
+	);
 
-	AnimatedObjectClass(const char* filename);
+	FrameShape UpdateAndGetShapeMatrix(const int frame, XMMATRIX transform_of_root);
+
+	AnimatedObjectClass(const char* filename, bool ignore_first_frame = false);
 	~AnimatedObjectClass();
 };
+
+
 

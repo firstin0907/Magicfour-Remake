@@ -102,8 +102,10 @@ AnimatedObjectClass::~AnimatedObjectClass()
 	delete[] frame_info;
 }
 
-void AnimatedObjectClass::UpdateGlobalMatrices(const int frame, XMMATRIX transform_of_root, vector<XMMATRIX>& result)
+AnimatedObjectClass::FrameShape AnimatedObjectClass::UpdateAndGetShapeMatrix(const int frame, XMMATRIX transform_of_root)
 {
+	FrameShape result;
+
 	float* frame_info_it = frame_info + (frame % frames_num) * channels_num;
 
 	root.global_transform = transform_of_root;
@@ -135,12 +137,14 @@ void AnimatedObjectClass::UpdateGlobalMatrices(const int frame, XMMATRIX transfo
 		node->global_transform = joint_transform * node->link_matrix * node->parent->global_transform;
 		if (!node->children.empty())
 		{
-			result.push_back(node->shape_transform * node->global_transform);
+			result[node->name] = node->shape_transform * node->global_transform;
 		}
 	}
+
+	return result;
 }
 
-AnimatedObjectClass::AnimatedObjectClass(const char* filename)
+AnimatedObjectClass::AnimatedObjectClass(const char* filename, bool ignore_first_frame)
 	: channels_num(0), frame_info(nullptr), root("", nullptr)
 {
 	ifstream fin(filename);
@@ -164,9 +168,44 @@ AnimatedObjectClass::AnimatedObjectClass(const char* filename)
 	fin >> buffer; // Time:
 	fin >> frame_time;
 
+	if(ignore_first_frame)
+	{
+		--frames_num;
+		for (int i = 0; i < channels_num; i++) fin >> buffer; // skip first frame
+	}
+
 	const int info_sz = frames_num * channels_num;
 	frame_info = new float[info_sz];
 	for (int i = 0; i < info_sz; i++) fin >> frame_info[i];
 
 	fin.close();
+}
+
+AnimatedObjectClass::FrameShape AnimatedObjectClass::MergeFrameShapes(
+	const AnimatedObjectClass::FrameShape& first,
+	const AnimatedObjectClass::FrameShape& second,
+	float alpha)
+{
+	AnimatedObjectClass::FrameShape result;
+
+	for (const auto& [name, matrix] : first)
+	{
+		auto it = second.find(name);
+		if (it != second.end())
+		{
+			XMVECTOR S, R, T;
+			XMMatrixDecompose(&S, &R, &T, matrix);
+			XMVECTOR S2, R2, T2;
+			XMMatrixDecompose(&S2, &R2, &T2, it->second);
+			result[name] = XMMatrixScalingFromVector(
+				XMVectorLerp(S, S2, alpha))
+				* XMMatrixRotationQuaternion(
+					XMQuaternionSlerp(R, R2, alpha))
+				* XMMatrixTranslationFromVector(
+					XMVectorLerp(T, T2, alpha));
+		}
+	}
+
+	return result;
+
 }
