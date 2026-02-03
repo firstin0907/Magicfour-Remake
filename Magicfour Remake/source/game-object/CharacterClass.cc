@@ -66,10 +66,6 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 	{
 		if (input->IsKeyPressed(DIK_LEFT))
 		{
-			if (state_ == CharacterState::kStop && direction_ != LEFT_FORWARD)
-			{
-				SetState(CharacterState::kNormal, curr_time);
-			}
 			direction_ = LEFT_FORWARD;
 
 			is_walk = !is_walk;
@@ -77,10 +73,6 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 
 		if (input->IsKeyPressed(DIK_RIGHT))
 		{
-			if (state_ == CharacterState::kStop && direction_ != RIGHT_FORWARD)
-			{
-				SetState(CharacterState::kNormal, curr_time);
-			}
 			direction_ = RIGHT_FORWARD;
 
 			is_walk = !is_walk;
@@ -203,11 +195,13 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		break;
 
 	case CharacterState::kStop:
-		if (GetStateTime(curr_time) >= 150)
-			SetState(CharacterState::kNormal, state_start_time_ + 150);
-		else if (is_walk) SetState(CharacterState::kRun, curr_time);
-		break;
 
+		if (is_walk)
+		{
+			if (GetStateTime(curr_time) >= 150) SetState(CharacterState::kWalk, curr_time);
+			else SetState(CharacterState::kRun, curr_time);
+		}
+		break;
 
 	case CharacterState::kSpell:
 	{
