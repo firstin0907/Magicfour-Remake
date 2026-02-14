@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../third-party/Audio.h"
+#include <directxtk/Audio.h>
 #include "util/ResourceMap.hh"
 
 #include <vector>

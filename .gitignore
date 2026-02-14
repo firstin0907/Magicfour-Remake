@@ -31,6 +31,12 @@
 *.out
 *.app
 
+# vcpkg directories
+vcpkg_installed
+
+# Shader error files
+shader-error.txt
+
 # Visual Studio build directories
 .vs
 Debug

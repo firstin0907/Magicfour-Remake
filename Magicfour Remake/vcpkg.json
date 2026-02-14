@@ -1,0 +1,14 @@
+{
+  "name": "magicfour-remake",
+  "version": "0.0.0",
+  "dependencies": [
+    "directxtex",
+    {
+      "name": "directxtk",
+      "features": [
+        "xaudio2-9"
+      ]
+    },
+    "rapidxml"
+  ]
+}

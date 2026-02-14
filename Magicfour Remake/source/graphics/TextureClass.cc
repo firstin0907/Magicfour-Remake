@@ -1,9 +1,9 @@
 #include "graphics/TextureClass.hh"
 
+#include <DirectXTex.h>
 #include <string>
 
 #include "core/GameException.hh"
-#include "../third-party/DirectXTex.h"
 
 using namespace DirectX;
 

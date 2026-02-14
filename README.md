@@ -5,11 +5,24 @@ The 3D remake of 'Magicfour', a magic action role-playing game.
 'Magicfour-Remake' is a game project developed with C++17 and DirectX 11.
 
 ## How To Build
-Open the `Magicfour Remake.sln` solution file in Visual Studio 2022 or later and build the project.  
+### Dependencies
 You may need the following dependencies:
-- **DirectX SDK**: Required for Direct3D rendering.
-- **[DirectXTex](https://github.com/microsoft/DirectXTex)**: Used for reading texture files. A `.lib` version is included in `/third-party`, but you may need to update it depending on your environment.
-- **[DirectXTK](https://github.com/microsoft/DirectXTK)**: DirectX Toolkit, required for audio playback. A `.lib` version is included in `/third-party`, but you may need to update it depending on your environment.
+- **Windows SDK**: Required for Direct3D rendering (installed with Visual Studio).
+- **vcpkg**: Used to install required libraries.
+
+This project uses vcpkg manifest mode via the included `vcpkg.json` file.
+The following libraries are declared in the manifest:
+- **[DirectXTex](https://github.com/microsoft/DirectXTex)**: Used for reading texture files.
+- **[DirectXTK](https://github.com/microsoft/DirectXTK)**: DirectX Toolkit, required for audio playback.
+
+### Setup
+1. Install Visual Studio 2022 (or later) with the Desktop development with C++ workload. Ensure the Windows SDK is installed.
+2. Install vcpkg and add the vcpkg installation directory to your `PATH` and `VCPKG_ROOT` environment variable.
+3. Ensure Visual Studio is integrated with vcpkg:
+```bash
+vcpkg integrate install
+```
+4. Open the `Magicfour Remake.sln` solution file in Visual Studio 2022 or later and build the project.
 
 ## How To Play
 The objective of the game is to survive as long as possible while collecting magical gems.  

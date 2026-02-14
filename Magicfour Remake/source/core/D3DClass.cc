@@ -1,10 +1,8 @@
 #include "core/D3DClass.hh"
 
-#include "../third-party/DirectXTex.h"
+#include <DirectXTex.h>
 #include "core/GameException.hh"
 #include "core/D2DClass.hh"
-
-#pragma comment(lib, "third-party/DirectXTex.lib")
 
 #define WIDE2(x) L##x
 #define WIDE(x) WIDE2(x)

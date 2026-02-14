@@ -5,8 +5,9 @@
 #include <functional>
 #include <memory>
 
+#include <rapidxml/rapidxml.hpp>
+
 #include "core/GameException.hh"
-#include "../third-party/rapidxml-1.13/rapidxml.hpp"
 
 struct xml_node_wrapper
 {

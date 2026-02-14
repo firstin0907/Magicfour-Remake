@@ -1,11 +1,9 @@
 #include "core/SoundClass.hh"
 
-#include "../third-party/Audio.h"
+#include <directxtk/Audio.h>
 
 using namespace DirectX;
 using namespace std;
-
-#pragma comment(lib, "third-party/DirectXTK.lib")
 
 SoundClass::SoundClass()
 {
@@ -18,7 +16,7 @@ SoundClass::SoundClass()
 
 	sounds_.loadFromXML("data/resources.xml", "Sound",
 		[this](xml_node_wrapper node) -> unique_ptr<SoundEffect>
-		{
+		{ 
 			std::string src = node.get_required_attr("src");
 			return std::make_unique<SoundEffect>(this->aud_engine_.get(),
 				std::wstring(src.begin(), src.end()).c_str());
