@@ -16,41 +16,41 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	//DXGI : DirectX Graphic Infrastructure
 
 	HRESULT result;
-	ComPtr<IDXGIFactory> factory;			// DXGI °´Ã¼µéÀ» Âï¾î³»´Â °øÀå
-	ComPtr<IDXGIAdapter> adapter;			// HW/SW ±â´ÉÀ» Çü»óÈ­ÇÑ °Í
-	// (ÇÏ³ª ÀÌ»óÀÇ GPU, DAC, ºñµð¿À ¸Þ¸ð¸®¸¦ Æ÷ÇÔÇÏ´Â µð½ºÇÃ·¹ÀÌ ¼­ºê½Ã½ºÅÛ)
-	ComPtr<IDXGIOutput> adapterOutput;		// ¾î´äÅÍ Ãâ·Â(¸ð´ÏÅÍ µî)
+	ComPtr<IDXGIFactory> factory;			// DXGI ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½î³»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	ComPtr<IDXGIAdapter> adapter;			// HW/SW ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½
+	// (ï¿½Ï³ï¿½ ï¿½Ì»ï¿½ï¿½ï¿½ GPU, DAC, ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ð¸®¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã½ï¿½ï¿½ï¿½)
+	ComPtr<IDXGIOutput> adapterOutput;		// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
 
 	unsigned int numModes = 0, numerator = 0, denominator = 1;
 	DXGI_ADAPTER_DESC adapterDesc;
 
-	// ¼öÁ÷ µ¿±âÈ­ ¼³Á¤ ÀúÀå
-	m_vsync_enabled = vsync;
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	vsync_enabled_ = vsync;
 
-	// ±×·¡ÇÈ ÀÎÅÍÆäÀÌ½º ÆÑÅä¸®¸¦ ¸¸µç´Ù?
+	// ï¿½×·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½?
 	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)factory.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create DirectX Graphic Interface Factory.", WFILE, __LINE__);
 
-	// ÆÑÅä¸® °´Ã¼¸¦ »ç¿ëÇÏ¿© Ã¹¹øÂ° ±×·¡ÇÈ Ä«µå ÀÎÅÍÆäÀÌ½º¿¡ ´ëÇÑ ¾Æ´äÅÍ¸¦ ¸¸µì´Ï´Ù.
+	// ï¿½ï¿½ï¿½ä¸® ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ Ã¹ï¿½ï¿½Â° ï¿½×·ï¿½ï¿½ï¿½ Ä«ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
 	result = factory->EnumAdapters(0, adapter.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create adapter.", WFILE, __LINE__);
 
-	// ¸ð´ÏÅÍ Ãâ·Â¿¡ ´ëÇÑ Ã¹ ¹øÂ° ¾Æ´äÅÍ ³ª¿­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Â¿ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¹ ï¿½ï¿½Â° ï¿½Æ´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	result = adapter->EnumOutputs(0, adapterOutput.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// DXGI_FORMAT_R8G8B8A8_UNORM ¸ð´ÏÅÍ Ãâ·Â µð½ºÇÃ·¹ÀÌ Æ÷¸Ë¿¡ ¸Â´Â ¸ðµåÀÇ °³¼ö¸¦ ±¸ÇÕ´Ï´Ù.
+	// DXGI_FORMAT_R8G8B8A8_UNORM ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ë¿ï¿½ ï¿½Â´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 	result = adapterOutput->GetDisplayModeList(
 		DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, NULL);
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// ¸ð´ÏÅÍ - ±×·¡ÇÈÄ«µå Á¶ÇÕ ÀúÀåÇÒ ¸®½ºÆ®
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½×·ï¿½ï¿½ï¿½Ä«ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
 	DXGI_MODE_DESC* displayModeList = new DXGI_MODE_DESC[numModes];
 	result = adapterOutput->GetDisplayModeList(
 		DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList);
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// »õ·Î °íÄ§ ºñÀ² °¡Á®¿À±â
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä§ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	for (unsigned int i = 0; i < numModes; i++)
 	{
 		auto& curr = displayModeList[i];
@@ -61,79 +61,79 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 		}
 	}
 
-	// ¾î´ðÅÍ(±×·¡ÇÈÄ«µå) Description °¡Á®¿À±â
+	// ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½×·ï¿½ï¿½ï¿½Ä«ï¿½ï¿½) Description ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	result = adapter->GetDesc(&adapterDesc);
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// ±×·¡ÇÈÄ«µåÀÇ ¸Þ¸ð¸® ¿ë·®À» °¡Á®¿À±â(MB ´ÜÀ§)
+	// ï¿½×·ï¿½ï¿½ï¿½Ä«ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ï¿½ ï¿½ë·®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(MB ï¿½ï¿½ï¿½ï¿½)
 	videoCardMemory_ = static_cast<int>(adapterDesc.DedicatedVideoMemory) / 1'024 / 1'024;
 
-	// ±×·¡ÇÈ Ä«µåÀÇ ÀÌ¸§ °¡Á®¿À±â
+	// ï¿½×·ï¿½ï¿½ï¿½ Ä«ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	size_t stringLenght;
 	int error = wcstombs_s(&stringLenght, videoCardDescription_, 128, adapterDesc.Description, 128);
 	if (error != 0) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 
-	// Á¤º¸¸¦ ¾ò±â À§ÇØ »ç¿ëÇß´ø ±¸Á¶Ã¼ Á¤º¸ ÇØÁö
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ß´ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	delete[] displayModeList;
 	displayModeList = nullptr;
 
-	// ½º¿Ò Ã¼ÀÎ Description ÃÊ±âÈ­
+	// ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ Description ï¿½Ê±ï¿½È­
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 
-	// ¹é ¹öÆÛ °³¼ö, ³Êºñ, ³ôÀÌ, ¼­ÆäÀÌ½º Æ÷¸Ë(ÀÏ¹ÝÀûÀÎ 32bit ¼­ÆäÀÌ½º·Î) ¼³Á¤
+	// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½Êºï¿½, ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ 32bit ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½
 	swapChainDesc.BufferCount = 1;
 	swapChainDesc.BufferDesc.Width = screenWidth;
 	swapChainDesc.BufferDesc.Height = screenHeight;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	if (m_vsync_enabled)
+	if (vsync_enabled_)
 	{
-		// ¹é¹öÆÛÀÇ »õ·Î°íÄ§ ºñÀ²À» ¸ð´ÏÅÍÀÇ ÁÖ»çÀ²¸¸Å­ ¼³Á¤!
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î°ï¿½Ä§ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½!
 		swapChainDesc.BufferDesc.RefreshRate.Numerator = numerator;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = denominator;
 	}
 	else
 	{
-		//¹é¹öÆÛÀÇ »õ·Î°íÄ§ ºñÀ²À» ¹«ÇÑ´ë·Î ¼³Á¤!
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î°ï¿½Ä§ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!
 		swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	}
 
-	// ¹é¹öÆÛÀÇ ¿ëµµ, À©µµ¿ì ÇÚµé ¼³Á¤
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ëµµ, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.OutputWindow = hwnd;
 
-	// ¸ÖÆ¼»ùÇÃ¸µ ²ô±â(±×°Ô ¹ºµ¥)
+	// ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½×°ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 
-	// Ç®½ºÅ©¸°¸ðµå
+	// Ç®ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ï¿½
 	swapChainDesc.Windowed = (fullscreen) ? false : true;
 
-	// ½ºÄµ¶óÀÎÀÇ Á¤·Ä°ú ½ºÄµ¶óÀÌ´×À» ÁöÁ¤µÇÁö ¾ÊÀ½À¸·Î(unspecified) ¼³Á¤ÇÕ´Ï´Ù.
+	// ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä°ï¿½ ï¿½ï¿½Äµï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(unspecified) ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 
-	// Ãâ·ÂµÈ ÀÌÈÄÀÇ ¹é¹öÆÛÀÇ ³»¿ëÀ» ¹ö¸²
+	// ï¿½ï¿½Âµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapChainDesc.Flags = 0; // Ãß°¡ ¿É¼Ç ¾ø¼Ç
+	swapChainDesc.Flags = 0; // ï¿½ß°ï¿½ ï¿½É¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 
-	// ½º¿ÒÃ¼ÀÎ, Direct3D ÀåÄ¡, Direct3D ÀåÄ¡ ÄÁÅØ½ºÆ® ¸¸µé±â
+	// ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½, Direct3D ï¿½ï¿½Ä¡, Direct3D ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE,
 		NULL, D3D11_CREATE_DEVICE_BGRA_SUPPORT, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, swapChain_.GetAddressOf(),
 		device_.GetAddressOf(), NULL, deviceContext_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3D swap chain.", WFILE, __LINE__);
 
-	// ¹é¹öÆÛÀÇ Æ÷ÀÎÅÍ ¹Þ¾Æ¿À±â
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¾Æ¿ï¿½ï¿½ï¿½
 	ID3D11Texture2D* backBufferPtr;
 	result = swapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
 	if (FAILED(result)) throw GameException(L"Failed to get buffer of swap chain.", WFILE, __LINE__);
 	
 
-	// ±× Æ÷ÀÎÅÍ·Î ·»´õ Å¸°Ù ºä »ý¼º
+	// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	result = device_->CreateRenderTargetView(backBufferPtr, NULL, renderTargetView_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create render target view.", WFILE, __LINE__);
 
@@ -141,7 +141,7 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	backBufferPtr->Release();
 	backBufferPtr = nullptr;
 
-	// ±íÀÌ ¹öÆÛÀÇ description ÀÛ¼º
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ description ï¿½Û¼ï¿½
 	D3D11_TEXTURE2D_DESC depthBufferDesc;
 	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
 
@@ -157,12 +157,12 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	depthBufferDesc.CPUAccessFlags = 0;
 	depthBufferDesc.MiscFlags = 0;
 
-	// ±× descriptionÀ¸·Î ±íÀÌ ¹öÆÛ ÅØ½ºÃÄ »ý¼º(È­¸é¿¡ ±×·ÁÁö´Â °Ç 2D´Ï±î 2D·Î »ý¼º)
+	// ï¿½ï¿½ descriptionï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(È­ï¿½é¿¡ ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 2Dï¿½Ï±ï¿½ 2Dï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	result = device_->CreateTexture2D(&depthBufferDesc, NULL, 
 		depthStencilBuffer_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// ±íÀÌ-½ºÅÙ½Ç description ÀÛ¼º(¾î¶² ±íÀÌ Å×½ºÆ®¸¦ ÇÒÁö Á¤ÇÒ ¼ö ÀÖ°Ô)
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ description ï¿½Û¼ï¿½(ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö°ï¿½)
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
 
@@ -182,17 +182,17 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 
 	// Stencil operations if pixel is back-facing.
 	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR; // ¿Ö ´Ù¸£Áö?
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR; // ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½?
 	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
-	// ±íÀÌ-½ºÅÙ½Ç »óÅÂ »ý¼º
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	result = device_->CreateDepthStencilState(&depthStencilDesc, depthStencilState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
-	// ±íÀÌ-½ºÅÙ½Ç »óÅÂ ¼³Á¤(µð¹ÙÀÌ½º°¡ ¾Æ´Ï¶ó ÄÁÅØ½ºÆ®)
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿½ ï¿½Æ´Ï¶ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ®)
 	deviceContext_->OMSetDepthStencilState(depthStencilState_.Get(), 1);
 
-	// ±íÀÌ-½ºÅÙ½Ç "ºä" description ÃÊ±âÈ­
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ "ï¿½ï¿½" description ï¿½Ê±ï¿½È­
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -203,11 +203,11 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 		&depthStencilViewDesc, depthStencilView_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// Áö±Ý²¯ ¸¸µç ±íÀÌ-½ºÅÙ½Ç ºä¸¦ Ãâ·Â ·»´õ¸µ ÆÄÀÌÇÁ¶óÀÎ¿¡ ¹ÙÀÎµù
+	// ï¿½ï¿½ï¿½Ý²ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ ï¿½ä¸¦ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½Îµï¿½
 	deviceContext_->OMSetRenderTargets(1,
 		renderTargetView_.GetAddressOf(), depthStencilView_.Get());
 
-	// ·¡½ºÅÍÈ­±â »óÅÂ(µµÇüÀÌ ¾î¶»°Ô ÇÈ¼¿·Î ±×·ÁÁö´ÂÁö) e.g. ¿ÍÀÌ¾îÇÁ·¹ÀÓ or ¾ÕµÞ¸é
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½È¼ï¿½ï¿½ï¿½ ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½) e.g. ï¿½ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ or ï¿½ÕµÞ¸ï¿½
 	D3D11_RASTERIZER_DESC rasterDesc;
 	ZeroMemory(&rasterDesc, sizeof(rasterDesc));
 	rasterDesc.AntialiasedLineEnable = false;
@@ -223,37 +223,37 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 
 	result = device_->CreateRasterizerState(&rasterDesc, rasterState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
-	// ·¹½ºÅÍ »óÅÂ ¼³Á¤
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	deviceContext_->RSSetState(rasterState_.Get());
 
 	D3D11_VIEWPORT viewport;
-	// ºäÆ÷Æ® ¼³Á¤(À©µµ¿ì ÀüÃ¼ Å©±â¿Í µ¿ÀÏÇÏ°Ô)
+	// ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ Å©ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½)
 	viewport.Width = static_cast<float>(screenWidth);
 	viewport.Height = static_cast<float>(screenHeight);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = viewport.TopLeftY = 0.0f;
-	// ºäÆ÷Æ® »ý¼º
+	// ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 	deviceContext_->RSSetViewports(1, &viewport);
 
-	// Åõ¿µ Çà·Ä(3D -> 2D) ¼³Á¤ ¹× »ý¼º
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½(3D -> 2D) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	float fieldOfView = 3.141592654f / 4.0f;
 	float screenAspect = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
 	projectionMatrix_ = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 
-	worldMatrix_ = XMMatrixIdentity(); // ´ÜÀ§ Çà·Ä·Î ÃÊ±âÈ­
+	worldMatrix_ = XMMatrixIdentity(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä·ï¿½ ï¿½Ê±ï¿½È­
 
-	// Á÷±³ Åõ¿µ Çà·Ä(UI µî 2D ¿ä¼Ò ±×¸®±â)
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½(UI ï¿½ï¿½ 2D ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½)
 	orthoMatrix_ = XMMatrixOrthographicLH(
 		static_cast<float>(screenWidth), static_cast<float>(screenHeight), -1, 1);
 
-	// ¹ÝÅõ¸í ·£´õ¸µ¿ë --> depth¿¡ ¸Â°Ô ±×¸®µÇ, depth °ª °»½ÅÀº ÇÏÁö ¾Ê±â
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --> depthï¿½ï¿½ ï¿½Â°ï¿½ ï¿½×¸ï¿½ï¿½ï¿½, depth ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½
 	D3D11_DEPTH_STENCIL_DESC depthNonWriteStencilDesc = depthStencilDesc;
 	depthNonWriteStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	result = device_->CreateDepthStencilState(&depthNonWriteStencilDesc, depthNonWriteStencilState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// ±âÁ¸ desc¿¡¼­ DepthEnable¸¸ false·Î ¹Ù²Ù±â!
+	// ï¿½ï¿½ï¿½ï¿½ descï¿½ï¿½ï¿½ï¿½ DepthEnableï¿½ï¿½ falseï¿½ï¿½ ï¿½Ù²Ù±ï¿½!
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc = depthStencilDesc;
 	depthDisabledStencilDesc.DepthEnable = false;
 
@@ -262,9 +262,9 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 
 	D3D11_BLEND_DESC blendStateDescription;
 	ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
-	blendStateDescription.RenderTarget[0].BlendEnable = TRUE; // ¾ËÆÄ°ª Àû¿ë
+	blendStateDescription.RenderTarget[0].BlendEnable = TRUE; // ï¿½ï¿½ï¿½Ä°ï¿½ ï¿½ï¿½ï¿½ï¿½
 	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA; // ¾ËÆÄ°ª Àû¿ë
+	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA; // ï¿½ï¿½ï¿½Ä°ï¿½ ï¿½ï¿½ï¿½ï¿½
 	blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
 	blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 	blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
@@ -276,7 +276,7 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 		alphaEnableBlendingState_.GetAddressOf());
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
-	// ¿¡µðÆ¼ºê ºí·£µù
+	// ï¿½ï¿½ï¿½ï¿½Æ¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	// Create an alpha enabled blend state description.
 	blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
 	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
@@ -291,7 +291,7 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	if (FAILED(result)) throw GameException(L"Failed to create D3DClass.", WFILE, __LINE__);
 
 
-	// ¾ËÆÄ°ª ¹ÌÀû¿ë
+	// ï¿½ï¿½ï¿½Ä°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 	result = device_->CreateBlendState(&blendStateDescription,
 		alphaDisableBlendingState_.GetAddressOf());
@@ -305,8 +305,8 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 
 D3DClass::~D3DClass()
 {
-	// ½º¿Ò Ã¼ÀÎÀº ³¡³ª±â Àü¿¡ ¹Ýµå½Ã! À©µµ¿ì ¸ðµå·Î ¹Ù²Ù±â
-	// ±×·¸Áö ¾ÊÀ¸¸é ¿¹¿Ü ¹ß»ý
+	// ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ýµï¿½ï¿½! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²Ù±ï¿½
+	// ï¿½×·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
 	if (swapChain_) swapChain_->SetFullscreenState(false, NULL);
 }
 
@@ -315,25 +315,25 @@ void D3DClass::BeginScene(float red, float green, float blue, float alpha)
 {
 	float color[4] = { red, green, blue, alpha };
 
-	// ¹é¹öÆÛ ³»¿ë Áö¿ò
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	deviceContext_->ClearRenderTargetView(renderTargetView_.Get(), color);
 
-	// ±íÀÌ ¹öÆÛ ³»¿ë Áö¿ò
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	deviceContext_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 }
 
 void D3DClass::EndScene()
 {
-	// ÇöÀç ·»´õ¸µÀÌ ¿Ï·áµÈ »óÅÂ, ¹é¹öÆÛÀÇ ³»¿ëÀ» È­¸é¿¡ Ç¥½Ã
-	if (m_vsync_enabled)
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È­ï¿½é¿¡ Ç¥ï¿½ï¿½
+	if (vsync_enabled_)
 	{
-		// »õ·Î °íÄ§ ºñÀ² °íÁ¤
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä§ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		swapChain_->Present(1, 0);
 	}
 	else
 	{
-		// °¡´ÉÇÑ ºü¸£°Ô!
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!
 		swapChain_->Present(0, 0);
 	}
 }

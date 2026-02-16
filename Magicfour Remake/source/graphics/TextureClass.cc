@@ -11,11 +11,11 @@ IMAGE_FILE_EXTENSION getExtension(const std::wstring filename)
 {
 	auto extension = filename.substr(filename.rfind(L'.'));
 
-	if (extension == L".jpg" || extension == L".jpeg") return FILE_EXTENSION_JPEG;
-	if (extension == L".png") return FILE_EXTENSION_PNG;
-	if (extension == L".tga") return FILE_EXTENSION_TGA;
+	if (extension == L".jpg" || extension == L".jpeg") return kFileExtensionJPEG;
+	if (extension == L".png") return kFileExtensionPNG;
+	if (extension == L".tga") return kFileExtensionTGA;
 
-	return FILE_EXTENSION_UNKNOWN;
+	return kFileExtensionUnknown;
 }
 
 
@@ -26,13 +26,13 @@ TextureClass::TextureClass(ID3D11Device* device, const wchar_t* filename)
 
 	switch (getExtension(filename))
 	{
-	case FILE_EXTENSION_JPEG:
-	case FILE_EXTENSION_PNG:
+	case kFileExtensionJPEG:
+	case kFileExtensionPNG:
 		hResult = LoadFromWICFile(filename, WIC_FLAGS_NONE, nullptr, image);
 		if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to Read " + std::wstring(filename));
 		break;
 
-	case FILE_EXTENSION_TGA:
+	case kFileExtensionTGA:
 		hResult = LoadFromTGAFile(filename, TGA_FLAGS_NONE, nullptr, image);
 		if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to Read " + std::wstring(filename));
 		break;
@@ -41,7 +41,7 @@ TextureClass::TextureClass(ID3D11Device* device, const wchar_t* filename)
 	width_ = image.GetMetadata().width;
 	height_ = image.GetMetadata().height;
 
-	hResult = CreateShaderResourceView(device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), textureView_.GetAddressOf());
+	hResult = CreateShaderResourceView(device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), texture_view_.GetAddressOf());
 	if (FAILED(hResult)) throw GAME_EXCEPTION(L"Failed to create Shader Resource View of " + std::wstring(filename));
 }
 
@@ -51,13 +51,11 @@ TextureClass::TextureClass(ID3D11Device* device, const std::string& filename)
 
 }
 
-TextureClass::~TextureClass()
-{
-}
+TextureClass::~TextureClass() = default;
 
 ID3D11ShaderResourceView* TextureClass::GetTexture()
 {
-	return textureView_.Get();
+	return texture_view_.Get();
 }
 
 int TextureClass::GetWidth()

@@ -32,8 +32,8 @@ bool MonsterClass::Damage(const int amount, time_t damaged_time, int vx, int vy)
 	velocity_ = Vector2d(vx, vy);
 	accel_ = Vector2d(-vx / 1000, -kGravity);
 
-	if (hit_vx_ > 0) direction_ = LEFT_FORWARD;
-	else if (hit_vx_ < 0) direction_ = RIGHT_FORWARD;
+	if (hit_vx_ > 0) direction_ = kLeftForword;
+	else if (hit_vx_ < 0) direction_ = kRightForward;
 
 	return hp_ > 0;
 }

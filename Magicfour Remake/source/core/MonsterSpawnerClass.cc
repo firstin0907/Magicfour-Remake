@@ -27,7 +27,7 @@ void MonsterSpawnerClass::Frame(time_t curr_time, time_t delta_time,
 		for (; schedule_iterator_ != monster_spawn_schedule_.end()
 			&& curr_time >= schedule_iterator_->first; schedule_iterator_++)
 		{
-			direction_t direction = RandomClass::rand(2) ? LEFT_FORWARD : RIGHT_FORWARD;
+			direction_t direction = RandomClass::rand(2) ? kLeftForword : kRightForward;
 
 			switch (schedule_iterator_->second)
 			{

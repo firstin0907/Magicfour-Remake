@@ -31,7 +31,7 @@ CharacterClass::CharacterClass(int pos_x, int pos_y,
 	vector<unique_ptr<class IGameObject> >& skill_objs)
 	: RigidbodyClass(
 		Point2d(pos_x, pos_y),
-		rect_t{ -50000, 0, 50000, 400000 }, LEFT_FORWARD
+		rect_t{ -50000, 0, 50000, 400000 }, kLeftForword
 	), jump_cnt(0), score_(0), input(input), sound(sound), skill_objs(skill_objs)
 {
 	jump_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt", true);
@@ -66,14 +66,14 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 	{
 		if (input->IsKeyPressed(DIK_LEFT))
 		{
-			direction_ = LEFT_FORWARD;
+			direction_ = kLeftForword;
 
 			is_walk = !is_walk;
 		}
 
 		if (input->IsKeyPressed(DIK_RIGHT))
 		{
-			direction_ = RIGHT_FORWARD;
+			direction_ = kRightForward;
 
 			is_walk = !is_walk;
 		}
@@ -146,7 +146,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		if (is_walk)
 		{
 			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
-			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
+			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
 		}
 
 		if (GetStateTime(curr_time) >= 1000) SetState(CharacterState::kNormal, curr_time);
@@ -157,7 +157,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		if (is_walk)
 		{
 			position_.x += DIR_WEIGHT(direction_, kRunSpd) * (int)time_delta;
-			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
+			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
 		}
 
 		if (jump_cnt == 0)
@@ -172,7 +172,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		{
 			SetState(CharacterState::kWalk, curr_time);
 			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
-			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
+			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
 		}
 		break;
 
@@ -181,7 +181,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		else
 		{
 			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
-			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
+			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
 		}
 		break;
 
@@ -190,7 +190,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		else
 		{
 			position_.x += DIR_WEIGHT(direction_, kRunSpd) * (int)time_delta;
-			position_.x = SATURATE(kFieldLeftX, position_.x, kFieldRightX);
+			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
 		}
 		break;
 
@@ -239,7 +239,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 
 		if (GetStateTime(curr_time) < 1000)
 		{
-			position_.x = SATURATE(kFieldLeftX, position_.x + (int)time_delta * velocity_.x, kFieldRightX);
+			position_.x = std::clamp(position_.x + (int)time_delta * velocity_.x, kFieldLeftX, kFieldRightX);
 		}
 
 		break;
@@ -407,7 +407,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 		combo_ = 0;
 
 		SetState(CharacterState::kHit, curr_time);
-		direction_ = (vx > 0) ? LEFT_FORWARD : RIGHT_FORWARD;
+		direction_ = (vx > 0) ? kLeftForword : kRightForward;
 
 		// lost skill
 		if (skill_[0].skill_type == 0)
@@ -440,12 +440,12 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 
 float CharacterClass::GetCooltimeGaugeRatio(time_t curr_time) const
 {
-	return SATURATE(-0.3f, (time_skill_available_ - (long long)curr_time) / (float)kSkillCooltime, 1.0f);
+	return std::clamp((time_skill_available_ - (long long)curr_time) / (float)kSkillCooltime, -0.3f, 1.0f);
 }
 
 float CharacterClass::GetInvincibleGaugeRatio(time_t curr_time) const
 {
-	return SATURATE(-0.3f, (time_invincible_end_ - (long long)curr_time) / (float)kInvincibleDuration, 1.0f);
+	return std::clamp((time_invincible_end_ - (long long)curr_time) / (float)kInvincibleDuration, -0.3f, 1.0f);
 }
 
 XMMATRIX CharacterClass::GetSkillStonePos(time_t curr_time) const

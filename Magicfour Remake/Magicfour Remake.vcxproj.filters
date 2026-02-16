@@ -104,9 +104,6 @@
     <ClCompile Include="source\core\SystemClass.cc">
       <Filter>소스 파일\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\util\RandomClass.cc">
-      <Filter>소스 파일\util</Filter>
-    </ClCompile>
     <ClCompile Include="source\util\TimerClass.cc">
       <Filter>소스 파일\util</Filter>
     </ClCompile>
@@ -277,9 +274,6 @@
     <ClInclude Include="include\core\global.hh">
       <Filter>헤더 파일\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\core\IGameObject.hh">
-      <Filter>헤더 파일\core</Filter>
-    </ClInclude>
     <ClInclude Include="include\core\InputClass.hh">
       <Filter>헤더 파일\core</Filter>
     </ClInclude>
@@ -351,6 +345,9 @@
     </ClInclude>
     <ClInclude Include="include\core\common\Stateful.hh">
       <Filter>헤더 파일\core\common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\interface\IGameObject.hh">
+      <Filter>헤더 파일\core\interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

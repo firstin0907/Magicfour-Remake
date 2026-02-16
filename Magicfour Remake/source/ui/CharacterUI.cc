@@ -55,7 +55,7 @@ void CharacterUI::DrawScoreAndCombo(D2DClass* direct2D, const UIContext& context
 	{
 		// Remained time for combo.
 		const time_t combo_durable_time = character->GetComboDurableTime(curr_time);
-		const float combo_text_alpha_value = SATURATE(0.0f, (combo_durable_time - 500.0f) * (1 / 3000.0f), 1.0f);
+		const float combo_text_alpha_value = std::clamp((combo_durable_time - 500.0f) * (1 / 3000.0f), 0.0f, 1.0f);
 
 
 		if (combo < 10) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, combo_text_alpha_value));

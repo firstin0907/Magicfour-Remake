@@ -2,7 +2,7 @@
 
 #include "core/global.hh"
 #include "core/common/Stateful.hh"
-#include "IGameObject.hh"
+#include "core/interface/IGameObject.hh"
 
 #include <cmath>
 

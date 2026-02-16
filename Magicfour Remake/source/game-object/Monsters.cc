@@ -49,13 +49,13 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 		if (position_.x >= kFieldRightX)
 		{
 			position_.x = 2 * kFieldRightX - position_.x;
-			direction_ = LEFT_FORWARD;
+			direction_ = kLeftForword;
 		}
 
 		if (position_.x <= -kFieldRightX)
 		{
 			position_.x = -2 * kFieldRightX - position_.x;
-			direction_ = RIGHT_FORWARD;
+			direction_ = kRightForward;
 		}
 
 	case MonsterState::kDuckJumpReady:
@@ -207,23 +207,23 @@ void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
 	switch (state_)
 	{
 	case MonsterState::kEmbryo:
-		position_.x += spd * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
+		position_.x += spd * time_delta * ((direction_ == kLeftForword) ? -1 : 1);
 		if (kFieldLeftX <= position_.x && position_.x <= kFieldRightX) SetState(MonsterState::kNormal, curr_time);
 		break;
 
 	case MonsterState::kNormal:
-		position_.x += spd * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
+		position_.x += spd * time_delta * ((direction_ == kLeftForword) ? -1 : 1);
 
 		if (position_.x >= kFieldRightX)
 		{
 			position_.x = 2 * kFieldRightX - position_.x;
-			direction_ = LEFT_FORWARD;
+			direction_ = kLeftForword;
 		}
 
 		if (position_.x <= -kFieldRightX)
 		{
 			position_.x = -2 * kFieldRightX - position_.x;
-			direction_ = RIGHT_FORWARD;
+			direction_ = kRightForward;
 		}
 		break;
 
@@ -310,7 +310,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 	{
 
 	case MonsterState::kEmbryo:
-		position_.x += X_SPEED * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
+		position_.x += X_SPEED * time_delta * ((direction_ == kLeftForword) ? -1 : 1);
 		if (kFieldLeftX <= position_.x && position_.x <= kFieldRightX) SetState(MonsterState::kNormal, curr_time);
 		break;
 
@@ -336,18 +336,18 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 
 
 	case MonsterState::kNormal:
-		position_.x += X_SPEED * time_delta * ((direction_ == LEFT_FORWARD) ? -1 : 1);
+		position_.x += X_SPEED * time_delta * ((direction_ == kLeftForword) ? -1 : 1);
 
 		if (position_.x >= kFieldRightX)
 		{
 			position_.x = 2 * kFieldRightX - position_.x;
-			direction_ = LEFT_FORWARD;
+			direction_ = kLeftForword;
 		}
 
 		if (position_.x <= -kFieldRightX)
 		{
 			position_.x = -2 * kFieldRightX - position_.x;
-			direction_ = RIGHT_FORWARD;
+			direction_ = kRightForward;
 		}
 		break;
 
@@ -424,7 +424,7 @@ int MonsterBird::GetVx()
 MonsterStop::MonsterStop(time_t created_time)
 	: MonsterClass(
 		Point2d(RandomClass::rand(kFieldLeftX, kFieldRightX), 1'500'000),
-		LEFT_FORWARD, 4, 100, { -50000, 0, 50000, 400000 }, created_time)
+		kLeftForword, 4, 100, { -50000, 0, 50000, 400000 }, created_time)
 {
 	SetState(MonsterState::kStopEmbryo, created_time);
 }

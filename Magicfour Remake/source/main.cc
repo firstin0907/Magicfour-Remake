@@ -10,14 +10,12 @@
 #include "core/SystemClass.hh"
 #include "core/GameException.hh"
 
-#include <cstdio>
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
 	try
 	{
 		// Create the system object.
-		unique_ptr<SystemClass> System = make_unique<SystemClass>();
+		std::unique_ptr<SystemClass> System = std::make_unique<SystemClass>();
 
 		System->Run();
 	}

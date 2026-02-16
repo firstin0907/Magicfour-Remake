@@ -61,10 +61,10 @@ protected:
 	VertexType* m_vertices;
 	ComPtr<ID3D11Buffer> vertex_buffer_, index_buffer_;
 
-	int m_vertexCount, m_indexCount;
+	int vertex_count_, index_count_;
 	float particle_size_, particles_per_second_;
 	size_t max_particle_num_;
-	float m_accumulatedTime;
+	float accumulated_time_;
 
 	const bool sort_particle_with_z_;
 };
@@ -90,12 +90,12 @@ public:
 		bool emitParticle = false;
 
 		// Increment the frame time.
-		m_accumulatedTime += curr_time;
+		accumulated_time_ += curr_time;
 
 		// Check if it is time to emit a new particle or not.
-		if (m_accumulatedTime > (1.0f / particles_per_second_))
+		if (accumulated_time_ > (1.0f / particles_per_second_))
 		{
-			m_accumulatedTime = 0.0f;
+			accumulated_time_ = 0.0f;
 			emitParticle = true;
 		}
 

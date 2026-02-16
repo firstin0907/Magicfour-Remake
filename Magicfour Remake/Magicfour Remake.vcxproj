@@ -169,7 +169,6 @@
     <ClCompile Include="source\ui\MonsterUI.cc" />
     <ClCompile Include="source\ui\SystemUI.cc" />
     <ClCompile Include="source\ui\UserInterfaceClass.cc" />
-    <ClCompile Include="source\util\RandomClass.cc" />
     <ClCompile Include="source\util\TimerClass.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -183,9 +182,9 @@
     <ClInclude Include="include\core\GameException.hh" />
     <ClInclude Include="include\core\GameObjectList.hh" />
     <ClInclude Include="include\core\global.hh" />
-    <ClInclude Include="include\core\IGameObject.hh" />
     <ClInclude Include="include\core\InputClass.hh" />
     <ClInclude Include="include\core\interface\IDrawable.hh" />
+    <ClInclude Include="include\core\interface\IGameObject.hh" />
     <ClInclude Include="include\core\MonsterSpawnerClass.hh" />
     <ClInclude Include="include\core\RigidbodyClass.hh" />
     <ClInclude Include="include\core\SoundClass.hh" />

@@ -1,6 +1,6 @@
 #include "core/GameObjectList.hh"
 
-#include "core/IGameObject.hh"
+#include "core/interface/IGameObject.hh"
 #include "shader/ShaderManager.hh"
 #include "util/ResourceMap.hh"
 

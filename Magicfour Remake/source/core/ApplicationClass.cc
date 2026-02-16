@@ -56,9 +56,9 @@ constexpr XMFLOAT4 kSkillColor[5] =
 
 ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd, InputClass* input)
 {
-	direct3D_ = make_unique<D3DClass>(screenWidth, screenHeight,
-		VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
-	direct2D_ = make_unique<D2DClass>(direct3D_->GetSwapChain(), hwnd);
+	direct3d_ = make_unique<D3DClass>(screenWidth, screenHeight,
+		kVsyncEnabled, hwnd, kFullScreen, kScreenDepth, kScreenNear);
+	direct2d_ = make_unique<D2DClass>(direct3d_->GetSwapChain(), hwnd);
 	sound_ = make_unique<SoundClass>();
 
 	camera_ = make_unique<CameraClass>();
@@ -67,7 +67,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 	auto texture_loader = [this](xml_node_wrapper node) -> std::shared_ptr<TextureClass>
 		{
-			return make_shared<TextureClass>(this->direct3D_->GetDevice(),
+			return make_shared<TextureClass>(this->direct3d_->GetDevice(),
 				node.get_required_attr("src"));
 		};
 
@@ -97,7 +97,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 			if (textures.find("emissive") != textures.end())
 				emissive_texture = textures_.get_by_path(textures["emissive"]);
 
-			return make_shared<ModelClass>(this->direct3D_->GetDevice(),
+			return make_shared<ModelClass>(this->direct3d_->GetDevice(),
 				node.get_required_attr("model_path").c_str(),
 				diffuse_texture,
 				normal_texture,
@@ -108,7 +108,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	auto particle_loader = [this](xml_node_wrapper node) -> std::shared_ptr<ParticleSystemBaseClass>
 		{
 			return std::make_shared<RadialSpreadParticleSystem>(
-				this->direct3D_->GetDevice(),
+				this->direct3d_->GetDevice(),
 				node.get_required_attr("src").c_str(),
 				std::stof(node.get_required_attr("particleSize")),
 				std::stof(node.get_required_attr("particlePerSecond")),
@@ -123,7 +123,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 	particle_system_.insert("star-spread2",
 		make_unique<LinearMoveParticleSystem>(
-			direct3D_->GetDevice(),
+			direct3d_->GetDevice(),
 			"data/texture/particle/star1.png",
 			0.2f,
 			100.0f,
@@ -136,8 +136,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 	// Create and initialize the light shader object.
 	shader_manager_ = make_unique<ShaderManager>(
-		direct3D_->GetDevice(),
-		direct3D_->GetDeviceContext(),
+		direct3d_->GetDevice(),
+		direct3d_->GetDeviceContext(),
 		hwnd
 	);
 	
@@ -156,12 +156,12 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	SkillObjectGuardian::initialize("orb");
 
 	// Create character instance.
-	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skillObjectList_.elements);
+	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skill_object_list_.elements);
 
 	// Temporary
 	monsters_.Insert(new MonsterStop(1000));
-	//monsters_.emplace_back(new MonsterOctopus(RIGHT_FORWARD, 1000));
-	//for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(RIGHT_FORWARD, 1000));
+	//monsters_.emplace_back(new MonsterOctopus(kRightForward, 1000));
+	//for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(kRightForward, 1000));
 
 	// Set ground of field.
 	field_ = make_unique<FieldClass>("data/field/field001.txt");
@@ -179,8 +179,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	items_.Insert(new ItemClass(timer_->GetTime(), 1231230, 1231230, 3));
 	items_.Insert(new ItemClass(timer_->GetTime(), -1231230, 242320, 2));
 
-	user_interface_ = make_unique<UserInterfaceClass>(direct2D_.get(),
-		direct3D_->GetDevice(), screenWidth, screenHeight);
+	user_interface_ = make_unique<UserInterfaceClass>(direct2d_.get(),
+		direct3d_->GetDevice(), screenWidth, screenHeight);
 
 	sound_->PlayBackground("background");
 	
@@ -254,7 +254,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 	character_->Frame(curr_time, delta_time);
 
 	// Move skill object instances.
-	skillObjectList_.FrameMove(curr_time, delta_time, field_->GetGrounds());
+	skill_object_list_.FrameMove(curr_time, delta_time, field_->GetGrounds());
 
 	// Move monsters.
 	monsters_.FrameMove(curr_time, delta_time, field_->GetGrounds());
@@ -278,7 +278,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 	// Coliide check
 	CollisionProcessor::Process<SkillObjectClass, MonsterClass>(
-		skillObjectList_, monsters_, [this, curr_time](SkillObjectClass* skill_obj, MonsterClass* monster)
+		skill_object_list_, monsters_, [this, curr_time](SkillObjectClass* skill_obj, MonsterClass* monster)
 		{
 			if (!skill_obj->OnCollided(monster, curr_time)) return;				
 			character_->AddCombo(curr_time);
@@ -320,7 +320,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 	// Process some work which should be conducted per frame,
 	// for skill object instances
-	skillObjectList_.Frame(curr_time, delta_time);
+	skill_object_list_.Frame(curr_time, delta_time);
 
 	// Process some work which should be conducted per frame,
 	// for monster object instances
@@ -336,7 +336,7 @@ void ApplicationClass::GameFrame(InputClass* input)
 
 void ApplicationClass::Render()
 {
-	const float camera_x = SATURATE(-kCameraXLimit, character_->GetPosition().x, kCameraXLimit) * kScope;
+	const float camera_x = std::clamp(character_->GetPosition().x, -kCameraXLimit, kCameraXLimit) * kScope;
 	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
 	camera_->SetPosition(camera_x, camera_y, kCameraZPosition);
 
@@ -349,8 +349,8 @@ void ApplicationClass::Render()
 
 	// Get the world, view, and projection matrices from the camera and d3d objects.
 	camera_->GetViewMatrix(viewMatrix);
-	direct3D_->GetProjectionMatrix(projectionMatrix);
-	direct3D_->GetOrthoMatrix(orthoMatrix);
+	direct3d_->GetProjectionMatrix(projectionMatrix);
+	direct3d_->GetOrthoMatrix(orthoMatrix);
 
 	const XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
@@ -358,13 +358,13 @@ void ApplicationClass::Render()
 
 	// Draw Items
 	items_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
-	skillObjectList_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
+	skill_object_list_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
 	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 	field_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
 
-	particle_system_.get("star-spread")->Frame(curr_time, time_delta, direct3D_->GetDeviceContext());
-	particle_system_.get("star-spread2")->Frame(curr_time, time_delta, direct3D_->GetDeviceContext());
+	particle_system_.get("star-spread")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
+	particle_system_.get("star-spread2")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
 
 	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread"), DirectX::XMMatrixScaling(1, 1, 1));
 	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread2"), DirectX::XMMatrixScaling(1, 1, 1));
@@ -374,7 +374,7 @@ void ApplicationClass::Render()
 	shader_manager_->light_shader_->PushRenderQueue(
 		models_.get("plane"), character_->GetRangeRepresentMatrix());
 
-	for (auto& obj : skillObjectList_.elements)
+	for (auto& obj : skill_object_list_.elements)
 	{
 		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
 		shader_manager_->light_shader_->PushRenderQueue(
@@ -390,33 +390,33 @@ void ApplicationClass::Render()
 
 #endif
 	// Clear the buffers to begin the scene.
-	direct3D_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
+	direct3d_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
 
-	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Default3D); 
-	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
-	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
-	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
+	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Default3D); 
+	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
+	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
+	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
 	
-	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Transparent3D);
-	direct3D_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaEnable); // Turn on alpha blending for the fire transparency.
-	shader_manager_->fire_shader_	  ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
+	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Transparent3D);
+	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaEnable); // Turn on alpha blending for the fire transparency.
+	shader_manager_->fire_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
 
-	direct3D_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaAdditive);
-	shader_manager_->particle_shader_ ->ProcessRenderQueue(direct3D_->GetDeviceContext(), vp_matrix);
+	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaAdditive);
+	shader_manager_->particle_shader_ ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix);
 
-	direct3D_->SetDepthStencilState(D3DClass::DepthStencilMode::Disabled2D);
-	direct3D_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaDisable); 
+	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Disabled2D);
+	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaDisable); 
 
-	user_interface_->Begin2dDraw(direct2D_.get(), vp_matrix, orthoMatrix);
+	user_interface_->Begin2dDraw(direct2d_.get(), vp_matrix, orthoMatrix);
 
-	user_interface_->DrawMonsterUI(direct2D_.get(), monsters_, curr_time);
+	user_interface_->DrawMonsterUI(direct2d_.get(), monsters_, curr_time);
 
-	user_interface_->DrawCharacterUI(direct2D_.get(), character_.get(), curr_time);
+	user_interface_->DrawCharacterUI(direct2d_.get(), character_.get(), curr_time);
 	
-	user_interface_->DrawSystemUI(direct2D_.get(), game_state_, timer_->GetActualTime());
+	user_interface_->DrawSystemUI(direct2d_.get(), game_state_, timer_->GetActualTime());
 
-	user_interface_->End2dDraw(direct2D_.get());
+	user_interface_->End2dDraw(direct2d_.get());
 
 	// Present the rendered scene to the screen.
-	direct3D_->EndScene();
+	direct3d_->EndScene();
 }

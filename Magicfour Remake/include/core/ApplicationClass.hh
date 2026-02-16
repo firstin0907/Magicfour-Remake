@@ -44,8 +44,8 @@ private:
 	GameState game_state_;
 	time_t	state_start_time_;
 
-	unique_ptr<class D3DClass>			direct3D_;
-	unique_ptr<class D2DClass>			direct2D_;
+	unique_ptr<class D3DClass>			direct3d_;
+	unique_ptr<class D2DClass>			direct2d_;
 	unique_ptr<class SoundClass>		sound_;
 
 	unique_ptr<class CameraClass>		camera_;
@@ -59,7 +59,7 @@ private:
 
 	unique_ptr<class CharacterClass>	character_;
 
-	GameObjectList	skillObjectList_;
+	GameObjectList	skill_object_list_;
 	GameObjectList	monsters_;
 	GameObjectList	items_;
 

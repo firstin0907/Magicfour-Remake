@@ -10,10 +10,10 @@ using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 enum IMAGE_FILE_EXTENSION
 {
-    FILE_EXTENSION_JPEG,
-    FILE_EXTENSION_PNG,
-    FILE_EXTENSION_TGA,
-    FILE_EXTENSION_UNKNOWN
+    kFileExtensionJPEG,
+    kFileExtensionPNG,
+    kFileExtensionTGA,
+    kFileExtensionUnknown
 };
 
 
@@ -31,7 +31,7 @@ public:
     int GetHeight();
 
 private:
-    ComPtr<ID3D11ShaderResourceView> textureView_; // texture ���ٿ�
+    ComPtr<ID3D11ShaderResourceView> texture_view_; // texture ���ٿ�
     int width_, height_;
 };
 

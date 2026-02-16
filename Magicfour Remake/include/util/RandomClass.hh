@@ -35,3 +35,5 @@ public:
 private:
 	static std::mt19937 generator_;
 };
+
+inline std::mt19937 RandomClass::generator_ = std::mt19937(std::random_device()());

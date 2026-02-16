@@ -5,7 +5,7 @@
 SkillObjectClass::SkillObjectClass(int pos_x, int pos_y,
 	rect_t range, int vx, int vy, int skill_level, time_t created_time)
 	: RigidbodyClass<SkillObjectState>(
-		Point2d(pos_x, pos_y), rect_t(range), LEFT_FORWARD, Vector2d(vx, vy), Vector2d(0, 0))
+		Point2d(pos_x, pos_y), rect_t(range), kLeftForword, Vector2d(vx, vy), Vector2d(0, 0))
 {
 	created_time_ = created_time;
 	skill_level_ = skill_level;

@@ -1,12 +1,10 @@
 #pragma once
 
-#include <windows.h>
-
-#include <memory>
-
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
-
-using namespace std;
+#endif
+#include <windows.h>
+#include <memory>
 
 class SystemClass
 {
@@ -25,12 +23,12 @@ private:
 	void ShutdownWindows();
 
 private:
-	LPCWSTR applicationName_;
+	LPCWSTR application_name_;
 	HINSTANCE hinstance_;
 	HWND hwnd_;
 
-	unique_ptr<class InputClass> input_;
-	unique_ptr<class ApplicationClass> application_;
+	std::unique_ptr<class InputClass> input_;
+	std::unique_ptr<class ApplicationClass> application_;
 };
 
 

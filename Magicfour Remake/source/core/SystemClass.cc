@@ -6,6 +6,8 @@
 #include "core/ApplicationClass.hh"
 #include "core/GameException.hh"
 
+using namespace std;
+
 SystemClass::SystemClass()
 {
 	int screenWidth = 0, screenHeight = 0;
@@ -138,7 +140,7 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	hinstance_ = GetModuleHandle(NULL);
 
 	// Give the application a name.
-	applicationName_ = L"Engine";
+	application_name_ = L"Engine";
 
 	// Setup the windows class with default settings.
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -151,7 +153,7 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName = NULL;
-	wc.lpszClassName = applicationName_;
+	wc.lpszClassName = application_name_;
 	wc.cbSize = sizeof(WNDCLASSEX);
 
 	// Register the window class.
@@ -162,7 +164,7 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	// Setup the screen settings depending on whether it is running in full screen or in windowed mode.
-	if (FULL_SCREEN)
+	if (kFullScreen)
 	{
 		// If full screen set the screen to maximum size of the users desktop and 32bit.
 		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
@@ -190,7 +192,7 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	}
 
 	// Create the window with the screen settings and get the handle to it.
-	hwnd_ = CreateWindowEx(WS_EX_APPWINDOW, applicationName_, applicationName_,
+	hwnd_ = CreateWindowEx(WS_EX_APPWINDOW, application_name_, application_name_,
 		WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
 		posX, posY, screenWidth, screenHeight, NULL, NULL, hinstance_, NULL);
 
@@ -212,7 +214,7 @@ void SystemClass::ShutdownWindows()
 	ShowCursor(true);
 
 	// Fix the display settings if leaving full screen mode.
-	if (FULL_SCREEN)
+	if (kFullScreen)
 	{
 		ChangeDisplaySettings(NULL, 0);
 	}
@@ -222,7 +224,7 @@ void SystemClass::ShutdownWindows()
 	hwnd_ = NULL;
 
 	// Remove the application instance.
-	UnregisterClass(applicationName_, hinstance_);
+	UnregisterClass(application_name_, hinstance_);
 	hinstance_ = NULL;
 
 	// Release the pointer to this class.

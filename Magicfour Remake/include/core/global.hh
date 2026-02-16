@@ -6,11 +6,11 @@
 #define DIRECTION_T
 enum direction_t
 {
-	LEFT_FORWARD,
-	RIGHT_FORWARD
+	kLeftForword,
+	kRightForward
 };
 
-#define DIR_WEIGHT(DIR, VAL) ((DIR == LEFT_FORWARD) ? -(VAL) : (VAL))
+#define DIR_WEIGHT(DIR, VAL) ((DIR == kLeftForword) ? -(VAL) : (VAL))
 
 #endif
 
@@ -51,7 +51,6 @@ enum class GameState
 	kGameRun, kGamePause, kGameOver
 };
 
-
 constexpr int kGroundY = -600'000;
 
 constexpr int kFieldRightX = 2'500'000;
@@ -63,11 +62,7 @@ constexpr int kSpawnLeftX = kFieldLeftX - 1'000'000;
 constexpr float kScope = 0.00001f;
 constexpr int kGravity = 10;
 
-const bool FULL_SCREEN = false;
-const bool VSYNC_ENABLED = true;
-const float SCREEN_DEPTH = 1000.0f;
-const float SCREEN_NEAR = 1.0f;
-
-#include <algorithm>
-
-#define SATURATE(MINIMUM, VAL, MAXIMUM) min(max(VAL, MINIMUM), MAXIMUM)
+const bool kFullScreen = false;
+const bool kVsyncEnabled = true;
+const float kScreenDepth = 1000.0f;
+const float kScreenNear = 1.0f;

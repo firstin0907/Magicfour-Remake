@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/GameObjectList.hh"
-#include "core/IGameObject.hh"
+#include "core/interface/IGameObject.hh"
 
 class CollisionProcessor
 {

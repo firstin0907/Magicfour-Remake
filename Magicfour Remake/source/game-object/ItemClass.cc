@@ -18,7 +18,7 @@ constexpr time_t kItemLifetime = 10'000;
 ItemClass::ItemClass(time_t create_time, int x_pos, int y_pos, int type)
 	: RigidbodyClass<ItemState>(
 		Point2d {x_pos, y_pos}, rect_t(kItemRange),
-		LEFT_FORWARD, Vector2d(0, 1000)
+		kLeftForword, Vector2d(0, 1000)
 	), createTime_(create_time), type_(type)
 {
 	SetState(ItemState::kNormal, create_time);

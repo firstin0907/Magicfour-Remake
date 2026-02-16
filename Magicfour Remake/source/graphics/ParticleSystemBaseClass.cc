@@ -69,7 +69,7 @@ ID3D11ShaderResourceView* ParticleSystemBaseClass::GetTexture()
 
 int ParticleSystemBaseClass::GetIndexCount()
 {
-	return m_indexCount;
+	return index_count_;
 }
 
 
@@ -86,7 +86,7 @@ void ParticleSystemBaseClass::InitializeParticleSystem()
 	particle_list_.reserve(max_particle_num_);
 
 	// Clear the initial accumulated time for the particle per second emission rate.
-	m_accumulatedTime = 0.0f;
+	accumulated_time_ = 0.0f;
 }
 
 
@@ -98,26 +98,26 @@ void ParticleSystemBaseClass::InitializeBuffers(ID3D11Device* device)
 	HRESULT result;
 
 	// Set the maximum number of vertices in the vertex array.
-	m_vertexCount = max_particle_num_ * 6;
+	vertex_count_ = max_particle_num_ * 6;
 
 	// Set the maximum number of indices in the index array.
-	m_indexCount = m_vertexCount;
+	index_count_ = vertex_count_;
 
 	// Create the vertex array for the particles that will be rendered.
-	m_vertices = new VertexType[m_vertexCount];
+	m_vertices = new VertexType[vertex_count_];
 
 	// Create the index array.
-	indices = new unsigned long[m_indexCount];
+	indices = new unsigned long[index_count_];
 	
 	// Initialize vertex array to zeros at first.
-	memset(m_vertices, 0, (sizeof(VertexType) * m_vertexCount));
+	memset(m_vertices, 0, (sizeof(VertexType) * vertex_count_));
 
 	// Initialize the index array.
-	for (int i = 0; i < m_indexCount; i++) indices[i] = i;
+	for (int i = 0; i < index_count_; i++) indices[i] = i;
 
 	// Set up the description of the dynamic vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertex_count_;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	vertexBufferDesc.MiscFlags = 0;
@@ -134,7 +134,7 @@ void ParticleSystemBaseClass::InitializeBuffers(ID3D11Device* device)
 
 	// Set up the description of the static index buffer.
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * index_count_;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
@@ -212,7 +212,7 @@ void ParticleSystemBaseClass::UpdateVertices()
 		index += 6;
 	}
 
-	m_indexCount = index;
+	index_count_ = index;
 }
 
 
@@ -230,7 +230,7 @@ bool ParticleSystemBaseClass::UpdateBuffers(ID3D11DeviceContext* device_context)
 	verticesPtr = (VertexType*)mappedResource.pData;
 
 	// Copy the data into the vertex buffer.
-	memcpy(verticesPtr, (void*)m_vertices, (sizeof(VertexType) * m_vertexCount));
+	memcpy(verticesPtr, (void*)m_vertices, (sizeof(VertexType) * vertex_count_));
 
 	// Unlock the vertex buffer.
 	device_context->Unmap(vertex_buffer_.Get(), 0);

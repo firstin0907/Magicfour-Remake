@@ -13,12 +13,6 @@ private:
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-	template<typename T>
-	using unique_ptr = std::unique_ptr<T>;
-
-	template<typename T>
-	using vector = std::vector<T>;
-
 	using XMFLOAT2 = DirectX::XMFLOAT2;
 	using XMFLOAT3 = DirectX::XMFLOAT3;
 	using XMFLOAT4 = DirectX::XMFLOAT4;
@@ -34,7 +28,7 @@ private:
 		XMFLOAT3 binormal;
 	};
 
-	struct ModelType
+	struct ModelVertexType
 	{
 		float x, y, z;
 		float tu, tv;
@@ -90,9 +84,9 @@ public:
 	~ModelClass();
 
 	void Shutdown();
-	void Render(ID3D11DeviceContext*);
+	void Render(ID3D11DeviceContext* device_context);
 
-	inline const vector<std::pair<MaterialType, int> >& GetMaterial()
+	inline const std::vector<std::pair<MaterialType, int> >& GetMaterial()
 	{
 		return material_list_; 
 	}
@@ -109,8 +103,8 @@ public:
 
 
 private:
-	void InitializeBuffers(ID3D11Device*);
-	void RenderBuffers(ID3D11DeviceContext*);
+	void InitializeBuffers(ID3D11Device* device);
+	void RenderBuffers(ID3D11DeviceContext* device_context);
 
 	void LoadTextures(ID3D11Device* device,
 		const wchar_t* diffuse_filename,
@@ -126,16 +120,16 @@ private:
 
 
 private:
-	ComPtr<ID3D11Buffer> vertexBuffer_, indexBuffer_;
-	int vertexCount_, indexCount_;
+	ComPtr<ID3D11Buffer> vertex_buffer_, index_buffer_;
+	int vertex_count_, index_count_;
 
 	std::shared_ptr<class TextureClass> diffuse_texture_;
 	std::shared_ptr<class TextureClass> normal_texture_;
 	std::shared_ptr<class TextureClass> emissive_texture_;
 
-	vector<ModelType> model_;
+	std::vector<ModelVertexType> model_;
 
-	vector<std::pair<MaterialType, int> > material_list_;
+	std::vector<std::pair<MaterialType, int> > material_list_;
 	
 	std::variant<DirectX::BoundingBox, DirectX::BoundingSphere> bounding_volume_;
 };

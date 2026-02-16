@@ -55,7 +55,7 @@ public:
 	void SetAlphaBlending(BlendStateMode blend_state_mode);
 
 private:
-	bool	m_vsync_enabled;		// ¼öÁ÷ µ¿±âÈ­ ¼³Á¤
+	bool	vsync_enabled_;		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
 	int		videoCardMemory_;
 	char	videoCardDescription_[128];
 

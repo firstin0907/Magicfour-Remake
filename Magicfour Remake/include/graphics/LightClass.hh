@@ -27,10 +27,10 @@ public:
     XMFLOAT4 GetPosition();
 
 private:
-    XMFLOAT4 ambientColor_;
-    XMFLOAT4 diffuseColor_;
+    XMFLOAT4 ambient_color_;
+    XMFLOAT4 diffuse_color_;
     XMFLOAT3 direction_;
-    XMFLOAT4 specularColor_;
-    float specularPower_;
+    XMFLOAT4 specular_color_;
+    float specular_power_;
     XMFLOAT4 position_;
 };
