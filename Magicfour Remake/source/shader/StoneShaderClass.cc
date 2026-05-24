@@ -47,6 +47,10 @@ void StoneShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 {
 	FrustumCuller fruster_culler(vp_matrix);
 
+	// Set the shader to be used for rendering.
+	SetShader(device_context);
+
+	// Go through the render queue and render each model.
 	for (auto& [model, params] : render_queue_)
 	{
 		// Batch processing for draw calls with same model
@@ -229,13 +233,6 @@ void StoneShaderClass::SetShaderParameters(ID3D11DeviceContext* device_context,
 
 void StoneShaderClass::RenderShader(ID3D11DeviceContext* device_context, int index_count, int index_start)
 {
-	// Set the vertex input layout.
-	device_context->IASetInputLayout(input_layout_.Get());
-
-	// Set the vertex and pixel shaders that will be used to render this triangle.
-	device_context->VSSetShader(vertex_shader_.Get(), NULL, 0);
-	device_context->PSSetShader(pixel_shader_.Get(), NULL, 0);
-
 	// Set the sampler state in the pixel shader.
 	device_context->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 

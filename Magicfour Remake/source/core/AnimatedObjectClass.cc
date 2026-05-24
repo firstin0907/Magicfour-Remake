@@ -12,8 +12,8 @@
 using namespace std; 
 using namespace DirectX;
 
-AnimatedObjectClass::AnimatedObjectClass(const char* filename, bool ignore_first_frame)
-	: channels_num_(0), filename_(std::wstring(filename, filename + strlen(filename)))
+AnimatedObjectClass::AnimatedObjectClass(const char* filename, size_t start_frame, DirectX::XMFLOAT3 scaling, DirectX::XMFLOAT3 offset)
+	: channels_num_(0), filename_(std::wstring(filename, filename + strlen(filename))), scaling_(scaling), offset_(offset)
 {
 	ifstream fin(filename);
 	if (fin.fail()) throw filenotfound_error(filename, WFILE, __LINE__);
@@ -35,7 +35,7 @@ AnimatedObjectClass::AnimatedObjectClass(const char* filename, bool ignore_first
 	fin >> buffer; // Time:
 	fin >> frame_time_;
 
-	if (ignore_first_frame)
+	while (start_frame--)
 	{
 		--frames_num_;
 		for (int i = 0; i < channels_num_ && fin >> buffer; i++); // skip first frame
@@ -98,9 +98,54 @@ AnimatedObjectClass::FrameShape AnimatedObjectClass::UpdateAndGetShapeMatrix(con
 
 	FrameShape result;
 
-	std::vector<float>::iterator frame_info_it = frame_info_.begin() + (frame % frames_num_) * channels_num_;
+	std::vector<float>::const_iterator frame_info_it = frame_info_.begin() + (frame % frames_num_) * channels_num_;
 
 	nodes_[0]->global_transform = transform_of_root;
+
+	for (auto& node : nodes_)
+	{
+		XMMATRIX joint_transform = XMMatrixIdentity();
+		for (channel_t channel : node->channels)
+		{
+			switch (channel)
+			{
+			case ANIMATION_CHANNEL_XPOS:
+				joint_transform = XMMatrixTranslation((*frame_info_it++ + offset_.x) * scaling_.x, 0, 0) * joint_transform; break;
+			case ANIMATION_CHANNEL_YPOS:
+				joint_transform = XMMatrixTranslation(0, ((*frame_info_it++) + offset_.y) * scaling_.y, 0) * joint_transform; break;
+			case ANIMATION_CHANNEL_ZPOS:
+				joint_transform = XMMatrixTranslation(0, 0, (*frame_info_it++ + offset_.z) * scaling_.z ) * joint_transform; break;
+			case ANIMATION_CHANNEL_XROT:
+				joint_transform = XMMatrixRotationX(*frame_info_it++ * 0.0174532925f) * joint_transform; break;
+			case ANIMATION_CHANNEL_YROT:
+				joint_transform = XMMatrixRotationY(*frame_info_it++ * 0.0174532925f) * joint_transform; break;
+			case ANIMATION_CHANNEL_ZROT:
+				joint_transform = XMMatrixRotationZ(*frame_info_it++ * 0.0174532925f) * joint_transform; break;
+				break;
+			}
+		}
+
+		auto parent = node->parent.lock();
+		if (!parent) parent = node;
+
+		node->global_transform = joint_transform * node->link_matrix * parent->global_transform;
+		if (!node->children.empty())
+		{
+			result[node->name] = node->shape_transform * node->global_transform;
+		}
+	}
+
+	return result;
+}
+
+
+AnimatedObjectClass::FrameShape AnimatedObjectClass::GetJointMatrix(const int frame) const
+{
+	if (nodes_.empty()) return {};
+
+	FrameShape result;
+
+	std::vector<float>::const_iterator frame_info_it = frame_info_.begin() + (frame % frames_num_) * channels_num_;
 
 	for (auto& node : nodes_)
 	{
@@ -126,18 +171,16 @@ AnimatedObjectClass::FrameShape AnimatedObjectClass::UpdateAndGetShapeMatrix(con
 			}
 		}
 
-		auto parent = node->parent.lock();
-		if (!parent) parent = node;
-
-		node->global_transform = joint_transform * node->link_matrix * parent->global_transform;
 		if (!node->children.empty())
 		{
-			result[node->name] = node->shape_transform * node->global_transform;
+			result[node->name] = joint_transform;
+
 		}
 	}
 
 	return result;
 }
+
 
 std::shared_ptr<AnimatedObjectClass::AnimationNode>
 AnimatedObjectClass::create_hierarchy(
@@ -152,6 +195,11 @@ AnimatedObjectClass::create_hierarchy(
 		if (buffer == "OFFSET")
 		{
 			fin >> curr_node->offset_x >> curr_node->offset_y >> curr_node->offset_z;
+
+			curr_node->offset_x *= scaling_.x;
+			curr_node->offset_y *= scaling_.y;
+			curr_node->offset_z *= scaling_.z;
+
 			curr_node->link_matrix = XMMatrixTranslation(
 				curr_node->offset_x, curr_node->offset_y, curr_node->offset_z);
 		}

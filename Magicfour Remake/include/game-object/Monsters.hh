@@ -30,7 +30,7 @@ public:
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const override final;
+		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();
@@ -61,7 +61,7 @@ public:
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const override final;
+		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();
@@ -90,7 +90,7 @@ public:
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const override final;
+		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();
@@ -123,7 +123,7 @@ public:
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const override final;
+		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();

@@ -51,6 +51,7 @@ private:
 	unique_ptr<class CameraClass>		camera_;
 
 	ResourceMap<class ModelClass>		models_;
+	ResourceMap<class FbxModel>			fbx_models_;
 	ResourceMap<class TextureClass>		textures_;
 	ResourceMap<class ParticleSystemBaseClass> particle_system_;
 

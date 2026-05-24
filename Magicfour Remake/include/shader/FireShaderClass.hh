@@ -93,7 +93,7 @@ private:
 		ID3D11ShaderResourceView* alpha_texture
 	);
 	
-	void RenderShader(ID3D11DeviceContext* device_context, int index_count);
+	void RenderShader(ID3D11DeviceContext* device_context, int index_count, int index_start = 0);
 
 
 private:

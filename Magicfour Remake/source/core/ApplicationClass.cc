@@ -4,38 +4,45 @@
 
 #include "core/D3DClass.hh"
 #include "core/D2DClass.hh"
-#include "graphics/ModelClass.hh"
-#include "core/InputClass.hh"
-#include "shader/LightShaderClass.hh"
-#include "shader/NormalMapShaderClass.hh"
-#include "shader/FireShaderClass.hh"
-#include "shader/ParticleShaderClass.hh"
-#include "graphics/LightClass.hh"
-#include "shader/StoneShaderClass.hh"
-#include "game-object/CharacterClass.hh"
-#include "game-object/MonsterClass.hh"
-#include "game-object/Monsters.hh"
-#include "core/AnimatedObjectClass.hh"
 #include "core/CameraClass.hh"
-#include "game-object/SkillObjectClass.hh"
-#include "game-object/SkillObjects.hh"
-#include "map/GroundClass.hh"
+#include "core/InputClass.hh"
+#include "core/AnimatedObjectClass.hh"
 #include "core/MonsterSpawnerClass.hh"
-#include "util/TimerClass.hh"
-#include "shader/TextureShaderClass.hh"
+#include "core/GameException.hh"
+#include "core/SoundClass.hh"
+
+#include "graphics/ModelClass.hh"
+#include "graphics/LightClass.hh"
 #include "graphics/TextureClass.hh"
 #include "graphics/ParticleSystemBaseClass.hh"
 #include "graphics/particle-system/RadialSpreadParticleSystem.hh"
 #include "graphics/particle-system/LinearMoveParticleSystem.hh"
+#include "graphics/FbxModel.hh"
+
+#include "shader/LightShaderClass.hh"
+#include "shader/NormalMapShaderClass.hh"
+#include "shader/FireShaderClass.hh"
+#include "shader/ParticleShaderClass.hh"
+#include "shader/StoneShaderClass.hh"
+#include "shader/TextureShaderClass.hh"
+#include "shader/CharacterShaderClass.hh"
+
+#include "game-object/CharacterClass.hh"
+#include "game-object/MonsterClass.hh"
+#include "game-object/Monsters.hh"
+#include "game-object/SkillObjectClass.hh"
+#include "game-object/SkillObjects.hh"
 #include "game-object/ItemClass.hh"
-#include "util/RandomClass.hh"
-#include "core/GameException.hh"
-#include "core/SoundClass.hh"
-#include "util/CollisionProcessor.hh"
+
+#include "map/GroundClass.hh"
 #include "map/FieldClass.hh"
 
 #include "ui/UserInterfaceClass.hh"
 #include "ui/MonsterUI.hh"
+
+#include "util/TimerClass.hh"
+#include "util/RandomClass.hh"
+#include "util/CollisionProcessor.hh"
 
 //#define DEBUG_RANGE
 
@@ -105,6 +112,13 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 			);
 		};
 
+	auto fbxmodel_loader = [this](xml_node_wrapper node) -> std::shared_ptr<FbxModel>
+		{
+			return std::make_shared<FbxModel>(this->direct3d_->GetDevice(),
+				node.get_required_attr("model_path").c_str()
+			);
+		};
+
 	auto particle_loader = [this](xml_node_wrapper node) -> std::shared_ptr<ParticleSystemBaseClass>
 		{
 			return std::make_shared<RadialSpreadParticleSystem>(
@@ -119,6 +133,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 	textures_.loadFromXML("data/resources.xml", "Texture", texture_loader);
 	models_.loadFromXML("data/resources.xml", "Model", model_loader);
+	fbx_models_.loadFromXML("data/resources.xml", "FbxModel", fbxmodel_loader);
 	particle_system_.loadFromXML("data/resources.xml", "RadialSpreadParticleSystem", particle_loader);
 
 	particle_system_.insert("star-spread2",
@@ -354,20 +369,21 @@ void ApplicationClass::Render()
 
 	const XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
-	character_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
+	character_->Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
 
 	// Draw Items
-	items_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
-	skill_object_list_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
+	items_.Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
+	skill_object_list_.Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
 
-	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
-	field_->Draw(curr_time, time_delta, shader_manager_.get(), models_, textures_);
+	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
+	field_->Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
 
 	particle_system_.get("star-spread")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
 	particle_system_.get("star-spread2")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
 
 	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread"), DirectX::XMMatrixScaling(1, 1, 1));
 	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread2"), DirectX::XMMatrixScaling(1, 1, 1));
+
 
 #ifdef DEBUG_RANGE
 
@@ -396,6 +412,7 @@ void ApplicationClass::Render()
 	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
 	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
 	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
+	shader_manager_->character_shader_->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix);
 	
 	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Transparent3D);
 	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaEnable); // Turn on alpha blending for the fire transparency.

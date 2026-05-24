@@ -149,6 +149,7 @@
     <ClCompile Include="source\game-object\SkillObjectClass.cc" />
     <ClCompile Include="source\game-object\SkillObjects.cc" />
     <ClCompile Include="source\graphics\BitmapClass.cc" />
+    <ClCompile Include="source\graphics\FbxModel.cc" />
     <ClCompile Include="source\graphics\FontClass.cc" />
     <ClCompile Include="source\graphics\LightClass.cc" />
     <ClCompile Include="source\graphics\ModelClass.cc" />
@@ -165,6 +166,7 @@
     <ClCompile Include="source\shader\ShaderClass.cc" />
     <ClCompile Include="source\shader\ShaderManager.cc" />
     <ClCompile Include="source\shader\StoneShaderClass.cc" />
+    <ClCompile Include="source\shader\CharacterShaderClass.cc" />
     <ClCompile Include="source\ui\CharacterUI.cc" />
     <ClCompile Include="source\ui\MonsterUI.cc" />
     <ClCompile Include="source\ui\SystemUI.cc" />
@@ -196,9 +198,11 @@
     <ClInclude Include="include\game-object\SkillObjectClass.hh" />
     <ClInclude Include="include\game-object\SkillObjects.hh" />
     <ClInclude Include="include\graphics\BitmapClass.hh" />
+    <ClInclude Include="include\graphics\FbxModel.hh" />
     <ClInclude Include="include\graphics\FontClass.hh" />
     <ClInclude Include="include\graphics\FrustumCuller.hh" />
     <ClInclude Include="include\graphics\LightClass.hh" />
+    <ClInclude Include="include\graphics\Mesh.h" />
     <ClInclude Include="include\graphics\ModelClass.hh" />
     <ClInclude Include="include\graphics\particle-system\LinearMoveParticleSystem.hh" />
     <ClInclude Include="include\graphics\particle-system\ParticleType.hh" />
@@ -207,6 +211,7 @@
     <ClInclude Include="include\graphics\TextureClass.hh" />
     <ClInclude Include="include\map\FieldClass.hh" />
     <ClInclude Include="include\map\GroundClass.hh" />
+    <ClInclude Include="include\shader\CharacterShaderClass.hh" />
     <ClInclude Include="include\shader\FireShaderClass.hh" />
     <ClInclude Include="include\shader\LightShaderClass.hh" />
     <ClInclude Include="include\shader\NormalMapShaderClass.hh" />

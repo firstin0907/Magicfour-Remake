@@ -56,7 +56,7 @@ private:
 	void SetShaderParameters(ID3D11DeviceContext* device_context,
 		XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
-	void RenderShader(ID3D11DeviceContext* device_context, int);
+	void RenderShader(ID3D11DeviceContext* device_context, int index_count, int index_start = 0);
 
 private:
 	ComPtr<ID3D11SamplerState>	sample_state_;

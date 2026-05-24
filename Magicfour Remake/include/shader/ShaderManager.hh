@@ -11,6 +11,7 @@ public:
 	std::unique_ptr<class NormalMapShaderClass>	normalMap_shader_;
 	std::unique_ptr<class FireShaderClass>		fire_shader_;
 	std::unique_ptr<class ParticleShaderClass>  particle_shader_;
+	std::unique_ptr<class CharacterShaderClass> character_shader_;
 
 	ShaderManager(class ID3D11Device* device, class ID3D11DeviceContext* device_context, HWND hwnd);
 	~ShaderManager();

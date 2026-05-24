@@ -13,12 +13,13 @@ public:
 
 public:
 	ShaderClass();
-	~ShaderClass() = default;
+	~ShaderClass();
 
 	template<typename T>
 	ID3D11Buffer* CreateBasicConstantBuffer(ID3D11Device* device);
 
 protected:
+	// Helper functions for shader initialization.
 	void CreateShaderObject(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd,
 		const WCHAR* vs_filename, const WCHAR* ps_filename,
 		D3D11_INPUT_ELEMENT_DESC polygon_layout[], int kNumOfElements);
@@ -26,6 +27,10 @@ protected:
 	ID3D11SamplerState* CreateSamplerState(ID3D11Device* device,
 		D3D11_TEXTURE_ADDRESS_MODE mode = D3D11_TEXTURE_ADDRESS_WRAP);
 
+	// Set the shader to use for rendering.
+	void SetShader(ID3D11DeviceContext* device_context);
+
+	// Helper function for shader error message.
 	void OutputShaderErrorMessage(ID3D10Blob* error_message,
 		HWND hwnd, const WCHAR* shader_filename);
 

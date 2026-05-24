@@ -1,4 +1,7 @@
 <Resources>
+
+  <FbxModel name="character" model_path="data/model/Character/rp_nathan_animated_003_walking.fbx"/>
+  
   <Model name="cube" model_path="data/model/abox.obj">
     <Texture type="diffuse" src="data/texture/stone01.tga"/>
     <Texture type="normal" src="data/texture/normal01.tga"/>
@@ -107,6 +110,24 @@
   <Sound name="spell3" src="data/sound/spell3.wav"/>
   <Sound name="heartbeat" src="data/sound/heartbeat.wav"/>
   <Sound name="gameover" src="data/sound/gameover.wav"/>
+
+  <Motions>
+    <Motion name="idle_legacy" src="data/motion/idle_motion.bvh"/>
+    <Motion name="fall_legacy" src="data/motion/fall_motion.bvh"/>
+    <Motion name="jump_legacy" src="data/motion/jump_motion.txt"/>
+    <Motion name="walk_legacy" src="data/motion/walk_motion.txt"/>
+    <Motion name="run_legacy"  src="data/motion/run_motion.txt"/>
+    <Motion name="stumble_legacy" src="data/motion/stumble_motion.bvh"/>
+    <Motion name="punch_legacy" src="data/motion/skill_motion.bvh"/>
+
+    <Motion name="idle_new" src="data/motion/140_07_idle.bvh"       start="1"  scale="0.025" offset_x ="-41.8469" offset_y="-4.2574" offset_z="-1.96825"/>
+    <Motion name="fall_new" src="data/motion/140_07_idle.bvh"       start="1"  scale="0.025"/>
+    <Motion name="jump_new" src="data/motion/02_04_jump.bvh"        start="1"  scale="0.025" offset_x="-52.1221" offset_y="0" offset_z="0"/>
+    <Motion name="walk_new" src="data/motion/07_01_walk.bvh"        start="1"  scale="0.025"/>
+    <Motion name="run_new" src="data/motion/09_03_run.bvh"          start="1"  scale="0.025"/>
+    <Motion name="stumble_new" src="data/motion/105_59_stumble.bvh" start="1"  scale="0.025" offset_x ="-53.35" offset_y="-10.6806" offset_z="-141.075"/>
+    <Motion name="punch_new" src="data/motion/76_01_punch.bvh"      start="700"  scale="0.025" offset_x="-181.844" offset_y="0" offset_z="-8.14948"/>
+  </Motions>
 
   <RadialSpreadParticleSystem name="star-spread"
        src="data/texture/particle/star1.png" particleSize="0.2" particlePerSecond="100" velocity="0.004" degree="30" lifetime="1000">

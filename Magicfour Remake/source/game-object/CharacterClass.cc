@@ -13,6 +13,8 @@
 
 #include "graphics/ModelClass.hh"
 #include "graphics/TextureClass.hh"
+#include "graphics/FbxModel.hh"
+#include "shader/CharacterShaderClass.hh"
 #include "shader/ShaderManager.hh"
 #include "shader/LightShaderClass.hh"
 #include "shader/StoneShaderClass.hh"
@@ -26,6 +28,96 @@ constexpr int kComboDuration = 5'000;
 constexpr int kInvincibleDuration = 5'000;
 constexpr int kWalkSpd = 700, kRunSpd = 1300;
 
+constexpr double kYRotationDeg = XM_PIDIV2;
+
+
+namespace
+{
+	std::unordered_map<std::string, std::string> kBvhToFbx = {
+		// --- Root & Body Core (몸통) ---
+		// {"hip",            "rp_nathan_animated_003_walking_hip"},
+		// {"abdomen",        "rp_nathan_animated_003_walking_spine_01"},
+		// {"chest_mid",      "rp_nathan_animated_003_walking_spine_02"}, // 추가: 척추 중간
+		// {"chest",          "rp_nathan_animated_003_walking_spine_03"},
+		// {"neck",           "rp_nathan_animated_003_walking_neck"},
+		// {"head",           "rp_nathan_animated_003_walking_head"},
+
+		// // --- Face & Eyes (얼굴) ---
+		// {"leftEye",        "rp_nathan_animated_003_walking_eye_l"},
+		// {"rightEye",       "rp_nathan_animated_003_walking_eye_r"},
+		// {"jaw",            "rp_nathan_animated_003_walking_jaw"},       // 추가
+		// {"eyebrow_l",      "rp_nathan_animated_003_walking_eyebrow_l"}, // 추가
+		// {"eyebrow_r",      "rp_nathan_animated_003_walking_eyebrow_r"}, // 추가
+
+		// // --- Right Arm (오른팔) ---
+		// {"rCollar",        "rp_nathan_animated_003_walking_shoulder_r"},
+		 {"rShldr",         "rp_nathan_animated_003_walking_upperarm_r"},
+		// {"rUpperArmTwist", "rp_nathan_animated_003_walking_upperarm_twist_r"}, // 추가
+		// {"rForeArm",       "rp_nathan_animated_003_walking_lowerarm_r"},
+		// {"rLowerArmTwist", "rp_nathan_animated_003_walking_lowerarm_twist_r"}, // 추가
+		// {"rHand",          "rp_nathan_animated_003_walking_hand_r"},
+
+		// // --- Left Arm (왼팔) ---
+		// {"lCollar",        "rp_nathan_animated_003_walking_shoulder_l"},
+		// {"lShldr",         "rp_nathan_animated_003_walking_upperarm_l"},
+		// {"lUpperArmTwist", "rp_nathan_animated_003_walking_upperarm_twist_l"}, // 추가
+		// {"lForeArm",       "rp_nathan_animated_003_walking_lowerarm_l"},
+		// {"lLowerArmTwist", "rp_nathan_animated_003_walking_lowerarm_twist_l"}, // 추가
+		// {"lHand",          "rp_nathan_animated_003_walking_hand_l"},
+
+		// --- Right Leg (오른다리) ---
+		//{"rButtock",       "rp_nathan_animated_003_walking_upperleg_twist_r"},
+		//{"rThigh",         "rp_nathan_animated_003_walking_upperleg_r"},
+		//{"rShin",          "rp_nathan_animated_003_walking_lowerleg_r"},
+		//{"rLowerLegTwist", "rp_nathan_animated_003_walking_lowerleg_twist_r"}, // 추가
+		//{"rFoot",          "rp_nathan_animated_003_walking_foot_r"},
+		//{"rBall",          "rp_nathan_animated_003_walking_ball_r"},          // 추가: 발가락
+
+		// // --- Left Leg (왼다리) ---
+		// {"lButtock",       "rp_nathan_animated_003_walking_upperleg_twist_l"},
+		// {"lThigh",         "rp_nathan_animated_003_walking_upperleg_l"},
+		// {"lShin",          "rp_nathan_animated_003_walking_lowerleg_l"},
+		// {"lLowerLegTwist", "rp_nathan_animated_003_walking_lowerleg_twist_l"}, // 추가
+		// {"lFoot",          "rp_nathan_animated_003_walking_foot_l"},
+		// {"lBall",          "rp_nathan_animated_003_walking_ball_l"},          // 추가: 발가락
+
+		// // --- Right Fingers (오른손가락 - 3마디 완성) ---
+		// {"rThumb1",  "rp_nathan_animated_003_walking_thumb_01_r"},
+		// {"rThumb2",  "rp_nathan_animated_003_walking_thumb_02_r"},
+		// {"rThumb3",  "rp_nathan_animated_003_walking_thumb_03_r"},
+		// {"rIndex1",  "rp_nathan_animated_003_walking_index_01_r"},
+		// {"rIndex2",  "rp_nathan_animated_003_walking_index_02_r"},
+		// {"rIndex3",  "rp_nathan_animated_003_walking_index_03_r"},
+		// {"rMid1",    "rp_nathan_animated_003_walking_middle_01_r"},
+		// {"rMid2",    "rp_nathan_animated_003_walking_middle_02_r"},
+		// {"rMid3",    "rp_nathan_animated_003_walking_middle_03_r"},
+		// {"rRing1",   "rp_nathan_animated_003_walking_ring_01_r"},
+		// {"rRing2",   "rp_nathan_animated_003_walking_ring_02_r"},
+		// {"rRing3",   "rp_nathan_animated_003_walking_ring_03_r"},
+		// {"rPinky1",  "rp_nathan_animated_003_walking_pinky_01_r"},
+		// {"rPinky2",  "rp_nathan_animated_003_walking_pinky_02_r"},
+		// {"rPinky3",  "rp_nathan_animated_003_walking_pinky_03_r"},
+
+		// // --- Left Fingers (왼손가락 - 3마디 완성) ---
+		// {"lThumb1",  "rp_nathan_animated_003_walking_thumb_01_l"},
+		// {"lThumb2",  "rp_nathan_animated_003_walking_thumb_02_l"},
+		// {"lThumb3",  "rp_nathan_animated_003_walking_thumb_03_l"},
+		// {"lIndex1",  "rp_nathan_animated_003_walking_index_01_l"},
+		// {"lIndex2",  "rp_nathan_animated_003_walking_index_02_l"},
+		// {"lIndex3",  "rp_nathan_animated_003_walking_index_03_l"},
+		// {"lMid1",    "rp_nathan_animated_003_walking_middle_01_l"},
+		// {"lMid2",    "rp_nathan_animated_003_walking_middle_02_l"},
+		// {"lMid3",    "rp_nathan_animated_003_walking_middle_03_l"},
+		// {"lRing1",   "rp_nathan_animated_003_walking_ring_01_l"},
+		// {"lRing2",   "rp_nathan_animated_003_walking_ring_02_l"},
+		// {"lRing3",   "rp_nathan_animated_003_walking_ring_03_l"},
+		// {"lPinky1",  "rp_nathan_animated_003_walking_pinky_01_l"},
+		// {"lPinky2",  "rp_nathan_animated_003_walking_pinky_02_l"},
+		// {"lPinky3",  "rp_nathan_animated_003_walking_pinky_03_l"}
+	};
+
+}
+
 CharacterClass::CharacterClass(int pos_x, int pos_y,
 	class InputClass* input, class SoundClass* sound,
 	vector<unique_ptr<class IGameObject> >& skill_objs)
@@ -34,13 +126,32 @@ CharacterClass::CharacterClass(int pos_x, int pos_y,
 		rect_t{ -50000, 0, 50000, 400000 }, kLeftForword
 	), jump_cnt(0), score_(0), input(input), sound(sound), skill_objs(skill_objs)
 {
-	jump_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\jump_motion.txt", true);
-	fall_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\fall_motion.bvh", true);
-	walk_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\walk_motion.txt", true);
-	run_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\run_motion.txt", true);
-	skill_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\skill_motion.bvh", true);
-	idle_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\idle_motion.bvh", true);
-	stumble_animation_data_ = make_unique<AnimatedObjectClass>("data\\motion\\stumble_motion.bvh", true);
+
+	motions_.loadFromXML("data/resources.xml", "Motion",
+		[this](xml_node_wrapper node) -> unique_ptr<AnimatedObjectClass>
+		{
+			std::string src = node.get_required_attr("src");
+
+			std::string scale_str = node.get_attr("scale", "");
+			float scale_x = stof(node.get_attr("scale_x", "1.0"));
+			float scale_y = stof(node.get_attr("scale_y", "1.0"));
+			float scale_z = stof(node.get_attr("scale_z", "1.0"));
+			if (!scale_str.empty())
+			{
+				scale_x = scale_y = scale_z = stof(scale_str);
+			}
+
+			float offset_x = stof(node.get_attr("offset_x", "0"));
+			float offset_y = stof(node.get_attr("offset_y", "0"));
+			float offset_z = stof(node.get_attr("offset_z", "0"));
+
+			size_t start_frame = stoull(node.get_attr("start", "0"));
+
+			return std::make_unique<AnimatedObjectClass>(src.c_str(),
+				start_frame,
+				XMFLOAT3(scale_x, scale_y, scale_z),
+				XMFLOAT3(offset_x, offset_y, offset_z));
+		});
 
 	SetState(CharacterState::kNormal, 0);
 
@@ -266,18 +377,97 @@ bool CharacterClass::Frame(time_t time_delta, time_t curr_time)
 }
 
 void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const 
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
-	vector<XMMATRIX> char_model_matrices;
-	GetShapeMatrices(curr_time, char_model_matrices);
-
 	ID3D11ShaderResourceView* char_texture = models.get("cube")->GetDiffuseTexture();
 	if (curr_time <= GetTimeInvincibleEnd()) char_texture = textures.get("rainbow")->GetTexture();
 
-	for (auto& box : char_model_matrices) {
+	auto char_model_matrices = GetShapeMatrices(curr_time);
+	for (auto& [name, box] : char_model_matrices)
+	{
 		shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
 			box * GetLocalWorldMatrix(), char_texture);
 	}
+
+	/// 하하하 이제부터 리깅 된 모델로 그릴거야 하하하
+	auto nam2 = [&](CharacterState state, float state_elapsed_seconds) -> AnimatedObjectClass::FrameShape
+		{
+			XMMATRIX root_transform = XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PI * 0.65f));
+			switch (state)
+			{
+			case CharacterState::kNormal:
+			case CharacterState::kStop:
+				root_transform *= XMMatrixRotationY(-XM_PI * 0.5f);
+				return motions_.get("idle_new")->GetJointMatrix(
+					state_elapsed_seconds / 0.01333333 );
+
+			case CharacterState::kWalk:
+				return motions_.get("walk_legacy")->GetJointMatrix(
+					state_elapsed_seconds / 0.00333333 );
+
+			case CharacterState::kRun:
+				return motions_.get("run_legacy")->GetJointMatrix(
+					state_elapsed_seconds / 0.00333333 );
+			case CharacterState::kJump:
+			case CharacterState::kRunJump:
+				if (GetStateTime(curr_time) > 90)
+					return motions_.get("jump_new")->GetJointMatrix(
+						20 + state_elapsed_seconds / 0.00333333 );
+				else
+					return motions_.get("jump_new")->GetJointMatrix(
+						43 + state_elapsed_seconds / 0.00833333 );
+				break;
+
+			case CharacterState::kSpell:
+				if (skill_currently_used_.skill_type == 1)
+				{
+					root_transform *= XMMatrixRotationY(-XM_PI);
+					return motions_.get("stumble_new")->GetJointMatrix(
+						50 + state_elapsed_seconds / 0.00333333 );
+				}
+				else
+				{
+					root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
+					return motions_.get("punch_new")->GetJointMatrix(
+						state_elapsed_seconds / 0.00133333 );
+				}
+				break;
+
+			case CharacterState::kHit:
+			case CharacterState::kSlip:
+				return motions_.get("fall_new")->GetJointMatrix(
+					50 + state_elapsed_seconds / 0.00433333 );
+
+			case CharacterState::kDie:
+				return motions_.get("fall_new")->GetJointMatrix(
+					min(394., 50 + state_elapsed_seconds / 0.01433333 ));
+
+			}
+		};
+
+
+	auto current_shape2 = nam2(state_, (float)GetStateTime(curr_time) / 1000.0f);
+	AnimatedObjectClass::FrameShape current_shape3;
+	for (auto& [name, matrix] : current_shape2)
+	{
+		std::string converted_name = name;
+
+		if (kBvhToFbx.find(name) != kBvhToFbx.end())
+			converted_name = kBvhToFbx[name];
+
+		current_shape3[converted_name] = matrix;
+	}
+	fbx_models.get("character")->Update(current_shape3);
+
+	double scaling = 0.05;
+	/*
+	shader_manager->character_shader_->PushRenderQueue(
+		fbx_models.get("character"),
+		DirectX::XMMatrixRotationY(M_PI_2) *
+		DirectX::XMMatrixScaling(scaling, scaling, scaling)
+		* DirectX::XMMatrixTranslation(-2, 0, 0)
+		* GetLocalWorldMatrix()
+	);*/
 
 	XMMATRIX skill_stone_pos = GetSkillStonePos(curr_time);
 
@@ -319,7 +509,7 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 			skill_color.w += (1 - skill_color.w) * brightness * 0.6;
 		}
 
-		shader_manager->stone_shader_->PushRenderQueue(models.get("diamond"), 
+		shader_manager->stone_shader_->PushRenderQueue(models.get("diamond"),
 			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
 			skill_color);
 	}
@@ -328,76 +518,126 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 	// Draw Gaurdian bead
 	for (int i = 0; GetGuardian(i) != nullptr; i++)
 	{
-		GetGuardian(i)->Draw(curr_time, time_delta, shader_manager, models, textures);
+		GetGuardian(i)->Draw(curr_time, time_delta, shader_manager, models, fbx_models, textures);
 	}
 }
 
-void CharacterClass::GetShapeMatrices(time_t curr_time, std::vector<XMMATRIX>& shape_matrices) const
+std::unordered_map<std::string, XMMATRIX> CharacterClass::GetShapeMatrices(time_t curr_time) const
 {
-	auto nam = [&](CharacterState state, float state_elapsed_seconds) -> AnimatedObjectClass::FrameShape
-	{
-		XMMATRIX root_transform = XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PI * 0.65f));
-		//XMMATRIX root_transform = XMMatrixIdentity();
-		switch (state)
-		{
-		case CharacterState::kNormal:
-		case CharacterState::kStop:
-			root_transform *= XMMatrixRotationY(-XM_PI * 0.5f);
-			return idle_animation_data_->UpdateAndGetShapeMatrix(
-				state_elapsed_seconds / 0.01333333, root_transform);
-
-		case CharacterState::kWalk:
-			return walk_animation_data_->UpdateAndGetShapeMatrix(
-				state_elapsed_seconds / 0.00333333, root_transform);
-
-		case CharacterState::kRun:
-			return run_animation_data_->UpdateAndGetShapeMatrix(
-				state_elapsed_seconds / 0.00333333, root_transform);
-
-		case CharacterState::kJump:
-		case CharacterState::kRunJump:
-			if(GetStateTime(curr_time) > 90)
-				return jump_animation_data_->UpdateAndGetShapeMatrix(
-					20 + state_elapsed_seconds / 0.00333333, root_transform);
-			else
-				return jump_animation_data_->UpdateAndGetShapeMatrix(
-					43 + state_elapsed_seconds / 0.00833333, root_transform);
-			break;
-			
-		case CharacterState::kSpell:
-			if (skill_currently_used_.skill_type == 1)
-			{
-				root_transform *= XMMatrixRotationY(-XM_PI);
-				return stumble_animation_data_->UpdateAndGetShapeMatrix(
-					50 + state_elapsed_seconds / 0.00333333, root_transform);
-			}
-			else
-			{
-				root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
-				return skill_animation_data_->UpdateAndGetShapeMatrix(
-					state_elapsed_seconds / 0.00133333, root_transform);
-			}
-			break;
-
-		case CharacterState::kHit:
-		case CharacterState::kSlip:
-			return fall_animation_data_->UpdateAndGetShapeMatrix(
-				50 + state_elapsed_seconds / 0.00433333, root_transform);
-
-		case CharacterState::kDie:
-			return fall_animation_data_->UpdateAndGetShapeMatrix(
-				min(394, 50 + state_elapsed_seconds / 0.01433333), root_transform);
-
-		}
-	};
-
-	auto current_shape = nam(state_, (float)GetStateTime(curr_time) / 1000.0f);
-	auto previous_shape = nam(prev_state_, (float)GetStateTime(curr_time) / 1000.0f);
-
+	// TODO: Fix It. (prev_state_'s state time is not considered.)
 	auto lerp_shape = AnimatedObjectClass::MergeFrameShapes(
-		previous_shape, current_shape,
+		GetShapeMatricesAtState(prev_state_, (float)GetStateTime(curr_time) / 1000.0f),
+		GetShapeMatricesAtState(state_,      (float)GetStateTime(curr_time) / 1000.0f),
 		min(1.0f, (float)GetStateTime(curr_time) / 100.0f));
-	for (auto& [name, matrix] : lerp_shape) shape_matrices.push_back(matrix);
+
+	return lerp_shape;
+}
+
+std::unordered_map<std::string, XMMATRIX> CharacterClass::GetShapeMatricesAtState
+	(CharacterState state, float state_elapsed_seconds) const
+{
+	XMMATRIX root_transform = XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PI * 0.65f));
+	switch (state)
+	{
+	case CharacterState::kNormal:
+	case CharacterState::kStop:
+		root_transform *= XMMatrixRotationY(-XM_PI * 0.5f);
+		return motions_.get("idle_new")->UpdateAndGetShapeMatrix(
+			state_elapsed_seconds / 0.01333333, root_transform);
+
+	case CharacterState::kWalk:
+		return motions_.get("walk_legacy")->UpdateAndGetShapeMatrix(
+			state_elapsed_seconds / 0.00333333, root_transform);
+
+	case CharacterState::kRun:
+		return motions_.get("run_legacy")->UpdateAndGetShapeMatrix(
+			state_elapsed_seconds / 0.00333333, root_transform);
+
+	case CharacterState::kJump:
+	case CharacterState::kRunJump:
+		if (state_elapsed_seconds > 0.0090)
+			return motions_.get("jump_new")->UpdateAndGetShapeMatrix(
+				20 + state_elapsed_seconds / 0.00333333, root_transform);
+		else
+			return motions_.get("jump_new")->UpdateAndGetShapeMatrix(
+				43 + state_elapsed_seconds / 0.00833333, root_transform);
+		break;
+
+	case CharacterState::kSpell:
+		if (skill_currently_used_.skill_type == 1)
+		{
+			root_transform *= XMMatrixRotationY(-XM_PI);
+			return motions_.get("stumble_new")->UpdateAndGetShapeMatrix(
+				50 + state_elapsed_seconds / 0.00333333 , root_transform);
+		}
+		else
+		{
+			root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
+			return motions_.get("punch_new")->UpdateAndGetShapeMatrix(
+				state_elapsed_seconds / 0.00133333 , root_transform);
+		}
+		break;
+
+	case CharacterState::kHit:
+	case CharacterState::kSlip:
+		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
+			50 + state_elapsed_seconds / 0.00433333 , root_transform);
+
+	case CharacterState::kDie:
+		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
+			min(394., 50 + state_elapsed_seconds / 0.01433333 ), root_transform);
+	}
+}
+
+std::pair<std::string, size_t> CharacterClass::GetMotionNameAndFrame(CharacterState state, float state_elapsed_seconds) const
+{
+	switch (state_)
+	{
+	case CharacterState::kNormal:
+	case CharacterState::kStop:
+		return { "idle_new",	(size_t)(state_elapsed_seconds / 0.01333333) };
+
+	case CharacterState::kWalk:
+		return { "walk_legacy",	(size_t)(state_elapsed_seconds / 0.00333333) };
+
+	case CharacterState::kRun:
+		return { "run_legacy",	(size_t)(state_elapsed_seconds / 0.00333333) };
+
+	case CharacterState::kJump:
+	case CharacterState::kRunJump:
+		if (state_elapsed_seconds > 0.0090)
+			return { "jump_new", (size_t)(20 + state_elapsed_seconds / 0.00333333) };
+		else
+			return { "jump_new", (size_t)(43 + state_elapsed_seconds / 0.00833333) };
+
+	default:
+		// NOt used for now.
+		return { "", 0 };
+	}
+	/*case CharacterState::kSpell:
+		if (skill_currently_used_.skill_type == 1)
+		{
+			root_transform *= XMMatrixRotationY(-XM_PI);
+			return motions_.get("stumble_new")->UpdateAndGetShapeMatrix(
+				50 + state_elapsed_seconds / 0.00333333, root_transform);
+		}
+		else
+		{
+			root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
+			return motions_.get("punch_new")->UpdateAndGetShapeMatrix(
+				state_elapsed_seconds / 0.00133333, root_transform);
+		}
+		break;
+
+	case CharacterState::kHit:
+	case CharacterState::kSlip:
+		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
+			50 + state_elapsed_seconds / 0.00433333, root_transform);
+
+	case CharacterState::kDie:
+		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
+			min(394., 50 + state_elapsed_seconds / 0.01433333), root_transform);
+	};*/
 }
 
 bool CharacterClass::OnCollided(time_t curr_time, int vx)
@@ -504,7 +744,7 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 	const time_t state_time = GetStateTime(curr_time);
 	const time_t prev_state_time =
 		(state_time >= time_delta) ? state_time - time_delta : 0;
-		
+
 	switch (skill_currently_used_.skill_type)
 	{
 	case 0:
@@ -520,7 +760,7 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 				skill_objs.emplace_back(new SkillObjectBasic(position_.x + DIR_WEIGHT(direction_, 185000), position_.y,
 					DIR_WEIGHT(direction_, 100), 0, state_start_time_ + 100));
 			}
-			
+
 		}
 		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 300);
 		break;
@@ -553,7 +793,7 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 				}
 			}
 
-			
+
 		}
 		SetStateIfTimeOver(CharacterState::kNormal, curr_time, 800);
 		break;
@@ -624,7 +864,7 @@ void CharacterClass::OnSkill(time_t curr_time, time_t time_delta,
 	}
 }
 
-	
+
 
 bool CharacterClass::UseSkill(time_t curr_time,
 	vector<unique_ptr<class IGameObject> >& skill_objs,
@@ -699,11 +939,11 @@ bool CharacterClass::UseSkill(time_t curr_time,
 		}
 	}
 
-	
+
 	if (skill_bonus_ == SkillBonus::BONUS_TRIPLE)
 		skill_currently_used_.skill_power += 3;
 
-	
+
 
 
 	if (skill_bonus_ == SkillBonus::BONUS_STRAIGHT || skill_bonus_ == SkillBonus::BONUS_STRAIGHT_FLUSH)

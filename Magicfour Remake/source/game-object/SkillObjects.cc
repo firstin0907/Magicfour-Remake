@@ -111,7 +111,7 @@ bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectSpear::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	const XMMATRIX shape = XMMatrixRotationY(XM_PI / 2) * XMMatrixRotationZ(XM_PI - angle_)
 		* XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
@@ -200,7 +200,7 @@ bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectBead::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	const XMMATRIX orb_shape = XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
 		;//* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
@@ -294,7 +294,7 @@ bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectLeg::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 	shader_manager->normalMap_shader_->PushRenderQueue(models.get("leg"), shape);
@@ -351,7 +351,7 @@ bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectBasic::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 	shader_manager->normalMap_shader_->PushRenderQueue(models.get("basic"), shape);
@@ -413,7 +413,7 @@ bool SkillObjectShield::Frame(time_t curr_time, time_t time_delta)
 
 
 void SkillObjectShield::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	XMMATRIX shape;
 	if (velocity_.x > 0)
@@ -465,7 +465,7 @@ SkillObjectGuardian::SkillObjectGuardian()
 }
 
 void SkillObjectGuardian::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 	shader_manager->normalMap_shader_->PushRenderQueue(models.get("orb"), shape);

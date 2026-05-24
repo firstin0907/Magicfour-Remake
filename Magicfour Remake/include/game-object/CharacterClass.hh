@@ -43,9 +43,16 @@ public:
 	virtual bool IsColliable() const override final { return true; };
 
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const override final;
+		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
+
+private:
+	std::unordered_map<std::string, XMMATRIX> GetShapeMatrices(time_t curr_time) const;
+	std::unordered_map<std::string, XMMATRIX> GetShapeMatricesAtState(CharacterState state, float state_elapsed_second) const;
+
+	std::pair<std::string, size_t> GetMotionNameAndFrame(CharacterState state, float state_elapsed_second) const;
+
 	
-	void GetShapeMatrices(time_t curr_time, vector<XMMATRIX>& shape_matrices) const;
+public:
 	inline time_t GetTimeInvincibleEnd() const { return time_invincible_end_; }
 
 
@@ -136,14 +143,7 @@ private:
 
 
 	unique_ptr<class SkillObjectGuardian> guardians_[2];
-
-	unique_ptr<class AnimatedObjectClass> jump_animation_data_;
-	unique_ptr<class AnimatedObjectClass> fall_animation_data_;
-	unique_ptr<class AnimatedObjectClass> walk_animation_data_;
-	unique_ptr<class AnimatedObjectClass> run_animation_data_;
-	unique_ptr<class AnimatedObjectClass> skill_animation_data_;
-	unique_ptr<class AnimatedObjectClass> idle_animation_data_;
-	unique_ptr<class AnimatedObjectClass> stumble_animation_data_;
+	ResourceMap<class AnimatedObjectClass> motions_;
 
 private:
 	class InputClass* input;

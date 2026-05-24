@@ -21,6 +21,8 @@ void ParticleShaderClass::PushRenderQueue(std::shared_ptr<ParticleSystemBaseClas
 
 void ParticleShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context, XMMATRIX vp_matrix)
 {
+	SetShader(device_context);
+
 	for (auto& [particle_system, commands] : render_queue_)
 	{
 		// Batch processing for draw calls with same particle system
@@ -117,13 +119,6 @@ bool ParticleShaderClass::SetShaderParameters(ID3D11DeviceContext* device_contex
 
 void ParticleShaderClass::RenderShader(ID3D11DeviceContext* device_context, int index_count, int index_start)
 {
-	// Set the vertex input layout.
-	device_context->IASetInputLayout(input_layout_.Get());
-
-	// Set the vertex and pixel shaders that will be used to render this triangle.
-	device_context->VSSetShader(vertex_shader_.Get(), NULL, 0);
-	device_context->PSSetShader(pixel_shader_.Get(), NULL, 0);
-
 	// Set the sampler state in the pixel shader.
 	device_context->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 

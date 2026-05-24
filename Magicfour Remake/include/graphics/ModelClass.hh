@@ -7,6 +7,8 @@
 #include <directxcollision.h>
 #include <variant>
 
+#include "Mesh.h"
+
 class ModelClass
 {
 private:
@@ -83,7 +85,6 @@ public:
 	ModelClass(const ModelClass&) = delete;
 	~ModelClass();
 
-	void Shutdown();
 	void Render(ID3D11DeviceContext* device_context);
 
 	inline const std::vector<std::pair<MaterialType, int> >& GetMaterial()
@@ -104,7 +105,6 @@ public:
 
 private:
 	void InitializeBuffers(ID3D11Device* device);
-	void RenderBuffers(ID3D11DeviceContext* device_context);
 
 	void LoadTextures(ID3D11Device* device,
 		const wchar_t* diffuse_filename,
@@ -112,15 +112,13 @@ private:
 		const wchar_t* emissive_filename);
 
 	void LoadModel(const char*);
-	void ReleaseModel();
-
 
 	void CalculateModelVectors();
 	void CalculateTangentBinormal(TempVertexType, TempVertexType, TempVertexType, VectorType&, VectorType&);
 
 
 private:
-	ComPtr<ID3D11Buffer> vertex_buffer_, index_buffer_;
+	MeshBuffer<VertexType> mesh_buffer_;
 	int vertex_count_, index_count_;
 
 	std::shared_ptr<class TextureClass> diffuse_texture_;

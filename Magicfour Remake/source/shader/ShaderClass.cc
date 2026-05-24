@@ -4,9 +4,9 @@
 
 #include "core/GameException.hh"
 
-ShaderClass::ShaderClass()
-{
-}
+ShaderClass::ShaderClass() = default;
+
+ShaderClass::~ShaderClass() = default;
 
 void ShaderClass::CreateShaderObject(ID3D11Device* device,
 	ID3D11DeviceContext* device_context, HWND hwnd,
@@ -91,6 +91,18 @@ ID3D11SamplerState* ShaderClass::CreateSamplerState(ID3D11Device* device,
 	return sampler_state;
 }
 ;
+
+void ShaderClass::SetShader(ID3D11DeviceContext* device_context)
+{
+	// Set the vertex input layout.
+	device_context->IASetInputLayout(input_layout_.Get());
+
+	// Set the vertex and pixel shaders that will be used to render this triangle.
+	device_context->VSSetShader(vertex_shader_.Get(), NULL, 0);
+	device_context->PSSetShader(pixel_shader_.Get(), NULL, 0);
+
+	return;
+}
 
 void ShaderClass::OutputShaderErrorMessage(
 	ID3D10Blob* error_message, HWND hwnd, const WCHAR* shader_filename)

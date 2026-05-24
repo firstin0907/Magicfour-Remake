@@ -47,7 +47,7 @@ public:
     };
 
 public:
-    AnimatedObjectClass(const char* filename, bool ignore_first_frame = false);
+    AnimatedObjectClass(const char* filename, size_t start_frame = 0, DirectX::XMFLOAT3 scaling = { 1.f, 1.f, 1.f }, DirectX::XMFLOAT3 offset = {0, 0, 0});
     ~AnimatedObjectClass();
 
     /// @brief Merges two frame shapes with linear interpolation.
@@ -63,6 +63,7 @@ public:
     );
 
     FrameShape UpdateAndGetShapeMatrix(const int frame, DirectX::XMMATRIX transform_of_root);
+    FrameShape GetJointMatrix(const int frame) const;
 
 private:
     std::shared_ptr<AnimationNode> create_hierarchy(
@@ -72,6 +73,9 @@ private:
     std::wstring filename_;
     int channels_num_, frames_num_;
     float frame_time_;
+
+	DirectX::XMFLOAT3 scaling_, offset_;
+
 
     std::vector<std::shared_ptr<AnimationNode>> nodes_;
     std::vector<float> frame_info_;

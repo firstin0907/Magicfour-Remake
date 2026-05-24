@@ -28,7 +28,7 @@ FieldClass::FieldClass(const char* filename)
 }
 
 void FieldClass::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	// Draw Background
 	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);

@@ -6,7 +6,7 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 input_file = sys.argv[1]  # 입력 파일 경로
-output_file = "stumble_motion.bvh"  # 출력 파일 경로
+output_file = "out.bvh"  # 출력 파일 경로
 
 offset_on = False
 offset = None

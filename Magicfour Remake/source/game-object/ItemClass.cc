@@ -92,7 +92,7 @@ bool ItemClass::IsColliable() const
 
 
 void ItemClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const 
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const 
 {
 	constexpr XMFLOAT4 kSkillColor[5] =
 	{

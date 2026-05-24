@@ -100,7 +100,7 @@ void FireShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 				param.fire_texture, param.noise_texture, param.alpha_texture);
 
 			// Now render the prepared buffers with the shader.
-			RenderShader(device_context, model->GetIndexCount());
+			RenderShader(device_context, model->GetIndexCount(), 0);
 		}
 	}
 
@@ -212,7 +212,7 @@ void FireShaderClass::SetShaderParameters(ID3D11DeviceContext* device_context,
 
 }
 
-void FireShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount)
+void FireShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount, int index_start)
 {
 	// Set the vertex input layout.
 	device_context->IASetInputLayout(input_layout_.Get());
@@ -225,8 +225,8 @@ void FireShaderClass::RenderShader(ID3D11DeviceContext* device_context, int inde
 	device_context->PSSetSamplers(0, 1, sample_state_wrap_.GetAddressOf());
 	device_context->PSSetSamplers(1, 1, sample_state_clamp_.GetAddressOf());
 
-	// Render the triangle.
-	device_context->DrawIndexed(indexCount, 0, 0);
+	// Render indexed geometry with optional start offset.
+	device_context->DrawIndexed(indexCount, index_start, 0);
 
 	return;
 }

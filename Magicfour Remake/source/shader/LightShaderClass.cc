@@ -44,6 +44,8 @@ void LightShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 	const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
 {
 	FrustumCuller fruster_culler(vp_matrix);
+
+	SetShader(device_context);
 	for (auto& [model, params] : render_queue_)
 	{
 		// Batch processing for draw calls with same model
@@ -57,7 +59,7 @@ void LightShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 			SetShaderParameters(device_context, param.world_matrix, vp_matrix, param.texture, light_direction, diffuse_color);
 
 			// Now render the prepared buffers with the shader.
-			RenderShader(device_context, model->GetIndexCount());
+			RenderShader(device_context, model->GetIndexCount(), 0);
 		}
 	}
 
@@ -160,20 +162,13 @@ void LightShaderClass::SetShaderParameters(ID3D11DeviceContext* device_context, 
 }
 
 
-void LightShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount)
+void LightShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount, int index_start)
 {
-	// Set the vertex input layout.
-	device_context->IASetInputLayout(input_layout_.Get());
-
-	// Set the vertex and pixel shaders that will be used to render this triangle.
-	device_context->VSSetShader(vertex_shader_.Get(), NULL, 0);
-	device_context->PSSetShader(pixel_shader_.Get(), NULL, 0);
-
 	// Set the sampler state in the pixel shader.
 	device_context->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 
-	// Render the triangle.
-	device_context->DrawIndexed(indexCount, 0, 0);
+	// Render the indexed geometry; use start offset if supplied.
+	device_context->DrawIndexed(indexCount, index_start, 0);
 
 	return;
 }

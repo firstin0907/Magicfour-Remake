@@ -177,7 +177,7 @@ bool MonsterDuck::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterDuck::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
 		GetRangeRepresentMatrix());
@@ -267,7 +267,7 @@ bool MonsterOctopus::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterOctopus::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
 		GetRangeRepresentMatrix());
@@ -410,7 +410,7 @@ bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterBird::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
 		GetRangeRepresentMatrix());
@@ -511,7 +511,7 @@ bool MonsterStop::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterStop::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class TextureClass>& textures) const
+	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
 {
 	const XMMATRIX shape = XMMatrixRotationY((curr_time - state_start_time_) * 0.001f)
 		* XMMatrixTranslation(kScope * position_.x, kScope * position_.y + 0.5f, 0);

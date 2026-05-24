@@ -14,7 +14,7 @@ void TextureShaderClass::Render(ID3D11DeviceContext* device_context, class Model
 	XMMATRIX world_matrix, XMMATRIX vp_matrix, ID3D11ShaderResourceView* texture)
 {
 	SetShaderParameters(world_matrix, vp_matrix, texture);
-	RenderShader(model->GetIndexCount());
+	RenderShader(model->GetIndexCount(), 0);
 }
 
 void TextureShaderClass::InitializeShader(HWND hwnd,
@@ -79,18 +79,11 @@ void TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* device_context
 	device_context_->PSSetShaderResources(0, 1, &texture);
 }
 
-void TextureShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount)
+void TextureShaderClass::RenderShader(ID3D11DeviceContext* device_context, int indexCount, int index_start)
 {
-	// Set the vertex input layout.
-	device_context_->IASetInputLayout(input_layout_.Get());
-
-	// Set the vertex and pixel shaders that will be used to render this triangle.
-	device_context_->VSSetShader(vertex_shader_.Get(), NULL, 0);
-	device_context_->PSSetShader(pixel_shader_.Get(), NULL, 0);
-
 	// Set the sampler state in the pixel shader.
 	device_context_->PSSetSamplers(0, 1, sample_state_.GetAddressOf());
 
 	// Render the triangle.
-	device_context_->DrawIndexed(indexCount, 0, 0);
+	device_context_->DrawIndexed(indexCount, index_start, 0);
 }

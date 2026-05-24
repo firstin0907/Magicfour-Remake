@@ -66,23 +66,13 @@ ModelClass::ModelClass(ID3D11Device* device,
 }
 
 
-ModelClass::~ModelClass()
-{
-}
-
-void ModelClass::Shutdown()
-{
-	// Release the model_ data.
-	ReleaseModel();
-}
+ModelClass::~ModelClass() = default;
 
 
 void ModelClass::Render(ID3D11DeviceContext* device_context)
 {
 	// Put the vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	RenderBuffers(device_context);
-
-	return;
+	mesh_buffer_.Render(device_context);
 }
 
 
@@ -116,10 +106,6 @@ void ModelClass::InitializeBuffers(ID3D11Device* device)
 	std::vector<VertexType> vertices(vertex_count_);
 	std::vector<unsigned long> indices(index_count_);
 
-	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexData, indexData;
-	HRESULT result;
-
 	// Load the vertex array and index array with data.
 	for (int i = 0; i < vertex_count_; i++)
 	{
@@ -132,56 +118,9 @@ void ModelClass::InitializeBuffers(ID3D11Device* device)
 		indices[i] = i;
 	}
 
-	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertex_count_;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the vertex data.
-	vertexData.pSysMem = vertices.data();
-	vertexData.SysMemPitch = 0;
-	vertexData.SysMemSlicePitch = 0;
-
-	// Now create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, vertex_buffer_.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create vertex buffer.");
-
-	// Set up the description of the static index buffer.
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * index_count_;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the index data.
-	indexData.pSysMem = indices.data();
-	indexData.SysMemPitch = 0;
-	indexData.SysMemSlicePitch = 0;
-
-	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, index_buffer_.GetAddressOf());
-	if (FAILED(result)) throw GAME_EXCEPTION(L"Failed to create index buffer.");
+	mesh_buffer_.Initialize(device, vertices, indices);
 }
 
-void ModelClass::RenderBuffers(ID3D11DeviceContext* device_context)
-{
-	// Set vertex buffer stride and offset.
-	unsigned int stride = sizeof(VertexType);
-	unsigned int offset = 0;
-
-	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	device_context->IASetVertexBuffers(0, 1, vertex_buffer_.GetAddressOf(), &stride, &offset);
-
-	// Set the index buffer to active in the input assembler so it can be rendered.
-	device_context->IASetIndexBuffer(index_buffer_.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
-	device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-}
 
 
 void ModelClass::LoadTextures(ID3D11Device* device,
@@ -476,12 +415,5 @@ void ModelClass::CalculateTangentBinormal(TempVertexType vertex1, TempVertexType
 	binormal.y = binormal.y / length;
 	binormal.z = binormal.z / length;
 
-	return;
-}
-
-
-
-void ModelClass::ReleaseModel()
-{
 	return;
 }

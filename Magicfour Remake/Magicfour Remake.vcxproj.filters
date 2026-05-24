@@ -188,6 +188,12 @@
     <ClCompile Include="source\graphics\particle-system\LinearMoveParticleSystem.cc">
       <Filter>소스 파일\graphics\particle-system</Filter>
     </ClCompile>
+    <ClCompile Include="source\graphics\FbxModel.cc">
+      <Filter>소스 파일\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\shader\CharacterShaderClass.cc">
+      <Filter>소스 파일\shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\util\RandomClass.hh">
@@ -348,6 +354,15 @@
     </ClInclude>
     <ClInclude Include="include\core\interface\IGameObject.hh">
       <Filter>헤더 파일\core\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\FbxModel.hh">
+      <Filter>헤더 파일\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\Mesh.h">
+      <Filter>헤더 파일\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shader\CharacterShaderClass.hh">
+      <Filter>헤더 파일\shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
