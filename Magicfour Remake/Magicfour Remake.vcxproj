@@ -177,7 +177,7 @@
     <ClInclude Include="include\core\AnimatedObjectClass.hh" />
     <ClInclude Include="include\core\ApplicationClass.hh" />
     <ClInclude Include="include\core\CameraClass.hh" />
-    <ClInclude Include="include\core\common\GameContext.hh" />
+    <ClInclude Include="include\core\common\GraphicResources.hh" />
     <ClInclude Include="include\core\common\Stateful.hh" />
     <ClInclude Include="include\core\D2DClass.hh" />
     <ClInclude Include="include\core\D3DClass.hh" />

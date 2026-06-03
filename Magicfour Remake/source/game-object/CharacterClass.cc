@@ -7,17 +7,21 @@
 #include "core/InputClass.hh"
 #include "core/AnimatedObjectClass.hh"
 #include "game-object/SkillObjects.hh"
-#include "map/GroundClass.hh"
+#include "map/FieldClass.hh"
 #include "core/SoundClass.hh"
 #include "util/RandomClass.hh"
 
 #include "graphics/ModelClass.hh"
 #include "graphics/TextureClass.hh"
 #include "graphics/FbxModel.hh"
+#include "graphics/ParticleSystemBaseClass.hh"
+
 #include "shader/CharacterShaderClass.hh"
 #include "shader/ShaderManager.hh"
 #include "shader/LightShaderClass.hh"
 #include "shader/StoneShaderClass.hh"
+#include "shader/ParticleShaderClass.hh"
+
 #include "util/ResourceMap.hh"
 
 using namespace DirectX;
@@ -169,84 +173,59 @@ CharacterClass::CharacterClass(int pos_x, int pos_y,
 	guardians_[1] = make_unique<SkillObjectGuardian>();
 }
 
-void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector<class GroundClass>& ground)
+void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const FieldClass* ground)
 {
-	bool is_walk = false;
+	bool is_walk = input->IsKeyPressed(DIK_LEFT) ^ input->IsKeyPressed(DIK_RIGHT);
+	bool state_controllable = IsStateNotIn({
+		CharacterState::kSpell, CharacterState::kHit, CharacterState::kSlip, CharacterState::kDie
+		});
+	bool is_on_ground = (jump_cnt == 0);
+	bool is_run = IsStateIn({
+		CharacterState::kRun, CharacterState::kRunJump
+		});
 
-	if (state_ != CharacterState::kHit && state_ != CharacterState::kSlip && state_ != CharacterState::kDie)
+
+	if (state_controllable)
 	{
-		if (input->IsKeyPressed(DIK_LEFT))
-		{
-			direction_ = kLeftForword;
-
-			is_walk = !is_walk;
-		}
-
-		if (input->IsKeyPressed(DIK_RIGHT))
-		{
-			direction_ = kRightForward;
-
-			is_walk = !is_walk;
-		}
+		// Move Attempt
+		// If both left and right keys are pressed, the character will not move.
+		if (input->IsKeyPressed(DIK_LEFT))  direction_ = kLeftForword;
+		if (input->IsKeyPressed(DIK_RIGHT)) direction_ = kRightForward;
+		
+		// Skill Attempt
 		if (input->IsKeyDown(DIK_Z)) UseSkill(curr_time, skill_objs, sound);
-	}
 
-
-	if (input->IsKeyDown(DIK_X))
-	{
-		for (int i = 3; i >= 0; i--)
+		// Down Attempt
+		if (input->IsKeyDown(DIK_DOWN) && state_ != CharacterState::kJump && is_on_ground)
 		{
-			if (skill_[i].skill_type)
-			{
-				skill_[i].skill_type = 0;
-				break;
-			}
+			velocity_.y = -1.0, jump_cnt = 1;
+			position_.y = max(position_.y - 30, kGroundY); // To prevent the character from felling down below the ground
+		}
+
+		// Jump Attempt
+		if(input->IsKeyDown(DIK_UP) && jump_cnt <= 1)
+		{
+			velocity_.y = 2'800, jump_cnt++;
+			if (is_run) SetState(CharacterState::kRunJump, curr_time);
+			else		SetState(CharacterState::kJump, curr_time);
 		}
 	}
+	
+	// gravity
+	const int start_y = position_.y;
+	const int target_y = position_.y + time_delta * (velocity_.y - (kGravity / 2) * time_delta);
+	velocity_.y -= kGravity * (int)time_delta;
 
-	if (time_combo_end_ < curr_time)
+	if (ground->IsCollided(range_.x1 + position_.x, range_.x2 + position_.x,
+			start_y, target_y, &position_.y))
 	{
-		combo_ = 0;
-	}
-
-	// down attempt
-	if (input->IsKeyDown(DIK_DOWN)
-		&& state_ != CharacterState::kSpell && state_ != CharacterState::kHit
-		&& state_ != CharacterState::kSlip && state_ != CharacterState::kDie
-		&& state_ != CharacterState::kJump)
-	{
-		velocity_.y = -1.0, jump_cnt = 1;
-		position_.y = max(position_.y - 30, kGroundY);
-	}
-
-
-	// jump attempt
-	if (jump_cnt <= 1 && input->IsKeyDown(DIK_UP)
-		&& state_ != CharacterState::kSpell && state_ != CharacterState::kHit
-		&& state_ != CharacterState::kSlip && state_ != CharacterState::kDie)
-	{
-		velocity_.y = 2'800, jump_cnt++;
-		if (state_ == CharacterState::kRun || state_ == CharacterState::kRunJump)
-			SetState(CharacterState::kRunJump, curr_time);
-		else SetState(CharacterState::kJump, curr_time);
+		velocity_.y = jump_cnt = 0;
 	}
 	else
 	{
-		const int start_y = position_.y;
-		const int target_y = position_.y + time_delta * (velocity_.y - (kGravity / 2) * time_delta);
-		velocity_.y -= kGravity * (int)time_delta;
-
-		position_.y = target_y;
-		for (auto& ground_obj : ground)
-		{
-			position_.y = max(position_.y,
-				ground_obj.IsCollided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
-		}
-
-		if (position_.y != target_y)
-		{
-			velocity_.y = jump_cnt = 0;
-		}
+		if (jump_cnt == 0) jump_cnt = 1;
+		if (state_ == CharacterState::kRun) SetState(CharacterState::kRunJump, curr_time);
+		if (state_ == CharacterState::kWalk) SetState(CharacterState::kJump, curr_time);
 	}
 
 
@@ -254,22 +233,17 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 	switch (state_)
 	{
 	case CharacterState::kJump:
-		if (is_walk)
+		
+		velocity_.x = (is_walk) ? DIR_WEIGHT(direction_, kWalkSpd) : 0;
+		if (jump_cnt == 0)
 		{
-			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
-			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
+			if (is_walk) SetState(CharacterState::kWalk, curr_time);
+			else SetState(CharacterState::kNormal, curr_time);
 		}
-
-		if (GetStateTime(curr_time) >= 1000) SetState(CharacterState::kNormal, curr_time);
-		else if (jump_cnt == 0 && is_walk) SetState(CharacterState::kWalk, curr_time);
 		break;
 
 	case CharacterState::kRunJump:
-		if (is_walk)
-		{
-			position_.x += DIR_WEIGHT(direction_, kRunSpd) * (int)time_delta;
-			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
-		}
+		velocity_.x = (is_walk) ? DIR_WEIGHT(direction_, kRunSpd) : 0;
 
 		if (jump_cnt == 0)
 		{
@@ -282,17 +256,16 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		if (is_walk)
 		{
 			SetState(CharacterState::kWalk, curr_time);
-			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
-			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
+			velocity_.x = DIR_WEIGHT(direction_, kWalkSpd);
 		}
+		else velocity_.x = 0;
 		break;
 
 	case CharacterState::kWalk:
 		if (!is_walk) SetState(CharacterState::kStop, curr_time);
 		else
 		{
-			position_.x += DIR_WEIGHT(direction_, kWalkSpd) * (int)time_delta;
-			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
+			velocity_.x = DIR_WEIGHT(direction_, kWalkSpd);
 		}
 		break;
 
@@ -300,13 +273,13 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		if (!is_walk) SetState(CharacterState::kStop, curr_time);
 		else
 		{
-			position_.x += DIR_WEIGHT(direction_, kRunSpd) * (int)time_delta;
-			position_.x = std::clamp(position_.x, kFieldLeftX, kFieldRightX);
+			velocity_.x = DIR_WEIGHT(direction_, kRunSpd);;
 		}
 		break;
 
 	case CharacterState::kStop:
 
+		velocity_.x = 0;
 		if (is_walk)
 		{
 			if (GetStateTime(curr_time) >= 150) SetState(CharacterState::kWalk, curr_time);
@@ -316,6 +289,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 
 	case CharacterState::kSpell:
 	{
+		velocity_.x = 0;
 		if (skill_bonus_ == SkillBonus::BONUS_FOUR_CARDS)
 		{
 			// if the character BONUS_FOUR_CARDS bounus, use all skills he has.
@@ -336,10 +310,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 
 	case CharacterState::kHit:
 		position_.x += (int)time_delta * velocity_.x;
-		if (GetStateTime(curr_time) >= 500)
-		{
-			SetState(CharacterState::kSlip, state_start_time_);
-		}
+		SetStateIfTimeOver(CharacterState::kSlip, state_start_time_, 500);
 		break;
 
 	case CharacterState::kSlip:
@@ -347,14 +318,10 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 		break;
 
 	case CharacterState::kDie:
-
-		if (GetStateTime(curr_time) < 1000)
-		{
-			position_.x = std::clamp(position_.x + (int)time_delta * velocity_.x, kFieldLeftX, kFieldRightX);
-		}
-
 		break;
 	}
+
+	position_.x = std::clamp(position_.x + static_cast<int>(time_delta) * velocity_.x, kFieldLeftX, kFieldRightX);
 
 
 	if (skill_bonus_ == SkillBonus::BONUS_ONE_PAIR || skill_bonus_ == SkillBonus::BONUS_TWO_PAIR)
@@ -373,19 +340,37 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const vector
 
 bool CharacterClass::Frame(time_t time_delta, time_t curr_time)
 {
+	if (time_combo_end_ < curr_time)
+	{
+		combo_ = 0;
+	}
+
+
+	if (input->IsKeyDown(DIK_X)) // Skill Drop
+	{
+		for (int i = 3; i >= 0; i--)
+		{
+			if (skill_[i].skill_type)
+			{
+				skill_[i].skill_type = 0;
+				break;
+			}
+		}
+	}
+
 	return true;
 }
 
 void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
-	ID3D11ShaderResourceView* char_texture = models.get("cube")->GetDiffuseTexture();
-	if (curr_time <= GetTimeInvincibleEnd()) char_texture = textures.get("rainbow")->GetTexture();
+	ID3D11ShaderResourceView* char_texture = graphic_resources->models_.get("cube")->GetDiffuseTexture();
+	if (curr_time <= GetTimeInvincibleEnd()) char_texture = graphic_resources->textures_.get("rainbow")->GetTexture();
 
 	auto char_model_matrices = GetShapeMatrices(curr_time);
 	for (auto& [name, box] : char_model_matrices)
 	{
-		shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+		shader_manager->light_shader_->PushRenderQueue(graphic_resources->models_.get("cube"),
 			box * GetLocalWorldMatrix(), char_texture);
 	}
 
@@ -457,12 +442,29 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 
 		current_shape3[converted_name] = matrix;
 	}
-	fbx_models.get("character")->Update(current_shape3);
+	graphic_resources->fbx_models_.get("character")->Update(current_shape3);
+
+	if (state_ == CharacterState::kRun)
+	{
+		if (prev_state_ != CharacterState::kRun && curr_time - time_delta < state_start_time_)
+		{
+			// If state just changed to run, reset the particle system to make sure the particles are emitted from the start.
+			graphic_resources->particle_system_.get("dust-spread")->Clear();
+		}
+
+		shader_manager->particle_shader_->PushRenderQueue(
+			graphic_resources->particle_system_.get("dust-spread"),
+			XMMatrixRotationZ(
+				direction_ == direction_t::kLeftForword ? 0 : XM_PI) * GetLocalWorldMatrix()
+		);
+	}
+
+
 
 	double scaling = 0.05;
 	/*
 	shader_manager->character_shader_->PushRenderQueue(
-		fbx_models.get("character"),
+		fbx_graphic_resources->models.get("character"),
 		DirectX::XMMatrixRotationY(M_PI_2) *
 		DirectX::XMMatrixScaling(scaling, scaling, scaling)
 		* DirectX::XMMatrixTranslation(-2, 0, 0)
@@ -509,7 +511,7 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 			skill_color.w += (1 - skill_color.w) * brightness * 0.6;
 		}
 
-		shader_manager->stone_shader_->PushRenderQueue(models.get("diamond"),
+		shader_manager->stone_shader_->PushRenderQueue(graphic_resources->models_.get("diamond"),
 			XMMatrixScaling(scale, scale, scale) * skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0),
 			skill_color);
 	}
@@ -518,7 +520,7 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 	// Draw Gaurdian bead
 	for (int i = 0; GetGuardian(i) != nullptr; i++)
 	{
-		GetGuardian(i)->Draw(curr_time, time_delta, shader_manager, models, fbx_models, textures);
+		GetGuardian(i)->Draw(curr_time, time_delta, shader_manager, graphic_resources);
 	}
 }
 

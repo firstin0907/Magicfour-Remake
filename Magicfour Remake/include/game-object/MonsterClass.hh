@@ -68,7 +68,7 @@ public:
 	virtual int GetVx() = 0;
 
 	// Change the location for one frame.
-	virtual void FrameMove(time_t curr_time, time_t time_delta, const std::vector<class GroundClass>& ground) = 0;
+	virtual void FrameMove(time_t curr_time, time_t time_delta, const class FieldClass* ground) = 0;
 
 	// Proceed the logic for one frame, and return this is still alive.
 	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;

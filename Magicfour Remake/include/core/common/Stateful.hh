@@ -1,5 +1,7 @@
 #pragma once
 
+#include <initializer_list>
+
 template <typename STATE_TYPE>
 class Stateful
 {
@@ -9,6 +11,25 @@ protected:
     time_t state_start_time_ = 0;
 
 public:
+    inline bool IsStateIn(std::initializer_list<STATE_TYPE> states) const
+    {
+        for (auto& s : states)
+        {
+            if (state_ == s) return true;
+        }
+        return false;
+    }
+
+
+    inline bool IsStateNotIn(std::initializer_list<STATE_TYPE> states) const
+    {
+        for (auto& s : states)
+        {
+            if (state_ == s) return false;
+        }
+        return true;
+    }
+
     inline STATE_TYPE GetState() const
     {
         return state_;

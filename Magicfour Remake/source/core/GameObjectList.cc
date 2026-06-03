@@ -15,7 +15,7 @@ void GameObjectList::Insert(IGameObject* object)
 }
 
 
-void GameObjectList::FrameMove(time_t curr_time, time_t delta_time, const std::vector<class GroundClass>& ground)
+void GameObjectList::FrameMove(time_t curr_time, time_t delta_time, const FieldClass* ground)
 {
 	for (auto& element : elements)
 	{
@@ -40,10 +40,10 @@ void GameObjectList::Frame(time_t curr_time, time_t delta_time, std::function<vo
 }
 
 void GameObjectList::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	for (auto& element : elements)
 	{
-		element->Draw(curr_time, time_delta, shader_manager, models, fbx_models, textures);
+		element->Draw(curr_time, time_delta, shader_manager, graphic_resources);
 	}
 }

@@ -14,7 +14,7 @@ public:
 
 	// Change the location for one frame.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const std::vector<class GroundClass>& ground) = 0;
+		const class FieldClass* ground) = 0;
 	
 	// Proceed the logic for one frame, and return this is still alive.
 	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;
@@ -27,5 +27,5 @@ public:
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const {};
+		class GraphicResources* graphic_resources) const {};
 };

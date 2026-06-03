@@ -11,9 +11,7 @@
 #include "GameObjectList.hh"
 
 #include "shader/ShaderManager.hh"
-#include "util/ResourceMap.hh"
 #include "core/global.hh"
-
 
 class ApplicationClass
 {
@@ -50,10 +48,7 @@ private:
 
 	unique_ptr<class CameraClass>		camera_;
 
-	ResourceMap<class ModelClass>		models_;
-	ResourceMap<class FbxModel>			fbx_models_;
-	ResourceMap<class TextureClass>		textures_;
-	ResourceMap<class ParticleSystemBaseClass> particle_system_;
+	unique_ptr<class GraphicResources>	graphic_resources_;
 
 	unique_ptr<class LightClass>		light_;
 	unique_ptr<class ShaderManager>		shader_manager_;

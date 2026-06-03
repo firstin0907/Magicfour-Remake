@@ -23,14 +23,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground);
+		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
+		class GraphicResources* graphic_resources) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();
@@ -54,14 +54,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground);
+		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
+		class GraphicResources* graphic_resources) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();
@@ -83,14 +83,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground);
+		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
+		class GraphicResources* graphic_resources) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();
@@ -116,14 +116,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground);
+		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
+		class GraphicResources* graphic_resources) const override final;
 
 	// Return character's knock-back speed.
 	virtual int GetVx();

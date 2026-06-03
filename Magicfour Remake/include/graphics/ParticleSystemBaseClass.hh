@@ -33,6 +33,7 @@ public:
 	ParticleSystemBaseClass(const ParticleSystemBaseClass&) = delete;
 	~ParticleSystemBaseClass();
 
+	void Clear();
 	bool Frame(time_t curr_time, time_t time_delta, ID3D11DeviceContext*);
 	void Render(ID3D11DeviceContext*);
 
@@ -50,6 +51,7 @@ private:
 
 	virtual void EmitParticles(time_t curr_time, time_t time_delta) = 0;
 	virtual void UpdateParticles(time_t curr_time, time_t time_delta) = 0;
+	virtual void ClearParticles() { particle_list_.clear(); }
 	
 	void UpdateVertices();
 	

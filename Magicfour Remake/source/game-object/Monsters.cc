@@ -3,7 +3,7 @@
 #include <DirectXMath.h>
 
 #include "core/global.hh"
-#include "map/GroundClass.hh"
+#include "map/FieldClass.hh"
 #include "util/RandomClass.hh"
 #include "util/ResourceMap.hh"
 #include "graphics/ModelClass.hh"
@@ -25,7 +25,7 @@ MonsterDuck::MonsterDuck(direction_t direction, time_t created_time)
 }
 
 void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	constexpr int spd = 1'000;
 	constexpr int kKnockBackTime = 1'000;
@@ -63,50 +63,26 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 			const int before_vy = velocity_.y;
 			const int after_vy = velocity_.y - kGravity * time_delta;
 
-			velocity_.y = after_vy;
-
 			if (after_vy >= 0)
 			{
 				position_.y += (before_vy + after_vy) / 2 * time_delta;
+				velocity_.y = after_vy;
 			}
-			else if (before_vy >= 0) // up and down
+			else
 			{
-				const int max_y = position_.y + before_vy / 2 * before_vy / kGravity;
+				const int max_y = (before_vy >= 0) ?
+					position_.y + before_vy / 2 * before_vy / kGravity : // up and down
+					position_.y;
 				const int target = GetPositionAfterMove(time_delta).y;
-				position_.y = target;
 
-				for (auto& ground_obj : ground)
-				{
-					position_.y = max(position_.y,
-						ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, max_y, position_.y));
-				}
-
-				if (position_.y != target)
+				bool landed = ground->IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, max_y, target, &position_.y);
+				if (landed)
 				{
 					if(state_ == MonsterState::kDuckJump)
 						SetState(MonsterState::kNormal, curr_time);
 					velocity_.y = 0;
 				}
-			}
-			else
-			{
-				const int max_y = position_.y;
-				const int target = GetPositionAfterMove(time_delta).y;
-				//const int target = position_.y + (before_vy + after_vy) / 2 * time_delta;
-				position_.y = target;
-
-				for (auto& ground_obj : ground)
-				{
-					position_.y = max(position_.y, ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, max_y, position_.y));
-
-				}
-
-				if (position_.y != target)
-				{
-					if (state_ == MonsterState::kDuckJump) SetState(MonsterState::kNormal, curr_time);
-					velocity_.y = 0;
-				}
-
+				else velocity_.y = after_vy;
 			}
 		}		
 
@@ -124,14 +100,9 @@ void MonsterDuck::FrameMove(time_t curr_time, time_t time_delta,
 			if (position_.x > kFieldRightX) position_.x = kFieldRightX;
 			else if (position_.x < kFieldLeftX) position_.x = kFieldLeftX;
 
-			for (auto& ground_obj : ground)
-			{
-				position_.y = max(position_.y,
-					ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
-			}
+			bool landed = ground->IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y, &position_.y);
 
 			velocity_ += accel_ * time_delta;
-
 
 			break;
 		}
@@ -177,9 +148,9 @@ bool MonsterDuck::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterDuck::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
-	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+	shader_manager->light_shader_->PushRenderQueue(graphic_resources->models_.get("cube"),
 		GetRangeRepresentMatrix());
 }
 
@@ -196,7 +167,7 @@ MonsterOctopus::MonsterOctopus(direction_t direction, time_t created_time)
 }
 
 void MonsterOctopus::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	constexpr int spd = 500;
 	constexpr int kKnockBackTime = 1'000;
@@ -267,9 +238,9 @@ bool MonsterOctopus::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterOctopus::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
-	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+	shader_manager->light_shader_->PushRenderQueue(graphic_resources->models_.get("cube"),
 		GetRangeRepresentMatrix());
 }
 
@@ -290,7 +261,7 @@ MonsterBird::MonsterBird(direction_t direction, time_t created_time)
 }
 
 void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	constexpr int X_SPEED = 1500, Y_SPEED = 400;
 	constexpr int kKnockBackTime = 1'000;
@@ -368,14 +339,7 @@ void MonsterBird::FrameMove(time_t curr_time, time_t time_delta,
 		if (position_.x > kFieldRightX) position_.x = kFieldRightX;
 		else if (position_.x < kFieldLeftX) position_.x = kFieldLeftX;
 
-		position_.y = target_y;
-		for (auto& ground_obj : ground)
-		{
-			position_.y = max(position_.y,
-				ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
-		}
-
-		if (position_.y == target_y)
+		if (ground->IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y, &position_.y))
 		{
 			velocity_.y = 0;
 		}
@@ -410,9 +374,9 @@ bool MonsterBird::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterBird::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
-	shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+	shader_manager->light_shader_->PushRenderQueue(graphic_resources->models_.get("cube"),
 		GetRangeRepresentMatrix());
 }
 
@@ -430,7 +394,7 @@ MonsterStop::MonsterStop(time_t created_time)
 }
 
 void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	constexpr int kKnockBackTime = 1'000;
 	switch (state_)
@@ -445,17 +409,11 @@ void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
 		position_.y = target_y;
 		velocity_.y -= kGravity * time_delta;
 
-		for (auto& ground_obj : ground)
-		{
-			position_.y = max(position_.y,				
-				ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
-		}
-
-		if (position_.y > target_y)
+		if (ground->IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y, &position_.y))
 		{
 			SetState(MonsterState::kStopOnGround, curr_time);
 			velocity_.y = 0;
-		}
+		};
 		break;
 	}		
 
@@ -477,11 +435,11 @@ void MonsterStop::FrameMove(time_t curr_time, time_t time_delta,
 		else if (position_.x < kFieldLeftX) position_.x = kFieldLeftX;
 
 		position_.y = target_y;
-		for (auto& ground_obj : ground)
+
+		if (ground->IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y, &position_.y))
 		{
-			position_.y = max(position_.y,
-				ground_obj.IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y));
-		}
+			velocity_.y = 0;
+		};
 		break;
 	}
 	}
@@ -511,12 +469,12 @@ bool MonsterStop::Frame(time_t curr_time, time_t time_delta)
 }
 
 void MonsterStop::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	const XMMATRIX shape = XMMatrixRotationY((curr_time - state_start_time_) * 0.001f)
 		* XMMatrixTranslation(kScope * position_.x, kScope * position_.y + 0.5f, 0);
 
-	shader_manager->light_shader_->PushRenderQueue(models.get("stop"), shape);
+	shader_manager->light_shader_->PushRenderQueue(graphic_resources->models_.get("stop"), shape);
 }
 
 int MonsterStop::GetVx()

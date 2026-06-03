@@ -131,7 +131,9 @@
 
   <RadialSpreadParticleSystem name="star-spread"
        src="data/texture/particle/star1.png" particleSize="0.2" particlePerSecond="100" velocity="0.004" degree="30" lifetime="1000">
-    
+  </RadialSpreadParticleSystem>
+  <RadialSpreadParticleSystem name="dust-spread"
+       src="data/texture/particle/dust1.png" particleSize="0.4" particlePerSecond="60" velocity="0.01" degree="10" lifetime="500">
   </RadialSpreadParticleSystem>
 
 </Resources>

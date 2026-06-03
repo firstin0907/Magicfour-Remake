@@ -18,10 +18,10 @@ public:
 
 	void Insert(class IGameObject* object);
 
-	void FrameMove(time_t curr_time, time_t delta_time, const std::vector<class GroundClass>& ground);
+	void FrameMove(time_t curr_time, time_t delta_time, const class FieldClass* ground);
 
 	void Frame(time_t curr_time, time_t delta_time, std::function<void(IGameObject*)> on_delete = nullptr);
 
 	void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const;
+		class GraphicResources* graphic_resources) const;
 };

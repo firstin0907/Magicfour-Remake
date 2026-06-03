@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "map/GroundClass.hh"
+#include "map/FieldClass.hh"
 #include "shader/ShaderManager.hh"
 #include "shader/StoneShaderClass.hh"
 #include "util/ResourceMap.hh"
@@ -25,7 +25,7 @@ ItemClass::ItemClass(time_t create_time, int x_pos, int y_pos, int type)
 }
 
 void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
-	const std::vector<class GroundClass>& ground)
+	const class FieldClass* ground)
 {
 	const int before_vy = velocity_.y, after_vy = velocity_.y - kGravity * time_delta;
 
@@ -35,15 +35,9 @@ void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 		const int max_y = position_.y + before_vy / 2 * before_vy / kGravity - kItemRange.y1;
 		const int target = position_.y + (before_vy + after_vy) / 2 * time_delta - kItemRange.y1;
 
-		position_.y = target;
-		for (auto& ground_obj : ground)
-		{
-			position_.y = max(position_.y, ground_obj.IsCollided(kItemRange.x1 + position_.x,
-					kItemRange.x2 + position_.x, max_y, position_.y));
-		}
-
 		// For the case item is collided with the ground, it should stop.
-		if (position_.y != target)
+		if (ground->IsCollided(kItemRange.x1 + position_.x,
+			kItemRange.x2 + position_.x, max_y, position_.y, &position_.y))
 		{
 			velocity_.y = 0; // it should stop.
 		}
@@ -55,17 +49,13 @@ void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 		const int target = position_.y + (before_vy + after_vy) / 2 * time_delta - kItemRange.y1;;
 		position_.y = target;
 
-		for (auto& ground_obj : ground)
+		// For the case item is collided with the ground, it should stop.
+		if (ground->IsCollided(kItemRange.x1 + position_.x,
+			kItemRange.x2 + position_.x, max_y, target, &position_.y))
 		{
-			position_.y = max(position_.y, ground_obj.IsCollided(kItemRange.x1 + position_.x,
-				kItemRange.x2 + position_.x, max_y, position_.y));
+			velocity_.y = 0;
 		}
 
-		// For the case item is collided with the ground, it should stop.
-		if (position_.y != target)
-		{
-			velocity_.y = 0; 
-		}
 		position_.y += kItemRange.y1;
 	}
 	
@@ -92,7 +82,7 @@ bool ItemClass::IsColliable() const
 
 
 void ItemClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const 
+	class GraphicResources* graphic_resources) const 
 {
 	constexpr XMFLOAT4 kSkillColor[5] =
 	{
@@ -104,7 +94,7 @@ void ItemClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_
 	};
 
 	shader_manager->stone_shader_->PushRenderQueue(
-		models.get("diamond"),
+		graphic_resources->models_.get("diamond"),
 		GetShapeMatrix(curr_time) * GetLocalWorldMatrix(),
 		kSkillColor[type_]);
 }

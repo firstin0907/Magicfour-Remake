@@ -27,12 +27,26 @@ FieldClass::FieldClass(const char* filename)
 	}
 }
 
+bool FieldClass::IsCollided(int x1, int x2, int from_bottom_coord, int to_bottom_coord, int* result) const
+{
+	int y = to_bottom_coord;
+	for(auto &ground : grounds_)
+	{
+		int temp_y;
+		ground.IsCollided(x1, x2, from_bottom_coord, to_bottom_coord, &temp_y);
+		y = max(y, temp_y);
+	}
+	*result = y;
+
+	return y != to_bottom_coord;
+}
+
 void FieldClass::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	// Draw Background
 	const static XMMATRIX kBackgroundMarix = XMMatrixScaling(192.0f, 153.6f, 1) * XMMatrixTranslation(0, 0, 100.0f);
-	shader_manager->light_shader_->PushRenderQueue(models.get("background"), kBackgroundMarix);
+	shader_manager->light_shader_->PushRenderQueue(graphic_resources->models_.get("background"), kBackgroundMarix);
 
 	// Draw grounds
 	for (const auto& ground : GetGrounds())
@@ -53,7 +67,7 @@ void FieldClass::Draw(time_t curr_time, time_t time_delta, class ShaderManager* 
 				grass_section_range.toMatrix();
 
 			shader_manager->fire_shader_->PushRenderQueue(
-				models.get("grass"),
+				graphic_resources->models_.get("grass"),
 				grass_matrix,
 				{ -0.3f, -0.1f, -0.3f },
 				{ 1.0f, 2.0f, 3.0f },
@@ -74,15 +88,16 @@ void FieldClass::Draw(time_t curr_time, time_t time_delta, class ShaderManager* 
 			const long long next_x = ground_range.x1 + ground_range.get_w() * (i + 1) / ground_drawing_steps;
 			ground_display_range.x1 = curr_x, ground_display_range.x2 = next_x;
 
-			shader_manager->light_shader_->PushRenderQueue(models.get("cube"),
+			shader_manager->light_shader_->PushRenderQueue(graphic_resources->models_.get("cube"),
 				ground_display_range.toMatrix());
 		}
 	}
 
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("gem"),
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("gem"),
 		XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(1750000 * kScope, (kGroundY - 50000) * kScope, +0.5f));
 
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("gem"),
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("gem"),
 		XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(1950000 * kScope, (kGroundY - 50000) * kScope, 0.0f));
 
 }
+

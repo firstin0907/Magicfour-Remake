@@ -30,7 +30,7 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground) = 0;
+		const class FieldClass* ground) = 0;
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;

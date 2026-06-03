@@ -33,6 +33,11 @@ ParticleSystemBaseClass::~ParticleSystemBaseClass()
 }
 
 
+void ParticleSystemBaseClass::Clear()
+{
+	ClearParticles();
+}
+
 bool ParticleSystemBaseClass::Frame(time_t frame_time, time_t time_delta, ID3D11DeviceContext* device_context)
 {
 	bool result;

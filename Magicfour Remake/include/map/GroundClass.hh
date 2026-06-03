@@ -15,14 +15,15 @@ class GroundClass
 public:
 	GroundClass(const rect_t& range) : range_(range) {};
 
-	inline int IsCollided(int x1, int x2, int from_bottom_coord, int to_bottom_coord) const
+	inline bool IsCollided(int x1, int x2, int from_bottom_coord, int to_bottom_coord, int* result = nullptr) const
 	{
 		if ((ISBETWEEN(range_.x1, x1, range_.x2) || ISBETWEEN(range_.x1, x2, range_.x2)) &&
 			to_bottom_coord <= range_.y2 && range_.y2 <= from_bottom_coord)
 		{
-			return range_.y2;
+			if (result) *result = range_.y2;
+			return true;
 		}
-		else return to_bottom_coord;
+		else return false;
 	}
 
 	inline rect_t GetRange() const

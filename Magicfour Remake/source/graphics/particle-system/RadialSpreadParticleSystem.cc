@@ -33,9 +33,8 @@ ParticleType RadialSpreadParticleSystem::CreateParticle(time_t curr_time)
 	new_particle.velocity.y = particle_start_velocity_ * sin(angle1) * cos(angle2);
 	new_particle.velocity.z = particle_start_velocity_ * sin(angle1) * sin(angle2);
 
-	new_particle.red = (((float)rand() - (float)rand()) / RAND_MAX) + 0.5f;
-	new_particle.green = (((float)rand() - (float)rand()) / RAND_MAX) + 0.5f;
-	new_particle.blue = (((float)rand() - (float)rand()) / RAND_MAX) + 0.5f;
+	const float alpha = RandomClass::rand(0.0f, 0.5f);
+	new_particle.red = new_particle.green = new_particle.blue = alpha;
 
 	new_particle.created_time = curr_time;
 

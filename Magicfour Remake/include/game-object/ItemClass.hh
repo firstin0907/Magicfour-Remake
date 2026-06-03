@@ -20,7 +20,7 @@ public:
 	ItemClass(time_t create_time, int x_pos, int y_pos, int type);
 
 	// Change the location for one frame.
-	virtual void FrameMove(time_t curr_time, time_t time_delta, const std::vector<class GroundClass>& ground) override final;
+	virtual void FrameMove(time_t curr_time, time_t time_delta, const class FieldClass* ground) override final;
 
 	// Proceed the logic for one frame, and return this is still alive.
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
@@ -30,7 +30,7 @@ public:
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const override final;
+		class GraphicResources* graphic_resources) const override final;
 
 	XMMATRIX GetShapeMatrix(time_t curr_time) const;
 

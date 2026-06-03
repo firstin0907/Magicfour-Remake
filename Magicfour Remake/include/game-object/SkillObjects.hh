@@ -11,14 +11,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground) override final;
+		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const final;
+		class GraphicResources* graphic_resources) const final;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -40,14 +40,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground) override final;
+		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const final;
+		class GraphicResources* graphic_resources) const final;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -70,14 +70,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground) override final;
+		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const final;
+		class GraphicResources* graphic_resources) const final;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -98,14 +98,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground) override final;
+		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const final;
+		class GraphicResources* graphic_resources) const final;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -127,14 +127,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground) override final;
+		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const final;
+		class GraphicResources* graphic_resources) const final;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
@@ -156,14 +156,14 @@ public:
 
 	// Move instance as time goes by.
 	virtual void FrameMove(time_t curr_time, time_t time_delta,
-		const vector<class GroundClass>& ground) override final {};
+		const class FieldClass* ground) override final {};
 
 	// Should be called after processing any collision with monsters. 
 	virtual bool Frame(time_t curr_time, time_t time_delta) override final { return true;  };
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const final;
+		class GraphicResources* graphic_resources) const final;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);

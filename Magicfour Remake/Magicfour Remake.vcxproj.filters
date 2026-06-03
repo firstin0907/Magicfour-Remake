@@ -346,9 +346,6 @@
     <ClInclude Include="include\graphics\particle-system\LinearMoveParticleSystem.hh">
       <Filter>헤더 파일\graphics\particle-system</Filter>
     </ClInclude>
-    <ClInclude Include="include\core\common\GameContext.hh">
-      <Filter>헤더 파일\core\common</Filter>
-    </ClInclude>
     <ClInclude Include="include\core\common\Stateful.hh">
       <Filter>헤더 파일\core\common</Filter>
     </ClInclude>
@@ -363,6 +360,9 @@
     </ClInclude>
     <ClInclude Include="include\shader\CharacterShaderClass.hh">
       <Filter>헤더 파일\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\common\GraphicResources.hh">
+      <Filter>헤더 파일\core\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

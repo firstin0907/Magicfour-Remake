@@ -11,6 +11,8 @@
 #include "core/GameException.hh"
 #include "core/SoundClass.hh"
 
+#include "core/common/GraphicResources.hh"
+
 #include "graphics/ModelClass.hh"
 #include "graphics/LightClass.hh"
 #include "graphics/TextureClass.hh"
@@ -71,7 +73,8 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	camera_ = make_unique<CameraClass>();
 	camera_->SetPosition(0.0f, 0.0f, kCameraZPosition);
 
-
+	// Load resources.
+	
 	auto texture_loader = [this](xml_node_wrapper node) -> std::shared_ptr<TextureClass>
 		{
 			return make_shared<TextureClass>(this->direct3d_->GetDevice(),
@@ -94,15 +97,15 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 			std::shared_ptr<TextureClass> emissive_texture = nullptr;
 
 			if (textures.find("diffuse") != textures.end())
-				diffuse_texture = textures_.get_by_path(textures["diffuse"]);
+				diffuse_texture = this->graphic_resources_->textures_.get_by_path(textures["diffuse"]);
 			else
 				throw GAME_EXCEPTION(L"Diffuse texture is required for model: " + std::wstring(node.get_required_attr("name").begin(), node.get_required_attr("name").end()));
 
 			if (textures.find("normal") != textures.end())
-				normal_texture = textures_.get_by_path(textures["normal"]);
+				normal_texture = this->graphic_resources_->textures_.get_by_path(textures["normal"]);
 
 			if (textures.find("emissive") != textures.end())
-				emissive_texture = textures_.get_by_path(textures["emissive"]);
+				emissive_texture = this->graphic_resources_->textures_.get_by_path(textures["emissive"]);
 
 			return make_shared<ModelClass>(this->direct3d_->GetDevice(),
 				node.get_required_attr("model_path").c_str(),
@@ -131,12 +134,12 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 				std::stoull(node.get_required_attr("lifetime")));
 		};
 
-	textures_.loadFromXML("data/resources.xml", "Texture", texture_loader);
-	models_.loadFromXML("data/resources.xml", "Model", model_loader);
-	fbx_models_.loadFromXML("data/resources.xml", "FbxModel", fbxmodel_loader);
-	particle_system_.loadFromXML("data/resources.xml", "RadialSpreadParticleSystem", particle_loader);
-
-	particle_system_.insert("star-spread2",
+	graphic_resources_ = make_unique<GraphicResources>();
+	graphic_resources_->textures_.loadFromXML("data/resources.xml", "Texture", texture_loader);
+	graphic_resources_->models_.loadFromXML("data/resources.xml", "Model", model_loader);
+	graphic_resources_->fbx_models_.loadFromXML("data/resources.xml", "FbxModel", fbxmodel_loader);
+	graphic_resources_->particle_system_.loadFromXML("data/resources.xml", "RadialSpreadParticleSystem", particle_loader);
+	graphic_resources_->particle_system_.insert("star-spread2",
 		make_unique<LinearMoveParticleSystem>(
 			direct3d_->GetDevice(),
 			"data/texture/particle/star1.png",
@@ -175,6 +178,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 
 	// Temporary
 	monsters_.Insert(new MonsterStop(1000));
+	monsters_.Insert(new MonsterDuck(direction_t::kLeftForword, 1000));
 	//monsters_.emplace_back(new MonsterOctopus(kRightForward, 1000));
 	//for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(kRightForward, 1000));
 
@@ -265,17 +269,17 @@ void ApplicationClass::GameFrame(InputClass* input)
 	}
 	else monster_spawner_->Frame(curr_time, delta_time, monsters_.elements);
 
-	character_->FrameMove(curr_time, delta_time, field_->GetGrounds());
+	character_->FrameMove(curr_time, delta_time, field_.get());
 	character_->Frame(curr_time, delta_time);
 
 	// Move skill object instances.
-	skill_object_list_.FrameMove(curr_time, delta_time, field_->GetGrounds());
+	skill_object_list_.FrameMove(curr_time, delta_time, field_.get());
 
 	// Move monsters.
-	monsters_.FrameMove(curr_time, delta_time, field_->GetGrounds());
+	monsters_.FrameMove(curr_time, delta_time, field_.get());
 
 	// Move items.
-	items_.FrameMove(curr_time, delta_time, field_->GetGrounds());
+	items_.FrameMove(curr_time, delta_time, field_.get());
 
 
 	// Handle collision for the gaurdians.
@@ -369,20 +373,21 @@ void ApplicationClass::Render()
 
 	const XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
 
-	character_->Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
+	character_->Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
 
 	// Draw Items
-	items_.Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
-	skill_object_list_.Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
+	items_.Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
+	skill_object_list_.Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
 
-	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
-	field_->Draw(curr_time, time_delta, shader_manager_.get(), models_, fbx_models_, textures_);
+	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
+	field_->Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
 
-	particle_system_.get("star-spread")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
-	particle_system_.get("star-spread2")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
+	graphic_resources_->particle_system_.get("star-spread")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
+	graphic_resources_->particle_system_.get("dust-spread")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
+	graphic_resources_->particle_system_.get("star-spread2")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
 
-	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread"), DirectX::XMMatrixScaling(1, 1, 1));
-	shader_manager_->particle_shader_->PushRenderQueue(particle_system_.get("star-spread2"), DirectX::XMMatrixScaling(1, 1, 1));
+	// shader_manager_->particle_shader_->PushRenderQueue(graphic_resources_->particle_system_.get("star-spread"), DirectX::XMMatrixScaling(1, 1, 1));
+	// shader_manager_->particle_shader_->PushRenderQueue(graphic_resources_->particle_system_.get("star-spread2"), DirectX::XMMatrixScaling(1, 1, 1));
 
 
 #ifdef DEBUG_RANGE

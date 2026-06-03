@@ -13,7 +13,11 @@ public:
 	~FieldClass() = default;
 
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-		ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const;
+		class GraphicResources* graphic_resources) const;
+
+	// Check collision between the rigid body and grounds, and update the rigid body's position and velocity.
+	/// @return true if the rigid body is collided with any ground, false otherwise.
+	bool IsCollided(int x1, int x2, int from_bottom_coord, int to_bottom_coord, int* result = nullptr) const;
 
 	inline const std::vector<GroundClass>& GetGrounds() const
 	{

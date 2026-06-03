@@ -3,7 +3,7 @@
 #include "core/global.hh"
 #include "game-object/MonsterClass.hh"
 #include "graphics/ModelClass.hh"
-#include "map/GroundClass.hh"
+#include "map/FieldClass.hh"
 
 #include "shader/ShaderManager.hh"
 #include "shader/NormalMapShaderClass.hh"
@@ -29,7 +29,7 @@ SkillObjectSpear::SkillObjectSpear(int pos_x, int pos_y,
 }
 
 void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	switch (state_)
 	{
@@ -48,20 +48,14 @@ void SkillObjectSpear::FrameMove(time_t curr_time, time_t time_delta,
 		position_ = GetPositionAfterMove(time_delta);
 		int target_y = position_.y;
 
-		for (auto& ground_obj : ground)
-		{
-			position_.y = max(position_.y,
-				ground_obj.IsCollided(range_.x1 + position_.x, range_.x2 + position_.x, start_y, target_y));
-		}
-
-		if (position_.y != target_y)
+		bool landed = ground->IsCollided(GetGlobalRange().x1, GetGlobalRange().x2, start_y, target_y, &position_.y);
+		if (landed)
 		{
 			state_ = SkillObjectState::kSpearOnGround;
 			state_start_time_ = curr_time;
 		}
-
-	}
 		break;
+	}
 	}
 }
 
@@ -111,11 +105,11 @@ bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectSpear::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	const XMMATRIX shape = XMMatrixRotationY(XM_PI / 2) * XMMatrixRotationZ(XM_PI - angle_)
 		* XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("spear"), shape);
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("spear"), shape);
 }
 
 XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
@@ -138,7 +132,7 @@ SkillObjectBead::SkillObjectBead(int pos_x, int pos_y,
 }
 
 void SkillObjectBead::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	switch (state_)
 	{
@@ -200,7 +194,7 @@ bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectBead::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	const XMMATRIX orb_shape = XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
 		;//* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
@@ -211,8 +205,8 @@ void SkillObjectBead::Draw(time_t curr_time, time_t time_delta, class ShaderMana
 		* XMMatrixRotationZ(XM_PI / 2 + atan2(velocity_.y, velocity_.x))
 		* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, (velocity_.y / 1'200'000.0f));
 	
-	//shader_manager->normalMap_shader_->PushRenderQueue(models.get("orb"), orb_shape);
-	shader_manager->fire_shader_->PushRenderQueue(models.get("fire"),
+	//shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("orb"), orb_shape);
+	shader_manager->fire_shader_->PushRenderQueue(graphic_resources->models_.get("fire"),
 		fire_shape,
 		{ 1.3f, 2.1f, 2.3f },
 		{ 1.0f, 2.0f, 3.0f },
@@ -247,7 +241,7 @@ SkillObjectLeg::SkillObjectLeg(int pos_x, int skill_level, time_t created_time)
 }
 
 void SkillObjectLeg::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	switch (state_)
 	{
@@ -294,10 +288,10 @@ bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectLeg::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("leg"), shape);
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("leg"), shape);
 }
 
 XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
@@ -320,7 +314,7 @@ SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx,
 }
 
 void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
-	const vector<class GroundClass>& ground)
+	const FieldClass* ground)
 {
 	switch (state_)
 	{
@@ -351,10 +345,10 @@ bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
 }
 
 void SkillObjectBasic::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("basic"), shape);
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("basic"), shape);
 }
 
 XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)
@@ -377,7 +371,7 @@ SkillObjectShield::SkillObjectShield(int pos_x, int pos_y,
 }
 
 void SkillObjectShield::FrameMove(time_t curr_time,
-	time_t time_delta, const vector<class GroundClass>& ground)
+	time_t time_delta, const FieldClass* ground)
 {
 	switch (state_)
 	{
@@ -413,7 +407,7 @@ bool SkillObjectShield::Frame(time_t curr_time, time_t time_delta)
 
 
 void SkillObjectShield::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	XMMATRIX shape;
 	if (velocity_.x > 0)
@@ -431,7 +425,7 @@ void SkillObjectShield::Draw(time_t curr_time, time_t time_delta, class ShaderMa
 			* XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 	}
 
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("shield"), shape);
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("shield"), shape);
 }
 
 XMMATRIX SkillObjectShield::GetGlobalShapeTransform(time_t curr_time)
@@ -465,10 +459,10 @@ SkillObjectGuardian::SkillObjectGuardian()
 }
 
 void SkillObjectGuardian::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
-	ResourceMap<class ModelClass>& models, ResourceMap<class FbxModel>& fbx_models, ResourceMap<class TextureClass>& textures) const
+	class GraphicResources* graphic_resources) const
 {
 	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
-	shader_manager->normalMap_shader_->PushRenderQueue(models.get("orb"), shape);
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("orb"), shape);
 }
 
 bool SkillObjectGuardian::OnCollided(MonsterClass* monster, time_t collided_time)
