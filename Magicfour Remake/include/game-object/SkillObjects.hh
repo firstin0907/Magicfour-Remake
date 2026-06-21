@@ -23,7 +23,7 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
-	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) const;
 	
 	static void initialize(const std::string& model_name);
 
@@ -52,7 +52,7 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
-	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) const;
 
 	static void initialize(const std::string& model_name, const std::string& effect_model_name);
 
@@ -82,7 +82,7 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
-	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) const;
 
 	static void initialize(const std::string& model_name);
 
@@ -110,7 +110,7 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
-	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) const;
 
 	static void initialize(const std::string& model_name);
 	
@@ -139,7 +139,7 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
-	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) const;
 
 	static void initialize(const std::string& model_name);
 	
@@ -168,7 +168,7 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
-	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time);
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) const;
 
 	static void initialize(const std::string& model_name);
 

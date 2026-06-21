@@ -65,13 +65,13 @@ float4 psMain(PixelInputType input) : SV_TARGET
 
     float2 noiseCoords;
 
-    // ÃÖÁ¾ ÁÂÇ¥ = ¿ø·¡ ÁÂÇ¥ + preturb.
+    //        Ç¥ =        Ç¥ + preturb.
     noiseCoords.xy = (finalNoise.xy * perturb) + input.tex.xy;
 
     float4 fireColor = fireTexture.Sample(SampleTypeClamp, noiseCoords.xy);
     float4 alphaColor = alphaTexture.Sample(SampleTypeClamp, noiseCoords.xy);
 
-    fireColor.a = alphaColor.r;
+    fireColor.a = fireColor.a * alphaColor.r;
 
 	return fireColor;
 }

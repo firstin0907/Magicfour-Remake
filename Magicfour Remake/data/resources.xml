@@ -1,6 +1,7 @@
 <Resources>
 
   <FbxModel name="character" model_path="data/model/Character/rp_nathan_animated_003_walking.fbx"/>
+  <FbxModel name="spiked_mace" model_path="data/model/SpikedMace/spiked_mace.FBX"></FbxModel>
   
   <Model name="cube" model_path="data/model/abox.obj">
     <Texture type="diffuse" src="data/texture/stone01.tga"/>
@@ -62,10 +63,10 @@
     <Texture type="normal" src="data/model/Crystal/None_Normal.png"/>
   </Model>
 
-  <Model name="basic" model_path="data/model/Blade/MagicCeramicBlade.obj">
-    <Texture type="diffuse" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_BaseColor.jpg"/>
-    <Texture type="normal" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Normal.jpg"/>
-    <Texture type="emissive" src="data/model/Blade/MagicCeramicBlade_MagicCeramicKnife_Emissive.jpg"/>
+  <Model name="basic" model_path="data/model/PlaneObject.obj">
+    <Texture type="diffuse" src="data/texture/magic_circle/basic_attack.png"/>
+    <Texture type="normal"  src="data/texture/white.png"/>
+    <Texture type="emissive" src="data/texture/white.png"/>
   </Model>
 
   <Model name="shield" model_path="data/model/Shield/shield.obj">

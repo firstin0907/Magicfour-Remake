@@ -7,6 +7,7 @@
 
 #include "shader/ShaderManager.hh"
 #include "shader/NormalMapShaderClass.hh"
+#include "shader/LightShaderClass.hh"
 #include "shader/FireShaderClass.hh"
 
 using namespace std;
@@ -112,7 +113,7 @@ void SkillObjectSpear::Draw(time_t curr_time, time_t time_delta, class ShaderMan
 	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("spear"), shape);
 }
 
-XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time)
+XMMATRIX SkillObjectSpear::GetGlobalShapeTransform(time_t curr_time) const
 {
 	return XMMatrixRotationY(XM_PI / 2) * XMMatrixRotationZ(XM_PI - angle_)
 		* XMMatrixScaling(0.3f, 0.3f, 0.3f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
@@ -216,7 +217,7 @@ void SkillObjectBead::Draw(time_t curr_time, time_t time_delta, class ShaderMana
 		0.8f, 0.0f);
 }
 
-XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time)
+XMMATRIX SkillObjectBead::GetGlobalShapeTransform(time_t curr_time) const
 {
 	return 
 		XMMatrixScaling(0.45f, 0.45f, 0.45f) * XMMatrixRotationY(curr_time * 0.0002f * XM_PI)
@@ -291,12 +292,20 @@ void SkillObjectLeg::Draw(time_t curr_time, time_t time_delta, class ShaderManag
 	class GraphicResources* graphic_resources) const
 {
 	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
-	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("leg"), shape);
+	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("cube"), GetGlobalShapeTransform(curr_time));
+	shader_manager->fire_shader_->PushRenderQueue(graphic_resources->models_.get("fire"),
+		XMMatrixScaling(0.5f, 1.0f, 1.0f) * XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f),
+		{ 1.3f, 2.1f, 2.3f },
+		{ 1.0f, 2.0f, 3.0f },
+		{ 0.1f, 0.2f },
+		{ 0.1f, 0.3f },
+		{ 0.1f, 0.1f },
+		0.8f, 0.0f);
 }
 
-XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time)
+XMMATRIX SkillObjectLeg::GetGlobalShapeTransform(time_t curr_time) const
 {
-	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
+	return GetGlobalRange().toMatrix();
 }
 
 
@@ -311,6 +320,7 @@ SkillObjectBasic::SkillObjectBasic(int pos_x, int pos_y, int vx,
 	: SkillObjectClass(pos_x, pos_y,
 		rect_t{ -60000, 80000, 60000, 380000 }, vx, 0, skill_level, created_time)
 {
+	direction_ = (vx > 0) ? direction_t::kLeftForword : direction_t::kRightForward;
 }
 
 void SkillObjectBasic::FrameMove(time_t curr_time, time_t time_delta,
@@ -347,11 +357,23 @@ bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
 void SkillObjectBasic::Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
 	class GraphicResources* graphic_resources) const
 {
-	const XMMATRIX shape = XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
-	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("basic"), shape);
+	const XMMATRIX shape =
+		XMMatrixRotationZ(curr_time * 0.0007f)
+		* XMMatrixRotationY(DIR_WEIGHT(direction_, XM_PIDIV4))
+		* XMMatrixScaling(3.0f, 3.0f, 3.0f)
+		* XMMatrixTranslation(position_.x * kScope, (position_.y + range_.get_h() / 2) * kScope, 0.0f);
+	
+	shader_manager->fire_shader_->PushRenderQueue(graphic_resources->models_.get("basic"), shape,
+		{ .0f, .0f, .0f },
+		{ .0f, .0f, .0f },
+		{ .0f, .0f },
+		{ .0f, .0f },
+		{ .0f, .0f },
+		.0f, .0f
+		);
 }
 
-XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time)
+XMMATRIX SkillObjectBasic::GetGlobalShapeTransform(time_t curr_time) const
 {
 	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }
@@ -428,7 +450,7 @@ void SkillObjectShield::Draw(time_t curr_time, time_t time_delta, class ShaderMa
 	shader_manager->normalMap_shader_->PushRenderQueue(graphic_resources->models_.get("shield"), shape);
 }
 
-XMMATRIX SkillObjectShield::GetGlobalShapeTransform(time_t curr_time)
+XMMATRIX SkillObjectShield::GetGlobalShapeTransform(time_t curr_time) const
 {
 	if (velocity_.x > 0)
 	{
@@ -474,7 +496,7 @@ bool SkillObjectGuardian::OnCollided(MonsterClass* monster, time_t collided_time
 	return true;
 }
 
-XMMATRIX SkillObjectGuardian::GetGlobalShapeTransform(time_t curr_time)
+XMMATRIX SkillObjectGuardian::GetGlobalShapeTransform(time_t curr_time) const
 {
 	return XMMatrixTranslation(position_.x * kScope, position_.y * kScope, 0.0f);
 }

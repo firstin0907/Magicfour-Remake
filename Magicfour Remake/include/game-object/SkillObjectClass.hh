@@ -44,7 +44,7 @@ public:
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool OnCollided(class MonsterClass* monster, time_t collided_time);
 
-	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) = 0;
+	virtual XMMATRIX GetGlobalShapeTransform(time_t curr_time) const = 0;
 
 protected:
 
