@@ -53,34 +53,53 @@ void CharacterUI::DrawScoreAndCombo(D2DClass* direct2D, const UIContext& context
 	const int combo = character->GetCombo();
 	if (combo > 0)
 	{
-		// Remained time for combo.
-		const time_t combo_durable_time = character->GetComboDurableTime(curr_time);
-		const float combo_text_alpha_value = std::clamp((combo_durable_time - 500.0f) * (1 / 3000.0f), 0.0f, 1.0f);
+		const time_t combo_elapsed_time = 5'000 - character->GetComboDurableTime(curr_time); // TODO: Make this value as a constant.
+		const time_t combo_durable_time = character->GetComboDurableTime(curr_time); // Remained time for combo.
+		const float combo_opacity = std::clamp((combo_durable_time - 500.0f) * (1 / 3000.0f), 0.0f, 1.0f);
 
+		// Draw Combo Effect Background
+		{
+			auto source_rect = D2D1::RectF(
+				context.bitmaps_.get("combo_stroke")->GetWidth() * std::clamp((150.0f - static_cast<float>(combo_elapsed_time)) / 150.0f, 0.0f, 1.0f),
+				0,
+				context.bitmaps_.get("combo_stroke")->GetWidth(),
+				context.bitmaps_.get("combo_stroke")->GetHeight()
+			);
+			auto dest_rect = source_rect;
 
-		if (combo < 10) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black, combo_text_alpha_value));
-		else if (combo < 30) direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkBlue, combo_text_alpha_value));
-		else direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::DarkRed, combo_text_alpha_value));
+			float x_offset = context.screen_width_ - 10 - context.bitmaps_.get("combo_stroke")->GetWidth();
+			float y_offset = (context.screen_height_ - context.bitmaps_.get("combo_stroke")->GetHeight()) / 2.f - 30.f;
 
+			dest_rect.left   += x_offset;
+			dest_rect.right  += x_offset;
+			dest_rect.top    += y_offset;
+			dest_rect.bottom += y_offset;
 
-		float font_size_1, font_size_2 = 45.0f;
-		font_size_1 = 65.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 30.0f;
+			direct2D->RenderBitmap(context.bitmaps_.get("combo_stroke").get(), dest_rect, source_rect, combo_opacity);
+		}
 
-		if (combo_durable_time < 4970)
-			font_size_2 = 45.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 20.0f;
+		// Set Combo Text Color based on combo count and remained time for combo.
+		direct2D->SetBrushColor(
+			(combo < 10) ? D2D1::ColorF(D2D1::ColorF::Black, combo_opacity) :
+			(combo < 30) ? D2D1::ColorF(D2D1::ColorF::DarkBlue, combo_opacity) :
+						   D2D1::ColorF(D2D1::ColorF::DarkRed, combo_opacity)
+		);
 
-		int font_offset = combo_durable_time > 4800 ? (combo_durable_time - 4800) / 5 : 0;
+		// Determine font size and offset for combo text based on combo count and remained time for combo.
+		float font_size_1 = 70.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 30.0f;
+		float font_size_2 = 35.0f;
+		int   font_offset = combo_durable_time > 4800 ? (combo_durable_time - 4800) / 5 : 0;
 
 
 		direct2D->RenderTextWithInstantFormat(
 			direct2D->CreateTextFormat(L"Arial", font_size_1,
 				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), std::to_wstring(combo).c_str(),
-			0, (float)(context.screen_height_ / 2), (float)(context.screen_width_ - 190 - font_offset), (float)(context.screen_height_ / 2));
+			0, 0, (float)(context.screen_width_ - 167), (float)(context.screen_height_ - 357));
 
 		direct2D->RenderTextWithInstantFormat(
 			direct2D->CreateTextFormat(L"Arial", font_size_2,
 				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
-			0, (float)(context.screen_height_ / 2), (float)(context.screen_width_ - 30), (float)(context.screen_height_ / 2));
+			0, 0, (float)(context.screen_width_ - 47), (float)(context.screen_height_ - 377));
 	}
 }
 

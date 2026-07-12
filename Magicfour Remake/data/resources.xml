@@ -87,6 +87,7 @@
   <Bitmap name="monster_hp_gauge" src="data/texture/user_interface/monster_hp_frame.png"/>
   <Bitmap name="skill_gauge_gray" src="data/texture/user_interface/skill_gauge_gray.png"/>
   <Bitmap name="skill_gauge_rainbow" src="data/texture/user_interface/skill_gauge_rainbow.png"/>
+  <Bitmap name="combo_stroke" src="data/texture/user_interface/combo_stroke.png"/>
   
   <!-- Fonts for UI -->
   <Fonts>

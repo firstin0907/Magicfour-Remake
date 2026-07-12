@@ -338,7 +338,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const FieldC
 	}
 }
 
-bool CharacterClass::Frame(time_t time_delta, time_t curr_time)
+bool CharacterClass::Frame(time_t curr_time, time_t time_delta)
 {
 	if (time_combo_end_ < curr_time)
 	{
