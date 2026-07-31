@@ -159,6 +159,8 @@
     <ClCompile Include="source\graphics\TextureClass.cc" />
     <ClCompile Include="source\main.cc" />
     <ClCompile Include="source\map\FieldClass.cc" />
+    <ClCompile Include="source\scenes\GameplayScene.cc" />
+    <ClCompile Include="source\scenes\TitleScene.cc" />
     <ClCompile Include="source\shader\FIreShaderClass.cc" />
     <ClCompile Include="source\shader\LightShaderClass.cc" />
     <ClCompile Include="source\shader\NormalMapShaderClass.cc" />
@@ -211,6 +213,10 @@
     <ClInclude Include="include\graphics\TextureClass.hh" />
     <ClInclude Include="include\map\FieldClass.hh" />
     <ClInclude Include="include\map\GroundClass.hh" />
+    <ClInclude Include="include\scenes\GameplayScene.hh" />
+    <ClInclude Include="include\scenes\InitScene.hh" />
+    <ClInclude Include="include\scenes\interface\IGameScene.hh" />
+    <ClInclude Include="include\scenes\TitleScene.hh" />
     <ClInclude Include="include\shader\CharacterShaderClass.hh" />
     <ClInclude Include="include\shader\FireShaderClass.hh" />
     <ClInclude Include="include\shader\LightShaderClass.hh" />

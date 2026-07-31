@@ -62,7 +62,7 @@ void ItemClass::FrameMove(time_t curr_time, time_t time_delta,
 	velocity_.y = after_vy;
 }
 
-bool ItemClass::Frame(time_t curr_time, time_t time_delta)
+bool ItemClass::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	return curr_time <= createTime_ + kItemLifetime && state_ == ItemState::kNormal;
 }

@@ -42,10 +42,22 @@ void StoneShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATR
 	render_queue_[model].push_back(render_command);
 }
 
-void StoneShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
-	const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT3 camera_pos)
+void StoneShaderClass::EnableShaderForFrame(const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT3 camera_pos)
 {
-	FrustumCuller fruster_culler(vp_matrix);
+	enabled_for_frame_ = true;
+	render_constant_.vp_matrix = vp_matrix;
+	render_constant_.light_direction = light_direction;
+	render_constant_.camera_pos = camera_pos;
+}
+
+void StoneShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context)
+{
+	if (!render_queue_.empty() && !enabled_for_frame_) // If command pushed to render queue but shader is not enabled
+	{
+		throw GAME_EXCEPTION(L"StoneShaderClass::ProcessRenderQueue() called without enabling the shader for the frame.");
+	}
+
+	FrustumCuller fruster_culler(render_constant_.vp_matrix);
 
 	// Set the shader to be used for rendering.
 	SetShader(device_context);
@@ -60,8 +72,8 @@ void StoneShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 			// Check if the model is in the view frustum
 			if (!fruster_culler.IsInFrustum(model->GetBoundingVolume())) continue;
 
-			SetShaderParameters(device_context, param.world_matrix, vp_matrix,
-				light_direction, param.diffuse_color, camera_pos,
+			SetShaderParameters(device_context, param.world_matrix, render_constant_.vp_matrix,
+				render_constant_.light_direction, param.diffuse_color, render_constant_.camera_pos,
 				param.ambient_weight, param.diffuse_weight, param.specular_weight);
 
 			RenderShader(device_context, param.index_count, param.index_start);
@@ -69,6 +81,7 @@ void StoneShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 	}
 
 	render_queue_.clear();
+	enabled_for_frame_ = false;
 }
 
 void StoneShaderClass::Render(

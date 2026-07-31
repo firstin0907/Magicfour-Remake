@@ -48,7 +48,7 @@ struct rect_t
 
 enum class GameState
 {
-	kGameRun, kGamePause, kGameOver
+	kGameBegin, kGameRun, kGamePause, kGameOver
 };
 
 constexpr int kGroundY = -600'000;

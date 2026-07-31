@@ -46,7 +46,9 @@
 #include "util/RandomClass.hh"
 #include "util/CollisionProcessor.hh"
 
-//#define DEBUG_RANGE
+#include "scenes/InitScene.hh"
+#include "scenes/TitleScene.hh"
+#include "scenes/GameplayScene.hh"
 
 using namespace std;
 using namespace DirectX;
@@ -70,11 +72,7 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	direct2d_ = make_unique<D2DClass>(direct3d_->GetSwapChain(), hwnd);
 	sound_ = make_unique<SoundClass>();
 
-	camera_ = make_unique<CameraClass>();
-	camera_->SetPosition(0.0f, 0.0f, kCameraZPosition);
-
 	// Load resources.
-	
 	auto texture_loader = [this](xml_node_wrapper node) -> std::shared_ptr<TextureClass>
 		{
 			return make_shared<TextureClass>(this->direct3d_->GetDevice(),
@@ -159,11 +157,6 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 		hwnd
 	);
 	
-	// Create and initialize the light object.
-	light_ = make_unique<LightClass>();
-	light_->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light_->SetDirection(0.0f, 0.0f, 1.0f);
-
 	
 	// Set model of skill object to be rendered.
 	SkillObjectBead::initialize("orb", "fire-effect");
@@ -173,36 +166,20 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	SkillObjectShield::initialize("shield");
 	SkillObjectGuardian::initialize("orb");
 
-	// Create character instance.
-	character_ = make_unique<CharacterClass>(0, 0, input, sound_.get(), skill_object_list_.elements);
-
-	// Temporary
-	monsters_.Insert(new MonsterStop(1000));
-	monsters_.Insert(new MonsterDuck(direction_t::kLeftForword, 1000));
-	//monsters_.emplace_back(new MonsterOctopus(kRightForward, 1000));
-	//for(int i = 1; i <= 10; i++) monsters_.emplace_back(new MonsterBird(kRightForward, 1000));
-
-	// Set ground of field.
-	field_ = make_unique<FieldClass>("data/field/field001.txt");
-	
-	monster_spawner_ = make_unique<MonsterSpawnerClass>();
-	monster_spawner_->SetBaseTotalSpawnRate(6);
-	monster_spawner_->SetIndividualSpawnRate(25, 25, 25, 25);
-
 	timer_ = make_unique<TimerClass>();
 	timer_->Frame();
-
-
-	items_.Insert(new ItemClass(timer_->GetTime(), 0, 0, 0));
-	items_.Insert(new ItemClass(timer_->GetTime(), 7777770, 111110, 0));
-	items_.Insert(new ItemClass(timer_->GetTime(), 1231230, 1231230, 3));
-	items_.Insert(new ItemClass(timer_->GetTime(), -1231230, 242320, 2));
 
 	user_interface_ = make_unique<UserInterfaceClass>(direct2d_.get(),
 		direct3d_->GetDevice(), screenWidth, screenHeight);
 
 	sound_->PlayBackground("background");
-	
+
+	scenes_["InitScene"]	 = make_shared<InitScene>();
+	scenes_["TitleScene"] 	 = make_shared<TitleScene>(screenWidth, screenHeight, input);
+	scenes_["GameplayScene"] = make_shared<GameplayScene>(screenWidth, screenHeight, input);
+
+	current_scene_ = scenes_["InitScene"];
+
 	game_state_ = GameState::kGameRun;
 	state_start_time_ = timer_->GetTime();
 }
@@ -215,230 +192,60 @@ bool ApplicationClass::Frame(InputClass* input)
 {
 	// Check if the user pressed escape and wants to exit the application.
 	if (input->IsKeyPressed(DIK_ESCAPE)) return false;
-	if (input->IsKeyDown(DIK_P))
-	{
-		timer_->Pause();
-		game_state_ = GameState::kGamePause;
-		state_start_time_ = timer_->GetTime();
-	}
-	else if (input->IsKeyDown(DIK_R))
-	{
-		timer_->Resume();
-		game_state_ = GameState::kGameRun;
-		// state_start_time_ will be same,
-		// because curr_time of timer_ is preserved while the game paused.
-	}
 
 	timer_->Frame();
+	current_scene_->Frame(timer_->GetTime(), timer_->GetElapsedTime(), sound_.get());
+	current_scene_->Render(timer_->GetTime(), timer_->GetElapsedTime(), shader_manager_.get(), graphic_resources_.get());
 
-	const time_t curr_time = timer_->GetTime();
-	switch (game_state_)
+	direct3d_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f); // Clear the buffers to begin the scene.
+	
+	ProcessRenderQueue();
+
+	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Disabled2D);
+	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaDisable);
+	current_scene_->RenderUI(timer_->GetTime(), timer_->GetElapsedTime(), user_interface_.get());
+	
+	direct3d_->EndScene(); // Present the rendered scene to the screen.
+	
+	// transition to next scene if current scene has a next scene.
+	std::string next_scene_name = current_scene_->NextScene();
+	if(!next_scene_name.empty())
 	{
-	case GameState::kGameRun:
-		GameFrame(input);
-		Render();
-		return true;
-
-	case GameState::kGamePause:
-		Render();
-		return true;
-
-	case GameState::kGameOver:
-		GameFrame(input);
-		Render();
-		return true;
-
-	default:
-		throw GAME_EXCEPTION(L"Unknown GameState");
-	}
-}
-
-
-void ApplicationClass::GameFrame(InputClass* input)
-{
-	time_t curr_time = timer_->GetTime();
-	time_t delta_time = timer_->GetElapsedTime();
-
-	const int GAME_OVER_SLOW = 4;
-	if (character_->GetState() == CharacterState::kDie)
-	{
-		if (curr_time - delta_time < state_start_time_ + 1000 && state_start_time_ + 1000 <= curr_time)
+		if(scenes_.find(next_scene_name) != scenes_.end())
 		{
-			sound_->PlayEffect("gameover");
+			current_scene_->OnExit();
+			current_scene_ = scenes_[next_scene_name];
+			current_scene_->OnEnter();
+		}
+		else
+		{
+			throw GAME_EXCEPTION(L"Scene not found: " + std::wstring(next_scene_name.begin(), next_scene_name.end()));
 		}
 	}
-	else monster_spawner_->Frame(curr_time, delta_time, monsters_.elements);
 
-	character_->FrameMove(curr_time, delta_time, field_.get());
-	character_->Frame(curr_time, delta_time);
-
-	// Move skill object instances.
-	skill_object_list_.FrameMove(curr_time, delta_time, field_.get());
-
-	// Move monsters.
-	monsters_.FrameMove(curr_time, delta_time, field_.get());
-
-	// Move items.
-	items_.FrameMove(curr_time, delta_time, field_.get());
-
-
-	// Handle collision for the gaurdians.
-	// The content of this loop is proceeded at most two times at once,
-	// because character_->GetGuardian(3) always returns nullptr.
-	for (int i = 0; character_->GetGuardian(i) != nullptr; i++)
-	{
-		CollisionProcessor::Process<SkillObjectGuardian, MonsterClass>(
-			character_->GetGuardian(i), monsters_, [this, curr_time](SkillObjectGuardian* skill_obj, MonsterClass* monster)
-			{
-				if (!skill_obj->OnCollided(monster, curr_time)) return;
-				character_->AddCombo(curr_time);
-			});
-	}
-
-	// Coliide check
-	CollisionProcessor::Process<SkillObjectClass, MonsterClass>(
-		skill_object_list_, monsters_, [this, curr_time](SkillObjectClass* skill_obj, MonsterClass* monster)
-		{
-			if (!skill_obj->OnCollided(monster, curr_time)) return;				
-			character_->AddCombo(curr_time);
-		});
-	/*
-
-	CollisionProcessor::Process<CharacterClass, MonsterClass>(
-		character_.get(), monsters_, [this, curr_time](CharacterClass* character, MonsterClass* monster)
-		{
-			if (!character->OnCollided(curr_time, monster->GetVx())) return;
-
-			if (character_->GetState() == CharacterState::kDie)
-			{
-				game_state_ = GameState::kGameOver;
-				state_start_time_ = curr_time;
-				sound_->PlayEffect("character_death");
-				timer_->SetGameSpeed(250);
-			}
-			else
-			{
-				sound_->PlayEffect("character_damage");
-				if (character_->GetSkill(0).skill_type == 0)
-				{
-					sound_->PlayEffect("heartbeat");
-				}
-			}
-		});
-		*/
-
-	CollisionProcessor::Process<CharacterClass, ItemClass>(
-		character_.get(), items_, [this, curr_time](CharacterClass* character, ItemClass* item)
-		{
-			character->LearnSkill(item->GetType(), curr_time);
-			item->SetState(ItemState::kDie, curr_time);
-
-			sound_->PlayEffect("skill_learn");
-		});
-
-
-	// Process some work which should be conducted per frame,
-	// for skill object instances
-	skill_object_list_.Frame(curr_time, delta_time);
-
-	// Process some work which should be conducted per frame,
-	// for monster object instances
-	monsters_.Frame(curr_time, delta_time, [this, curr_time](IGameObject* obj)
-		{
-			auto monster = static_cast<MonsterClass*>(obj);
-			this->items_.Insert(new ItemClass(curr_time, monster->GetPosition().x,
-				monster->GetPosition().y, monster->GetType()));
-		});
-
-	items_.Frame(curr_time, delta_time);
-}
-
-void ApplicationClass::Render()
-{
-	const float camera_x = std::clamp(character_->GetPosition().x, -kCameraXLimit, kCameraXLimit) * kScope;
-	const float camera_y = max(0, character_->GetPosition().y + 200'000) * kScope;
-	camera_->SetPosition(camera_x, camera_y, kCameraZPosition);
-
-	XMMATRIX viewMatrix, projectionMatrix, orthoMatrix;
 	time_t curr_time = timer_->GetTime();
 	time_t time_delta = timer_->GetElapsedTime();
-
-	// Generate the view matrix based on the camera's position.
-	camera_->Render();
-
-	// Get the world, view, and projection matrices from the camera and d3d objects.
-	camera_->GetViewMatrix(viewMatrix);
-	direct3d_->GetProjectionMatrix(projectionMatrix);
-	direct3d_->GetOrthoMatrix(orthoMatrix);
-
-	const XMMATRIX vp_matrix = viewMatrix * projectionMatrix;
-
-	character_->Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
-
-	// Draw Items
-	items_.Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
-	skill_object_list_.Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
-
-	monsters_.Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
-	field_->Draw(curr_time, time_delta, shader_manager_.get(), graphic_resources_.get());
 
 	graphic_resources_->particle_system_.get("star-spread")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
 	graphic_resources_->particle_system_.get("dust-spread")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
 	graphic_resources_->particle_system_.get("star-spread2")->Frame(curr_time, time_delta, direct3d_->GetDeviceContext());
 
-	// shader_manager_->particle_shader_->PushRenderQueue(graphic_resources_->particle_system_.get("star-spread"), DirectX::XMMatrixScaling(1, 1, 1));
-	// shader_manager_->particle_shader_->PushRenderQueue(graphic_resources_->particle_system_.get("star-spread2"), DirectX::XMMatrixScaling(1, 1, 1));
 
+	return true;
+}
 
-#ifdef DEBUG_RANGE
-
-	shader_manager_->light_shader_->PushRenderQueue(
-		models_.get("plane"), character_->GetRangeRepresentMatrix());
-
-	for (auto& obj : skill_object_list_.elements)
-	{
-		auto skill_obj = static_cast<SkillObjectClass*>(obj.get());
-		shader_manager_->light_shader_->PushRenderQueue(
-			models_.get("plane"), skill_obj->GetRangeRepresentMatrix());
-	}
-
-	for (auto& obj : monsters_.elements)
-	{
-		auto skill_obj = static_cast<MonsterClass*>(obj.get());
-		shader_manager_->light_shader_->PushRenderQueue(
-			models_.get("plane"), skill_obj->GetRangeRepresentMatrix());
-	}
-
-#endif
-	// Clear the buffers to begin the scene.
-	direct3d_->BeginScene(0.0f, 0.0f, 0.5f, 1.0f);
-
+void ApplicationClass::ProcessRenderQueue()
+{
 	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Default3D); 
-	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor());
-	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), light_->GetDiffuseColor(), camera_->GetPosition());
-	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, light_->GetDirection(), camera_->GetPosition());
-	shader_manager_->character_shader_->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix);
+	shader_manager_->light_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext());
+	shader_manager_->normalMap_shader_->ProcessRenderQueue(direct3d_->GetDeviceContext());
+	shader_manager_->stone_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext());
+	shader_manager_->character_shader_->ProcessRenderQueue(direct3d_->GetDeviceContext());
 	
 	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Transparent3D);
 	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaEnable); // Turn on alpha blending for the fire transparency.
-	shader_manager_->fire_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix, curr_time * 0.0004f);
+	shader_manager_->fire_shader_	  ->ProcessRenderQueue(direct3d_->GetDeviceContext());
 
 	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaAdditive);
-	shader_manager_->particle_shader_ ->ProcessRenderQueue(direct3d_->GetDeviceContext(), vp_matrix);
-
-	direct3d_->SetDepthStencilState(D3DClass::DepthStencilMode::Disabled2D);
-	direct3d_->SetAlphaBlending(D3DClass::BlendStateMode::AlphaDisable); 
-
-	user_interface_->Begin2dDraw(direct2d_.get(), vp_matrix, orthoMatrix);
-
-	user_interface_->DrawMonsterUI(direct2d_.get(), monsters_, curr_time);
-
-	user_interface_->DrawCharacterUI(direct2d_.get(), character_.get(), curr_time);
-	
-	user_interface_->DrawSystemUI(direct2d_.get(), game_state_, timer_->GetActualTime());
-
-	user_interface_->End2dDraw(direct2d_.get());
-
-	// Present the rendered scene to the screen.
-	direct3d_->EndScene();
+	shader_manager_->particle_shader_ ->ProcessRenderQueue(direct3d_->GetDeviceContext());
 }

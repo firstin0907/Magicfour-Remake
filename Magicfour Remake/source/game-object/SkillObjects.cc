@@ -79,7 +79,7 @@ bool SkillObjectSpear::OnCollided(MonsterClass* monster, time_t collided_time)
 	return true;
 }
 
-bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta)
+bool SkillObjectSpear::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	switch (state_)
 	{
@@ -175,7 +175,7 @@ bool SkillObjectBead::OnCollided(MonsterClass* monster, time_t collided_time)
 
 }
 
-bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta)
+bool SkillObjectBead::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	switch (state_)
 	{
@@ -283,7 +283,7 @@ bool SkillObjectLeg::OnCollided(MonsterClass* monster, time_t collided_time)
 	return false;
 }
 
-bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta)
+bool SkillObjectLeg::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	return state_start_time_ + 1200 > curr_time;
 }
@@ -348,7 +348,7 @@ bool SkillObjectBasic::OnCollided(MonsterClass* monster, time_t collided_time)
 	return true;
 }
 
-bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta)
+bool SkillObjectBasic::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	constexpr time_t lifetime = 200;
 	return created_time_ + lifetime > curr_time;
@@ -421,7 +421,7 @@ bool SkillObjectShield::OnCollided(MonsterClass* monster, time_t collided_time)
 	return true;
 }
 
-bool SkillObjectShield::Frame(time_t curr_time, time_t time_delta)
+bool SkillObjectShield::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	constexpr time_t lifetime = 200;
 	return state_start_time_ + lifetime > curr_time;

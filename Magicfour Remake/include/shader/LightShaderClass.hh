@@ -46,8 +46,10 @@ public:
 	void PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATRIX world_matrix,
 		ID3D11ShaderResourceView* texture);
 
-	void ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix,
-		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color);
+	/// @brief Enable the shader for rendering a frame. This function sets the shader parameters.
+	void EnableShaderForFrame(const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color);
+	
+	void ProcessRenderQueue(ID3D11DeviceContext* device_context);
 
 private:
 	void InitializeShader(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd,
@@ -71,4 +73,14 @@ private:
 	};
 
 	std::unordered_map<std::shared_ptr<ModelClass>, std::vector<RenderCommand> > render_queue_;
+
+	
+	struct RenderConstant
+	{
+		XMMATRIX	vp_matrix;
+		XMFLOAT3 	light_direction;
+		XMFLOAT4 	diffuse_color;
+	};
+	bool enabled_for_frame_ = false;
+	RenderConstant render_constant_;
 };

@@ -59,8 +59,11 @@ public:
 		ID3D11ShaderResourceView* normal_texture,
 		ID3D11ShaderResourceView* emissive_texture);
 
-	void ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix,
+	/// @brief Enable the shader for rendering a frame. This function sets the shader parameters.
+	void EnableShaderForFrame(const XMMATRIX& vp_matrix,
 		XMFLOAT3 light_direction, XMFLOAT4 diffuse_color, XMFLOAT3 camera_pos);
+	
+	void ProcessRenderQueue(ID3D11DeviceContext* device_context);
 
 private:
 	void InitializeShader(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd,
@@ -100,4 +103,14 @@ private:
 	};
 
 	std::unordered_map<std::shared_ptr<ModelClass>, std::vector<RenderCommand> > render_queue_;
+		
+	struct RenderConstant
+	{
+		XMMATRIX	vp_matrix;
+		XMFLOAT3 	light_direction;
+		XMFLOAT4 	diffuse_color;
+		XMFLOAT3 	camera_pos;
+	};
+	bool enabled_for_frame_ = false;
+	RenderConstant render_constant_;
 };

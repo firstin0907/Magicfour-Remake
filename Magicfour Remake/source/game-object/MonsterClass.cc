@@ -15,7 +15,7 @@ MonsterClass::MonsterClass(Point2d position, direction_t direction,
 	hit_vx_ = hit_vy_ = 0;
 }
 
-bool MonsterClass::Frame(time_t curr_time, time_t time_delta)
+bool MonsterClass::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	prev_hp_ = (prev_hp_ * 30 + hp_) / 31;
 	return true;

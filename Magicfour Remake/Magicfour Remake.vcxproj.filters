@@ -72,6 +72,15 @@
     <Filter Include="헤더 파일\core\common">
       <UniqueIdentifier>{afb76118-62f1-4526-8833-a2ac1d4c179e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\scenes">
+      <UniqueIdentifier>{d086684d-c9ee-4ffd-b197-334346f1ef89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\scenes">
+      <UniqueIdentifier>{ffac2d4c-9db4-4508-8de0-7a21baa6b3ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\scenes\interface">
+      <UniqueIdentifier>{f331e65d-3918-4dfe-a842-703f28cea680}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\core\AnimatedObjectClass.cc">
@@ -193,6 +202,12 @@
     </ClCompile>
     <ClCompile Include="source\shader\CharacterShaderClass.cc">
       <Filter>소스 파일\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scenes\GameplayScene.cc">
+      <Filter>소스 파일\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scenes\TitleScene.cc">
+      <Filter>소스 파일\scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -363,6 +378,18 @@
     </ClInclude>
     <ClInclude Include="include\core\common\GraphicResources.hh">
       <Filter>헤더 파일\core\common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\GameplayScene.hh">
+      <Filter>헤더 파일\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\TitleScene.hh">
+      <Filter>헤더 파일\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\interface\IGameScene.hh">
+      <Filter>헤더 파일\scenes\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\InitScene.hh">
+      <Filter>헤더 파일\scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

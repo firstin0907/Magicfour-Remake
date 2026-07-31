@@ -123,12 +123,11 @@ namespace
 }
 
 CharacterClass::CharacterClass(int pos_x, int pos_y,
-	class InputClass* input, class SoundClass* sound,
-	vector<unique_ptr<class IGameObject> >& skill_objs)
+	class InputClass* input, vector<unique_ptr<class IGameObject> >& skill_objs)
 	: RigidbodyClass(
 		Point2d(pos_x, pos_y),
 		rect_t{ -50000, 0, 50000, 400000 }, kLeftForword
-	), jump_cnt(0), score_(0), input(input), sound(sound), skill_objs(skill_objs)
+	), jump_cnt(0), score_(0), input(input), skill_objs(skill_objs)
 {
 
 	motions_.loadFromXML("data/resources.xml", "Motion",
@@ -192,9 +191,6 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const FieldC
 		if (input->IsKeyPressed(DIK_LEFT))  direction_ = kLeftForword;
 		if (input->IsKeyPressed(DIK_RIGHT)) direction_ = kRightForward;
 		
-		// Skill Attempt
-		if (input->IsKeyDown(DIK_Z)) UseSkill(curr_time, skill_objs, sound);
-
 		// Down Attempt
 		if (input->IsKeyDown(DIK_DOWN) && state_ != CharacterState::kJump && is_on_ground)
 		{
@@ -227,8 +223,6 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const FieldC
 		if (state_ == CharacterState::kRun) SetState(CharacterState::kRunJump, curr_time);
 		if (state_ == CharacterState::kWalk) SetState(CharacterState::kJump, curr_time);
 	}
-
-
 
 	switch (state_)
 	{
@@ -310,7 +304,7 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const FieldC
 
 	case CharacterState::kHit:
 		position_.x += (int)time_delta * velocity_.x;
-		SetStateIfTimeOver(CharacterState::kSlip, state_start_time_, 500);
+		SetStateIfTimeOver(CharacterState::kSlip, curr_time, 500);
 		break;
 
 	case CharacterState::kSlip:
@@ -318,6 +312,10 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const FieldC
 		break;
 
 	case CharacterState::kDie:
+		if (curr_time - state_start_time_ <= 500)
+		{
+			position_.x += (int)time_delta * velocity_.x;
+		}
 		break;
 	}
 
@@ -338,13 +336,15 @@ void CharacterClass::FrameMove(time_t curr_time, time_t time_delta, const FieldC
 	}
 }
 
-bool CharacterClass::Frame(time_t curr_time, time_t time_delta)
+bool CharacterClass::Frame(time_t curr_time, time_t time_delta, SoundClass* sound_manager)
 {
 	if (time_combo_end_ < curr_time)
 	{
 		combo_ = 0;
 	}
 
+	// Skill Attempt
+	if (input->IsKeyDown(DIK_Z)) UseSkill(curr_time, skill_objs, sound_manager);
 
 	if (input->IsKeyDown(DIK_X)) // Skill Drop
 	{
@@ -419,14 +419,16 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 				break;
 
 			case CharacterState::kHit:
+				return motions_.get("fall_legacy")->GetJointMatrix(
+					50 + state_elapsed_seconds / 0.00433333);
+
 			case CharacterState::kSlip:
-				return motions_.get("fall_new")->GetJointMatrix(
-					50 + state_elapsed_seconds / 0.00433333 );
+				return motions_.get("fall_legacy")->GetJointMatrix(
+					50 + (state_elapsed_seconds + 0.5) / 0.00433333 );
 
 			case CharacterState::kDie:
-				return motions_.get("fall_new")->GetJointMatrix(
-					min(394., 50 + state_elapsed_seconds / 0.01433333 ));
-
+				return motions_.get("fall_legacy")->GetJointMatrix(
+					50 + state_elapsed_seconds / 0.00433333);
 			}
 		};
 
@@ -581,12 +583,15 @@ std::unordered_map<std::string, XMMATRIX> CharacterClass::GetShapeMatricesAtStat
 		break;
 
 	case CharacterState::kHit:
+		return motions_.get("fall_legacy")->UpdateAndGetShapeMatrix(
+			50 + state_elapsed_seconds / 0.00433333, root_transform);
+
 	case CharacterState::kSlip:
-		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
-			50 + state_elapsed_seconds / 0.00433333 , root_transform);
+		return motions_.get("fall_legacy")->UpdateAndGetShapeMatrix(
+			50 + (state_elapsed_seconds + 0.5) / 0.00433333, root_transform);
 
 	case CharacterState::kDie:
-		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
+		return motions_.get("fall_legacy")->UpdateAndGetShapeMatrix(
 			min(394., 50 + state_elapsed_seconds / 0.01433333 ), root_transform);
 	}
 }
@@ -616,30 +621,6 @@ std::pair<std::string, size_t> CharacterClass::GetMotionNameAndFrame(CharacterSt
 		// NOt used for now.
 		return { "", 0 };
 	}
-	/*case CharacterState::kSpell:
-		if (skill_currently_used_.skill_type == 1)
-		{
-			root_transform *= XMMatrixRotationY(-XM_PI);
-			return motions_.get("stumble_new")->UpdateAndGetShapeMatrix(
-				50 + state_elapsed_seconds / 0.00333333, root_transform);
-		}
-		else
-		{
-			root_transform *= XMMatrixRotationY(XM_PI * 0.5f);
-			return motions_.get("punch_new")->UpdateAndGetShapeMatrix(
-				state_elapsed_seconds / 0.00133333, root_transform);
-		}
-		break;
-
-	case CharacterState::kHit:
-	case CharacterState::kSlip:
-		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
-			50 + state_elapsed_seconds / 0.00433333, root_transform);
-
-	case CharacterState::kDie:
-		return motions_.get("fall_new")->UpdateAndGetShapeMatrix(
-			min(394., 50 + state_elapsed_seconds / 0.01433333), root_transform);
-	};*/
 }
 
 bool CharacterClass::OnCollided(time_t curr_time, int vx)
@@ -658,7 +639,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 			velocity_.x = vx / 2;
 
 			velocity_.y = 1500;
-			time_invincible_end_ = 1LL << 59;
+			time_skill_available_ = time_invincible_end_ = 1LL << 59;
 		}
 		else
 		{
@@ -674,6 +655,7 @@ bool CharacterClass::OnCollided(time_t curr_time, int vx)
 			velocity_.x = vx / 3;
 			velocity_.y = 1500;
 			time_invincible_end_ = state_start_time_ + kInvincibleDuration;
+			time_skill_available_ = state_start_time_ + 1500;
 		}
 		return true;
 	}

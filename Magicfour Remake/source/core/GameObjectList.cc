@@ -23,12 +23,13 @@ void GameObjectList::FrameMove(time_t curr_time, time_t delta_time, const FieldC
 	}
 }
 
-void GameObjectList::Frame(time_t curr_time, time_t delta_time, std::function<void(IGameObject*)> on_delete)
+void GameObjectList::Frame(time_t curr_time, time_t delta_time, SoundClass* sound_manager,
+	std::function<void(IGameObject*)> on_delete)
 {
 	for (int i = 0; i < elements.size(); i++)
 	{
 		// If this skill object should be deleted,
-		if (!elements[i]->Frame(curr_time, delta_time))
+		if (!elements[i]->Frame(curr_time, delta_time, sound_manager))
 		{
 			if (on_delete) on_delete(elements[i].get());
 

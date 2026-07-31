@@ -14,7 +14,7 @@ public:
 		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
@@ -43,7 +43,7 @@ public:
 		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
@@ -73,7 +73,7 @@ public:
 		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
@@ -101,7 +101,7 @@ public:
 		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
@@ -130,7 +130,7 @@ public:
 		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final;
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
@@ -159,7 +159,7 @@ public:
 		const class FieldClass* ground) override final {};
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final { return true;  };
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final { return true;  };
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,

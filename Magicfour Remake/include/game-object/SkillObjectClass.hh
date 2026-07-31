@@ -33,7 +33,7 @@ public:
 		const class FieldClass* ground) = 0;
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) = 0;
 
 	// Check if this instance is on collidable state.
 	virtual bool IsColliable() const override final

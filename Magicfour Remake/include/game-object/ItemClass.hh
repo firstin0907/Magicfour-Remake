@@ -23,7 +23,7 @@ public:
 	virtual void FrameMove(time_t curr_time, time_t time_delta, const class FieldClass* ground) override final;
 
 	// Proceed the logic for one frame, and return this is still alive.
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final;
 
 	// Check if this instance is on collidable state.
 	virtual bool IsColliable() const override final;

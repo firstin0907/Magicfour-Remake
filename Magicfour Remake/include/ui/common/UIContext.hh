@@ -7,6 +7,7 @@
 
 struct UIContext
 {
+	class D2DClass* direct2d_;
 	int		screen_width_, screen_height_;
 	float	f_screen_width_, f_screen_height_;
 
@@ -20,10 +21,11 @@ struct UIContext
 
 		GameState game_state = GameState::kGameRun;
 		time_t state_start_time = 0;
+		time_t actual_time = 0;
 	} system_context_;
 
-	UIContext(int screen_width, int screen_height)
-		: screen_height_(screen_height), screen_width_(screen_width),
+	UIContext(class D2DClass* direct2d, int screen_width, int screen_height)
+		: direct2d_(direct2d), screen_height_(screen_height), screen_width_(screen_width),
 		f_screen_height_(static_cast<float>(screen_height)),
 		f_screen_width_(static_cast<float>(screen_width)),
 		system_context_{}

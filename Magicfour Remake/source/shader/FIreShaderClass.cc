@@ -66,10 +66,21 @@ void FireShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model,
 	render_queue_[model].push_back(render_command);
 }
 
-void FireShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
-	XMMATRIX vp_matrix, float frame_time)
+void FireShaderClass::EnableShaderForFrame(const XMMATRIX& vp_matrix, float frame_time)
 {
-	FrustumCuller fruster_culler(vp_matrix);
+	enabled_for_frame_ = true;
+	render_constant_.vp_matrix = vp_matrix;
+	render_constant_.frame_time = frame_time;
+}
+
+void FireShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context)
+{
+	if (!render_queue_.empty() && !enabled_for_frame_) // If command pushed to render queue but shader is not enabled
+	{
+		throw GAME_EXCEPTION(L"FireShaderClass::ProcessRenderQueue() called without enabling the shader for the frame.");
+	}
+
+	FrustumCuller fruster_culler(render_constant_.vp_matrix);
 	for (auto& [model, params] : render_queue_)
 	{
 		// Check if the model is in the view frustum
@@ -80,10 +91,10 @@ void FireShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 		for (const auto& param : params)
 		{
 			MatrixBufferType matrix_data;
-			matrix_data.mvp = param.world_matrix * vp_matrix;
+			matrix_data.mvp = param.world_matrix * render_constant_.vp_matrix;
 
 			NoiseBufferType noise_data;
-			noise_data.frame_time = frame_time;
+			noise_data.frame_time = render_constant_.frame_time;
 			noise_data.scroll_speeds = param.scroll_speeds;
 			noise_data.scales = param.scales;
 			noise_data.padding = 0.0f;
@@ -105,6 +116,7 @@ void FireShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 	}
 
 	render_queue_.clear();
+	enabled_for_frame_ = false;
 }
 
 void FireShaderClass::InitializeShader(ID3D11Device* device,

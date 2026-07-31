@@ -236,17 +236,6 @@ D3DClass::D3DClass(int screenWidth, int screenHeight,
 	// ����Ʈ ����
 	deviceContext_->RSSetViewports(1, &viewport);
 
-	// ���� ���(3D -> 2D) ���� �� ����
-	float fieldOfView = 3.141592654f / 4.0f;
-	float screenAspect = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
-	projectionMatrix_ = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
-
-	worldMatrix_ = XMMatrixIdentity(); // ���� ��ķ� �ʱ�ȭ
-
-	// ���� ���� ���(UI �� 2D ��� �׸���)
-	orthoMatrix_ = XMMatrixOrthographicLH(
-		static_cast<float>(screenWidth), static_cast<float>(screenHeight), -1, 1);
-
 	// ������ �������� --> depth�� �°� �׸���, depth �� ������ ���� �ʱ�
 	D3D11_DEPTH_STENCIL_DESC depthNonWriteStencilDesc = depthStencilDesc;
 	depthNonWriteStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
@@ -351,21 +340,6 @@ ID3D11Device* D3DClass::GetDevice()
 ID3D11DeviceContext* D3DClass::GetDeviceContext()
 {
 	return deviceContext_.Get();
-}
-
-void D3DClass::GetProjectionMatrix(XMMATRIX& projectionMatrix)
-{
-	projectionMatrix = projectionMatrix_;
-}
-
-void D3DClass::GetWorldMatrix(XMMATRIX& world)
-{
-	world = worldMatrix_;
-}
-
-void D3DClass::GetOrthoMatrix(XMMATRIX& orthoMatrix)
-{
-	orthoMatrix = orthoMatrix_;
 }
 
 void D3DClass::GetVideoCardInfo(char* cardName, int& memory)

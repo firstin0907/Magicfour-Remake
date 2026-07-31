@@ -51,9 +51,11 @@ void FieldClass::Draw(time_t curr_time, time_t time_delta, class ShaderManager* 
 	// Draw grounds
 	for (const auto& ground : GetGrounds())
 	{
+		
 		// for grass
 		rect_t grass_range = ground.GetRange();
 		const int grass_drawing_steps = grass_range.get_w() / 100000 + 1;
+		
 		for (long long i = 0; i < grass_drawing_steps; i++)
 		{
 			rect_t grass_section_range = grass_range;
@@ -63,7 +65,7 @@ void FieldClass::Draw(time_t curr_time, time_t time_delta, class ShaderManager* 
 			grass_section_range.x1 = curr_x, grass_section_range.x2 = next_x;
 
 			const XMMATRIX&& grass_matrix = XMMatrixRotationY(3 * M_PI_2) * XMMatrixRotationZ(3 * M_PI_2) *
-				XMMatrixTranslation(0.0f, 0.0f, -0.0001f) *
+				XMMatrixScaling(1.1f, 1.1f, 1.1f) *
 				grass_section_range.toMatrix();
 
 			shader_manager->fire_shader_->PushRenderQueue(
@@ -76,7 +78,7 @@ void FieldClass::Draw(time_t curr_time, time_t time_delta, class ShaderManager* 
 				{ 0.1f, 0.1f },
 				0.4f, 0.0f);
 		}
-
+		
 		rect_t ground_range = ground.GetRange();
 		const int ground_drawing_steps = grass_range.get_w() / 420000 + 1;
 		for (long long i = 0; i < ground_drawing_steps; i++)

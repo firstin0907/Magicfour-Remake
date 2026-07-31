@@ -71,7 +71,7 @@ public:
 	virtual void FrameMove(time_t curr_time, time_t time_delta, const class FieldClass* ground) = 0;
 
 	// Proceed the logic for one frame, and return this is still alive.
-	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) = 0;
 
 	// Check if this instance is on collidable state.
 	virtual bool IsColliable() const override final { return state_ != MonsterState::kEmbryo && state_ != MonsterState::kDie;  }

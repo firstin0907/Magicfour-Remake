@@ -17,7 +17,7 @@ public:
 		const class FieldClass* ground) = 0;
 	
 	// Proceed the logic for one frame, and return this is still alive.
-	virtual bool Frame(time_t curr_time, time_t time_delta) = 0;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) = 0;
 
 	// Return the global range.
 	virtual rect_t GetGlobalRange() const = 0;

@@ -26,7 +26,7 @@ public:
 		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta);
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
@@ -57,7 +57,7 @@ public:
 		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta);
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
@@ -86,7 +86,7 @@ public:
 		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta);
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
@@ -119,7 +119,7 @@ public:
 		const class FieldClass* ground);
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta);
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager);
 
 	// Render this instance to game scene.
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,

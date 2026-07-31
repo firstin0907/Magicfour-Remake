@@ -35,15 +35,16 @@ public:
 
 	void CalculateScreenPos(const XMMATRIX& world_matrix, float& x, float& y) const;
 
-	void Begin2dDraw(class D2DClass* direct2D, const XMMATRIX& vp_matrix, const XMMATRIX& ortho_matrix);
-	void End2dDraw(class D2DClass* direct2D);
+	void Begin2dDraw(const XMMATRIX& vp_matrix, const XMMATRIX& ortho_matrix);
+	void End2dDraw();
 
-	void DrawMonsterUI(class D2DClass* direct2D, class GameObjectList& monsters, time_t curr_time);
-	void DrawCharacterUI(class D2DClass* direct2D, class CharacterClass* character, time_t curr_time);
-	void DrawSystemUI(class D2DClass* direct2D, GameState game_state, time_t actual_curr_time);
+	void DrawMonsterUI(class GameObjectList& monsters, time_t curr_time);
+	void DrawCharacterUI(class CharacterClass* character, time_t curr_time);
+	void DrawSystemUI();
+
+	void UpdateSystemContext(GameState game_state, time_t actual_curr_time);
 
 	inline const UIContext& GetContext() { return context; }
-
 
 private:
 	UIContext context;

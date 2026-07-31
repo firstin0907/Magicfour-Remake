@@ -35,8 +35,7 @@ public:
 	bool Frame(class InputClass* input);
 
 private:
-	void GameFrame(class InputClass* input);
-	void Render();
+	void ProcessRenderQueue();
 
 private:
 	GameState game_state_;
@@ -46,24 +45,15 @@ private:
 	unique_ptr<class D2DClass>			direct2d_;
 	unique_ptr<class SoundClass>		sound_;
 
-	unique_ptr<class CameraClass>		camera_;
-
 	unique_ptr<class GraphicResources>	graphic_resources_;
 
-	unique_ptr<class LightClass>		light_;
 	unique_ptr<class ShaderManager>		shader_manager_;
 
-	unique_ptr<class CharacterClass>	character_;
-
-	GameObjectList	skill_object_list_;
-	GameObjectList	monsters_;
-	GameObjectList	items_;
-
-	unique_ptr<class FieldClass>			field_;
-
-
 	unique_ptr<class TimerClass>			timer_;
-	unique_ptr<class MonsterSpawnerClass>	monster_spawner_;
-
 	unique_ptr<class UserInterfaceClass>	user_interface_;
+
+	std::unordered_map<std::string, shared_ptr<class IGameScene>> scenes_;
+
+	shared_ptr<class IGameScene> current_scene_;
+
 };

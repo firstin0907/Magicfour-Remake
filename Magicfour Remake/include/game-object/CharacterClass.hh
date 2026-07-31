@@ -28,8 +28,7 @@ private:
 
 public:
 	CharacterClass(int pos_x, int pos_y,
-		class InputClass* input, class SoundClass *sound,
-		vector<unique_ptr<class IGameObject> >& skill_objs);
+		class InputClass* input, vector<unique_ptr<class IGameObject> >& skill_objs);
 	~CharacterClass() = default;
 
 	// Move instance as time goes by.
@@ -37,7 +36,7 @@ public:
 		const class FieldClass* ground) override final;
 
 	// Should be called after processing any collision with monsters. 
-	virtual bool Frame(time_t curr_time, time_t time_delta) override final;
+	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) override final;
 
 	// Should be called when this instance is collided with any valid(live) monster.
 	virtual bool IsColliable() const override final { return true; };
@@ -147,7 +146,6 @@ private:
 
 private:
 	class InputClass* input;
-	class SoundClass* sound;
 
 	vector<unique_ptr<class IGameObject> >& skill_objs;
 };

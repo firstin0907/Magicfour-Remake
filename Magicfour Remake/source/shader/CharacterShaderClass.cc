@@ -25,10 +25,20 @@ void CharacterShaderClass::PushRenderQueue(std::shared_ptr<FbxModel> model, XMMA
 	render_queue_[model].push_back(render_command);
 }
 
-
-void CharacterShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix)
+void CharacterShaderClass::EnableShaderForFrame(const XMMATRIX& vp_matrix)
 {
-    FrustumCuller fruster_culler(vp_matrix);
+	enabled_for_frame_ = true;
+	render_constant_.vp_matrix = vp_matrix;
+}
+
+void CharacterShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context)
+{
+	if (!render_queue_.empty() && !enabled_for_frame_) // If command pushed to render queue but shader is not enabled
+	{
+		throw GAME_EXCEPTION(L"CharacterShaderClass::ProcessRenderQueue() called without enabling the shader for the frame.");
+	}
+
+    FrustumCuller fruster_culler(render_constant_.vp_matrix);
 
     SetShader(device_context);
     for (auto& [model, params] : render_queue_)
@@ -50,7 +60,7 @@ void CharacterShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_contex
 				// if (!fruster_culler.IsInFrustum(model->GetBoundingVolume())) continue;
 
 				// Set the shader parameters that it will use for rendering.
-				SetShaderParameters(device_context, param, vp_matrix);
+				SetShaderParameters(device_context, param, render_constant_.vp_matrix);
 
 
 				// Now render the prepared buffers with the shader.
@@ -60,6 +70,7 @@ void CharacterShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_contex
 	}
 
 	render_queue_.clear();
+	enabled_for_frame_ = false;
 }
 
 void CharacterShaderClass::InitializeShader(ID3D11Device* device,

@@ -40,10 +40,22 @@ void LightShaderClass::PushRenderQueue(std::shared_ptr<ModelClass> model, XMMATR
 	render_queue_[model].push_back(render_command);
 }
 
-void LightShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
-	const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
+void LightShaderClass::EnableShaderForFrame(const XMMATRIX& vp_matrix, XMFLOAT3 light_direction, XMFLOAT4 diffuse_color)
 {
-	FrustumCuller fruster_culler(vp_matrix);
+	enabled_for_frame_ = true;
+	render_constant_.vp_matrix = vp_matrix;
+	render_constant_.light_direction = light_direction;
+	render_constant_.diffuse_color = diffuse_color;
+}
+
+void LightShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context)
+{
+	if(!render_queue_.empty() && !enabled_for_frame_) // If command pushed to render queue but shader is not enabled
+	{
+		throw GAME_EXCEPTION(L"LightShaderClass::ProcessRenderQueue() called without enabling the shader for the frame.");
+	}
+
+	FrustumCuller fruster_culler(render_constant_.vp_matrix);
 
 	SetShader(device_context);
 	for (auto& [model, params] : render_queue_)
@@ -56,7 +68,8 @@ void LightShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 			if (!fruster_culler.IsInFrustum(model->GetBoundingVolume())) continue;
 
 			// Set the shader parameters that it will use for rendering.
-			SetShaderParameters(device_context, param.world_matrix, vp_matrix, param.texture, light_direction, diffuse_color);
+			SetShaderParameters(device_context, param.world_matrix, render_constant_.vp_matrix,
+				param.texture, render_constant_.light_direction, render_constant_.diffuse_color);
 
 			// Now render the prepared buffers with the shader.
 			RenderShader(device_context, model->GetIndexCount(), 0);
@@ -64,6 +77,7 @@ void LightShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context,
 	}
 
 	render_queue_.clear();
+	enabled_for_frame_ = false;
 }
 
 void LightShaderClass::InitializeShader(ID3D11Device* device,

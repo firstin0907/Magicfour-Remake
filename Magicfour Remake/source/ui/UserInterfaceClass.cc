@@ -19,9 +19,9 @@
 using namespace std;
 using namespace DirectX;
 
-UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
+UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2d,
 	ID3D11Device* device, int screen_width, int screen_height)
-	: context(screen_width, screen_height)
+	: context(direct2d, screen_width, screen_height)
 {
 	const std::unordered_map<std::string, DWRITE_TEXT_ALIGNMENT> kTextAlignmentMap = {
 		{"leading", DWRITE_TEXT_ALIGNMENT_LEADING},
@@ -36,7 +36,7 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 		{"center", DWRITE_PARAGRAPH_ALIGNMENT_CENTER}
 	};
 
-	auto font_loader = [&kTextAlignmentMap, &kParagraphAlignmentMap, direct2D](xml_node_wrapper node)
+	auto font_loader = [&kTextAlignmentMap, &kParagraphAlignmentMap, direct2d](xml_node_wrapper node)
 		-> std::shared_ptr<FontClass>
 		{
 			// find text alignment key
@@ -44,7 +44,7 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 			auto paragraph_align = kParagraphAlignmentMap.find(node.get_attr("paragraphAlignment", "near"));
 
 			return make_shared<FontClass>(
-				direct2D,
+				direct2d,
 				node.get_required_attr("family"),
 				stof(node.get_required_attr("size")),
 				(text_align != kTextAlignmentMap.end()) ? text_align->second : DWRITE_TEXT_ALIGNMENT_LEADING,
@@ -54,9 +54,9 @@ UserInterfaceClass::UserInterfaceClass(class D2DClass* direct2D,
 		};
 	context.fonts_.loadFromXML("data/resources.xml", "Font", font_loader);
 
-	auto bitmap_loader = [direct2D](xml_node_wrapper node) -> std::shared_ptr<BitmapClass>
+	auto bitmap_loader = [direct2d](xml_node_wrapper node) -> std::shared_ptr<BitmapClass>
 	{
-		return make_shared<BitmapClass>(direct2D, node.get_required_attr("src"));
+		return make_shared<BitmapClass>(direct2d, node.get_required_attr("src"));
 	};
 	context.bitmaps_.loadFromXML("data/resources.xml", "Bitmap", bitmap_loader);
 
@@ -85,36 +85,40 @@ void UserInterfaceClass::CalculateScreenPos(
 	CalculateScreenPos(world_matrix * vp_matrix, ortho_inverse, x, y);
 }
 
-
-void UserInterfaceClass::Begin2dDraw(D2DClass* direct2D, const XMMATRIX& vp_matrix, const XMMATRIX& ortho_matrix)
+void UserInterfaceClass::Begin2dDraw(const XMMATRIX& vp_matrix, const XMMATRIX& ortho_matrix)
 {
-	direct2D->BeginDraw();
+	context.direct2d_->BeginDraw();
 	ortho_inverse = XMMatrixInverse(nullptr, ortho_matrix);
 	this->vp_matrix = vp_matrix;
 }
 
-void UserInterfaceClass::End2dDraw(D2DClass* direct2D)
+void UserInterfaceClass::End2dDraw()
 {
-	direct2D->EndDraw();
+	context.direct2d_->EndDraw();
 }
 
-void UserInterfaceClass::DrawMonsterUI(D2DClass* direct2D, GameObjectList& monsters, time_t curr_time)
+void UserInterfaceClass::DrawMonsterUI(GameObjectList& monsters, time_t curr_time)
 {
 	for (auto& object : monsters.elements)
 	{
 		MonsterClass* monster = static_cast<MonsterClass*>(object.get());
-		MonsterUI::DrawUI(direct2D, this, monster, curr_time);
+		MonsterUI::DrawUI(context.direct2d_, this, monster, curr_time);
 	}
 }
 
 void UserInterfaceClass::DrawCharacterUI(
-	D2DClass* direct2D, CharacterClass* character, time_t curr_time)
+	CharacterClass* character, time_t curr_time)
 {
-	CharacterUI::DrawUI(direct2D, this, character, curr_time);
+	CharacterUI::DrawUI(context.direct2d_, this, character, curr_time);
 }
 
-void UserInterfaceClass::DrawSystemUI(D2DClass* direct2D, GameState game_state,
-	time_t actual_curr_time)
+
+void UserInterfaceClass::DrawSystemUI()
+{
+	SystemUI::DrawUI(context.direct2d_, this, context.system_context_.prev_frame_time);
+}
+
+void UserInterfaceClass::UpdateSystemContext(GameState game_state, time_t actual_curr_time)
 {
 	constexpr time_t kSeconds = 1'000;
 
@@ -130,9 +134,6 @@ void UserInterfaceClass::DrawSystemUI(D2DClass* direct2D, GameState game_state,
 		context.system_context_.frame_cnt = 0;
 	}
 
-	SystemUI::DrawUI(direct2D, this, actual_curr_time);
-
 	context.system_context_.frame_cnt++;
 	context.system_context_.prev_frame_time = actual_curr_time;
 }
-

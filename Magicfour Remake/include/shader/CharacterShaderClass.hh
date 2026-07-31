@@ -57,7 +57,10 @@ public:
 
     void PushRenderQueue(std::shared_ptr<FbxModel> model, XMMATRIX world_matrix);
 
-    void ProcessRenderQueue(ID3D11DeviceContext* device_context, const XMMATRIX& vp_matrix);
+	/// @brief Enable the shader for rendering a frame. This function sets the shader parameters.
+    void EnableShaderForFrame(const XMMATRIX& vp_matrix);
+
+    void ProcessRenderQueue(ID3D11DeviceContext* device_context);
 
 
 private:
@@ -82,4 +85,10 @@ private:
 
     std::unordered_map<std::shared_ptr<FbxModel>, std::vector<RenderCommand> > render_queue_;
 
+	struct RenderConstant
+	{
+		XMMATRIX	vp_matrix;
+	};
+	bool enabled_for_frame_ = false;
+	RenderConstant render_constant_;
 };

@@ -19,8 +19,19 @@ void ParticleShaderClass::PushRenderQueue(std::shared_ptr<ParticleSystemBaseClas
 	render_queue_[particle_system].push_back(render_command);
 }
 
-void ParticleShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context, XMMATRIX vp_matrix)
+void ParticleShaderClass::EnableShaderForFrame(const XMMATRIX& vp_matrix)
 {
+	enabled_for_frame_ = true;
+	render_constant_.vp_matrix = vp_matrix;
+}
+
+void ParticleShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context)
+{
+	if (!render_queue_.empty() && !enabled_for_frame_) // If command pushed to render queue but shader is not enabled
+	{
+		throw GAME_EXCEPTION(L"ParticleShaderClass::ProcessRenderQueue() called without enabling the shader for the frame.");
+	}
+
 	SetShader(device_context);
 
 	for (auto& [particle_system, commands] : render_queue_)
@@ -31,7 +42,7 @@ void ParticleShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context
 		{
 			// Set the shader parameters that it will use for rendering.
 			if (!SetShaderParameters(device_context,
-				command.world_matrix, vp_matrix,
+				command.world_matrix, render_constant_.vp_matrix,
 				particle_system->GetTexture()))
 			{
 				continue;
@@ -43,6 +54,7 @@ void ParticleShaderClass::ProcessRenderQueue(ID3D11DeviceContext* device_context
 	}
 
 	render_queue_.clear();
+	enabled_for_frame_ = false;
 }
 
 void ParticleShaderClass::InitializeShader(ID3D11Device* device, ID3D11DeviceContext* device_context,

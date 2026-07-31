@@ -20,7 +20,8 @@ public:
 
 	void FrameMove(time_t curr_time, time_t delta_time, const class FieldClass* ground);
 
-	void Frame(time_t curr_time, time_t delta_time, std::function<void(IGameObject*)> on_delete = nullptr);
+	void Frame(time_t curr_time, time_t delta_time, class SoundClass* sound_manager,
+		std::function<void(IGameObject*)> on_delete = nullptr);
 
 	void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
 		class GraphicResources* graphic_resources) const;

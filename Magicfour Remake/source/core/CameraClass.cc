@@ -2,10 +2,16 @@
 
 using namespace DirectX;
 
-CameraClass::CameraClass()
+CameraClass::CameraClass(float screen_width, float screen_height, float field_of_view, float screen_near, float screen_far)
 {
 	positionX_ = positionY_ = positionZ_ = 0.0f;
 	rotationX_ = rotationY_ = rotationZ_ = 0.0f;
+
+	// Create the projection matrix for 3D rendering.
+	const float screen_aspect = screen_width / screen_height;
+	projection_matrix_ = XMMatrixPerspectiveFovLH(field_of_view, screen_aspect, screen_near, screen_far);
+	ortho_matrix_ = XMMatrixOrthographicLH(
+		static_cast<float>(screen_width), static_cast<float>(screen_height), -1, 1);
 }
 
 CameraClass::~CameraClass()
@@ -24,16 +30,6 @@ void CameraClass::SetRotation(float x, float y, float z)
 	rotationX_ = x;
 	rotationY_ = y;
 	rotationZ_ = z;
-}
-
-XMFLOAT3 CameraClass::GetPosition()
-{
-	return XMFLOAT3(positionX_, positionY_, positionZ_);
-}
-
-XMFLOAT3 CameraClass::GetRotation()
-{
-	return XMFLOAT3(rotationX_, rotationY_, rotationZ_);
 }
 
 void CameraClass::Render()
@@ -83,10 +79,5 @@ void CameraClass::Render()
 	lookAtVector = XMVectorAdd(positionVector, lookAtVector);
 
 	// Finally create the view matrix from the three updated vectors.
-	viewMatrix_ = XMMatrixLookAtLH(positionVector, lookAtVector, upVector);
-}
-
-void CameraClass::GetViewMatrix(XMMATRIX& viewMatrix)
-{
-	viewMatrix = viewMatrix_;
+	view_matrix_ = XMMatrixLookAtLH(positionVector, lookAtVector, upVector);
 }
