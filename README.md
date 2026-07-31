@@ -1,5 +1,5 @@
 # Magicfour-Remake
-The 3D remake of 'Magicfour', a magic action role-playing game.
+The 3D remake of '[Magicfour](https://github.com/firstin0907/Magicfour)', a magic action role-playing game.
 
 ## Introduction
 'Magicfour-Remake' is a game project developed with C++17 and DirectX 11.
@@ -14,6 +14,7 @@ This project uses vcpkg manifest mode via the included `vcpkg.json` file.
 The following libraries are declared in the manifest:
 - **[DirectXTex](https://github.com/microsoft/DirectXTex)**: Used for reading texture files.
 - **[DirectXTK](https://github.com/microsoft/DirectXTK)**: DirectX Toolkit, required for audio playback.
+- **[rapidxml](https://rapidxml.sourceforge.net/index.htm)**: XML parser, used for reading [resources.xml](https://github.com/firstin0907/Magicfour-Remake/blob/main/Magicfour%20Remake/data/resources.xml) file.
 
 ### Setup
 1. Install Visual Studio 2022 (or later) with the Desktop development with C++ workload. Ensure the Windows SDK is installed.
@@ -50,7 +51,7 @@ Each game object derived `IGameObject` implements the following methods:
   `ApplicationClass` uses this to perform collision checks between objects.
 - `bool IsCollidable()`: Returns whether the object can currently collide.
   For example, a character becomes temporarily non-collidable after taking damage to prevent continuous collision damage.
-- `void Draw(...)`: Renders the object and its additional visual effects.
+- `void Draw(...)`: Renders the object and its additional visual effects. Only pushes render commands to the render queues, not makes actual drawcall.
 
 `FrameMove(...)` is called for all objects first, followed by collision detection.
 After that, `Frame(...)` is executed to process each object's logic.
