@@ -8,6 +8,7 @@
 #include "core/SoundClass.hh"
 
 #include "core/common/GraphicResources.hh"
+#include "core/configuration/ConfigManager.hh"
 
 #include "graphics/LightClass.hh"
 
@@ -42,9 +43,11 @@ constexpr int	kItemDropProbability = 50;
 using namespace std;
 using namespace DirectX;
 
-GameplayScene::GameplayScene(float screen_width, float screen_height, InputClass* input) :
-    screen_width_(screen_width), screen_height_(screen_height), input_(input), next_scene_name_("")
+GameplayScene::GameplayScene(ConfigManager* config_manager, InputClass* input) :
+    config_manager_(config_manager), input_(input), next_scene_name_("")
 {
+	auto resolution_string = config_manager->GetConfigValue<std::wstring>(L"Resolution");
+	
 }
 
 GameplayScene::~GameplayScene()
@@ -55,7 +58,10 @@ void GameplayScene::OnEnter()
 {
 	game_time_ = 0;
 
-    camera_ = make_unique<CameraClass>(screen_width_, screen_height_, XM_PIDIV4, 0.1f, 1000.0f);
+    camera_ = make_unique<CameraClass>(
+		config_manager_->GetResolution().first,
+		config_manager_->GetResolution().second,
+		XM_PIDIV4, 0.1f, 1000.0f);
 	camera_->SetPosition(0.0f, 0.0f, kCameraZPosition);
     
 	// Create and initialize the light object.

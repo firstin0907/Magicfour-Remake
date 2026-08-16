@@ -6,22 +6,26 @@
 #include "core/ApplicationClass.hh"
 #include "core/GameException.hh"
 
+#include "core/configuration/ConfigManager.hh"
+
 using namespace std;
 
 SystemClass::SystemClass()
 {
 	int screenWidth = 0, screenHeight = 0;
 	
-	// Initialize the windows api.
-	InitializeWindows(screenWidth, screenHeight);
-	
 	try
 	{
+		config_ = make_unique<ConfigManager>("config.ini");
+
+		// Initialize the windows api.
+		InitializeWindows(screenWidth, screenHeight);
+
 		// Create and initialize the input object.  This object will be used to handle reading the keyboard input from the user.
 		input_ = make_unique<InputClass>(hinstance_, hwnd_, screenWidth, screenHeight);
 
 		// Create and initialize the application class object.  This object will handle rendering all the graphics for this application.
-		application_ = make_unique<ApplicationClass>(screenWidth, screenHeight, hwnd_, input_.get());
+		application_ = make_unique<ApplicationClass>(config_.get(), hwnd_, input_.get());
 	}
 	catch (const wchar_t* message)
 	{
@@ -164,7 +168,7 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	// Setup the screen settings depending on whether it is running in full screen or in windowed mode.
-	if (kFullScreen)
+	if (config_->GetConfigValue<std::wstring>(L"Fullscreen") == L"On")
 	{
 		// If full screen set the screen to maximum size of the users desktop and 32bit.
 		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
@@ -182,9 +186,9 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	}
 	else
 	{
-		// If windowed then set it to 1280x720 resolution.
-		screenWidth = 1'280;
-		screenHeight = 720;
+		// If windowed then set it according to config file.
+		screenWidth = config_->GetResolution().first;
+		screenHeight = config_->GetResolution().second;
 
 		// Place the window in the middle of the screen.
 		posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;
@@ -214,7 +218,7 @@ void SystemClass::ShutdownWindows()
 	ShowCursor(true);
 
 	// Fix the display settings if leaving full screen mode.
-	if (kFullScreen)
+	if (config_->GetConfigValue<std::wstring>(L"Fullscreen") == L"On")
 	{
 		ChangeDisplaySettings(NULL, 0);
 	}

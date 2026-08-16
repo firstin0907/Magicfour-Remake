@@ -28,7 +28,7 @@ private:
 	using shared_ptr = std::shared_ptr<T>;
 
 public:
-	ApplicationClass(int screenWidth, int screenHeight, HWND hwnd, class InputClass* input);
+	ApplicationClass(class ConfigManager* config, HWND hwnd, class InputClass* input);
 	ApplicationClass(const ApplicationClass&) = delete;
 	~ApplicationClass();
 
@@ -40,6 +40,8 @@ private:
 private:
 	GameState game_state_;
 	time_t	state_start_time_;
+
+	class ConfigManager* config_;
 
 	unique_ptr<class D3DClass>			direct3d_;
 	unique_ptr<class D2DClass>			direct2d_;

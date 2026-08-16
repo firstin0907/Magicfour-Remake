@@ -62,7 +62,6 @@ constexpr int kSpawnLeftX = kFieldLeftX - 1'000'000;
 constexpr float kScope = 0.00001f;
 constexpr int kGravity = 10;
 
-const bool kFullScreen = false;
 const bool kVsyncEnabled = true;
 const float kScreenDepth = 1000.0f;
 const float kScreenNear = 1.0f;

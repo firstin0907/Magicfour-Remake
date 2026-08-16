@@ -11,6 +11,7 @@
 #include "core/GameException.hh"
 #include "core/SoundClass.hh"
 
+#include "core/configuration/ConfigManager.hh"
 #include "core/common/GraphicResources.hh"
 
 #include "graphics/ModelClass.hh"
@@ -49,6 +50,7 @@
 #include "scenes/InitScene.hh"
 #include "scenes/TitleScene.hh"
 #include "scenes/GameplayScene.hh"
+#include "scenes/SettingScene.hh"
 
 using namespace std;
 using namespace DirectX;
@@ -65,12 +67,14 @@ constexpr XMFLOAT4 kSkillColor[5] =
 	{0.2f, 0.1f, 0.1f, 1.0f}
 };
 
-ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd, InputClass* input)
+ApplicationClass::ApplicationClass(ConfigManager* config, HWND hwnd, InputClass* input)
+	: config_(config)
 {
-	direct3d_ = make_unique<D3DClass>(screenWidth, screenHeight,
-		kVsyncEnabled, hwnd, kFullScreen, kScreenDepth, kScreenNear);
+	direct3d_ = make_unique<D3DClass>(config->GetResolution().first, config->GetResolution().second,
+		kVsyncEnabled, hwnd, config_->GetConfigValue<std::wstring>(L"Fullscreen") == L"On", kScreenDepth, kScreenNear);
 	direct2d_ = make_unique<D2DClass>(direct3d_->GetSwapChain(), hwnd);
 	sound_ = make_unique<SoundClass>();
+	
 
 	// Load resources.
 	auto texture_loader = [this](xml_node_wrapper node) -> std::shared_ptr<TextureClass>
@@ -170,13 +174,14 @@ ApplicationClass::ApplicationClass(int screenWidth, int screenHeight, HWND hwnd,
 	timer_->Frame();
 
 	user_interface_ = make_unique<UserInterfaceClass>(direct2d_.get(),
-		direct3d_->GetDevice(), screenWidth, screenHeight);
+		direct3d_->GetDevice(), config_->GetResolution().first, config_->GetResolution().second);
 
 	sound_->PlayBackground("background");
 
 	scenes_["InitScene"]	 = make_shared<InitScene>();
-	scenes_["TitleScene"] 	 = make_shared<TitleScene>(screenWidth, screenHeight, input);
-	scenes_["GameplayScene"] = make_shared<GameplayScene>(screenWidth, screenHeight, input);
+	scenes_["TitleScene"] 	 = make_shared<TitleScene>(config_, input);
+	scenes_["GameplayScene"] = make_shared<GameplayScene>(config_, input);
+	scenes_["SettingScene"]  = make_shared<SettingScene>(config_, input);
 
 	current_scene_ = scenes_["InitScene"];
 
@@ -211,11 +216,15 @@ bool ApplicationClass::Frame(InputClass* input)
 	std::string next_scene_name = current_scene_->NextScene();
 	if(!next_scene_name.empty())
 	{
-		if(scenes_.find(next_scene_name) != scenes_.end())
+		if (scenes_.find(next_scene_name) != scenes_.end())
 		{
 			current_scene_->OnExit();
 			current_scene_ = scenes_[next_scene_name];
 			current_scene_->OnEnter();
+		}
+		else if (next_scene_name == "Exit")
+		{
+			return false; // Exit the application.
 		}
 		else
 		{

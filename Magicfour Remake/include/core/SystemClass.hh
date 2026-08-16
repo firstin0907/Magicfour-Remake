@@ -27,6 +27,7 @@ private:
 	HINSTANCE hinstance_;
 	HWND hwnd_;
 
+	std::unique_ptr<class ConfigManager> config_;
 	std::unique_ptr<class InputClass> input_;
 	std::unique_ptr<class ApplicationClass> application_;
 };

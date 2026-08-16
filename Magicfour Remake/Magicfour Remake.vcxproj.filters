@@ -81,6 +81,12 @@
     <Filter Include="헤더 파일\scenes\interface">
       <UniqueIdentifier>{f331e65d-3918-4dfe-a842-703f28cea680}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\core\configuaration">
+      <UniqueIdentifier>{4bbad9b7-3852-44ca-9951-9963eaa0996c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\core\configuaration">
+      <UniqueIdentifier>{6e6c0287-e449-45cb-95f7-bea31c597e61}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\core\AnimatedObjectClass.cc">
@@ -208,6 +214,12 @@
     </ClCompile>
     <ClCompile Include="source\scenes\TitleScene.cc">
       <Filter>소스 파일\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scenes\SettingScene.cc">
+      <Filter>소스 파일\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\configuration\ConfigManager.cc">
+      <Filter>소스 파일\core\configuaration</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -391,10 +403,24 @@
     <ClInclude Include="include\scenes\InitScene.hh">
       <Filter>헤더 파일\scenes</Filter>
     </ClInclude>
+    <ClInclude Include="include\scenes\SettingScene.hh">
+      <Filter>헤더 파일\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\configuration\ConfigManager.hh">
+      <Filter>헤더 파일\core\configuaration</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\configuration\ConfigDefinitions.hh">
+      <Filter>헤더 파일\core\configuaration</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="data\resources.xml">
       <Filter>리소스 파일</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.ini">
+      <Filter>리소스 파일</Filter>
+    </None>
   </ItemGroup>
 </Project>

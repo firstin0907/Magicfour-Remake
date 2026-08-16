@@ -135,6 +135,7 @@
     <ClCompile Include="source\core\AnimatedObjectClass.cc" />
     <ClCompile Include="source\core\ApplicationClass.cc" />
     <ClCompile Include="source\core\CameraClass.cc" />
+    <ClCompile Include="source\core\configuration\ConfigManager.cc" />
     <ClCompile Include="source\core\D2DClass.cc" />
     <ClCompile Include="source\core\D3DClass.cc" />
     <ClCompile Include="source\core\GameObjectList.cc" />
@@ -160,6 +161,7 @@
     <ClCompile Include="source\main.cc" />
     <ClCompile Include="source\map\FieldClass.cc" />
     <ClCompile Include="source\scenes\GameplayScene.cc" />
+    <ClCompile Include="source\scenes\SettingScene.cc" />
     <ClCompile Include="source\scenes\TitleScene.cc" />
     <ClCompile Include="source\shader\FIreShaderClass.cc" />
     <ClCompile Include="source\shader\LightShaderClass.cc" />
@@ -181,6 +183,8 @@
     <ClInclude Include="include\core\CameraClass.hh" />
     <ClInclude Include="include\core\common\GraphicResources.hh" />
     <ClInclude Include="include\core\common\Stateful.hh" />
+    <ClInclude Include="include\core\configuration\ConfigDefinitions.hh" />
+    <ClInclude Include="include\core\configuration\ConfigManager.hh" />
     <ClInclude Include="include\core\D2DClass.hh" />
     <ClInclude Include="include\core\D3DClass.hh" />
     <ClInclude Include="include\core\GameException.hh" />
@@ -216,6 +220,7 @@
     <ClInclude Include="include\scenes\GameplayScene.hh" />
     <ClInclude Include="include\scenes\InitScene.hh" />
     <ClInclude Include="include\scenes\interface\IGameScene.hh" />
+    <ClInclude Include="include\scenes\SettingScene.hh" />
     <ClInclude Include="include\scenes\TitleScene.hh" />
     <ClInclude Include="include\shader\CharacterShaderClass.hh" />
     <ClInclude Include="include\shader\FireShaderClass.hh" />
@@ -239,6 +244,9 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="data\resources.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

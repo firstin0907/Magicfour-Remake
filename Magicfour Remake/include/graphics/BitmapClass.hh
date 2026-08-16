@@ -1,5 +1,7 @@
-#include <wrl.h>
 #include <string>
+
+#include <wrl.h>
+#include <d2d1.h>
 
 class BitmapClass
 {
@@ -14,6 +16,7 @@ public:
 	
 	inline float GetWidth() { return width_; }
 	inline float GetHeight() { return height_; }
+	inline D2D1_RECT_F GetEntireRect() { return D2D1::RectF(0, 0, width_, height_); }
 
 	inline struct ID2D1Bitmap* GetBitmap() { return bitmap_.Get(); }
 

@@ -16,7 +16,7 @@ private:
 
 public:
     /// @brief Default constructor for the IGameScene class.
-    GameplayScene(float screen_width, float screen_height, class InputClass* input);
+    GameplayScene(class ConfigManager* config_manager, class InputClass* input);
 
     /// @brief Virtual destructor for the IGameScene class.
     virtual ~GameplayScene();
@@ -41,7 +41,7 @@ public:
     virtual const std::string& NextScene() const;
 
 private:
-    float screen_width_, screen_height_;
+    class ConfigManager* config_manager_;
 	class InputClass* input_;
 
     time_t game_time_; // Actually played time (exclude for paused time)

@@ -35,7 +35,7 @@ public:
 
 	void CalculateScreenPos(const XMMATRIX& world_matrix, float& x, float& y) const;
 
-	void Begin2dDraw(const XMMATRIX& vp_matrix, const XMMATRIX& ortho_matrix);
+	void Begin2dDraw(const XMMATRIX& vp_matrix = XMMATRIX(), const XMMATRIX& ortho_matrix = XMMATRIX());
 	void End2dDraw();
 
 	void DrawMonsterUI(class GameObjectList& monsters, time_t curr_time);

@@ -82,6 +82,8 @@
   
   <Texture name="rainbow" src="data/texture/skill_gauge_rainbow.png"/>
   <Texture name="background" src="data/texture/background.jpg"/>
+  <Bitmap name="title_background" src="data/texture/background2.jpg"/>
+  <Bitmap name="logo" src="data/texture/user_interface/logo.png"/>
 
   <!-- Bitmap for UI -->
   <Bitmap name="monster_hp_gauge" src="data/texture/user_interface/monster_hp_frame.png"/>
@@ -101,6 +103,8 @@
           textAlignment="center" paragraphAlignment="near" />
     <Font name="gameover_text_format" family="Cambria" size="70"
           textAlignment="center" paragraphAlignment="center" />
+    <Font name="menu_text_format" family="궁서" size="36"
+          textAlignment="trailing" paragraphAlignment="near" />
   </Fonts>
   
   <Sound name="background" src="data/sound/background.wav"/>
