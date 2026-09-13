@@ -78,28 +78,28 @@ void CharacterUI::DrawScoreAndCombo(D2DClass* direct2D, const UIContext& context
 			direct2D->RenderBitmap(context.bitmaps_.get("combo_stroke").get(), dest_rect, source_rect, combo_opacity);
 		}
 
-		// Set Combo Text Color based on combo count and remained time for combo.
-		direct2D->SetBrushColor(
-			(combo < 10) ? D2D1::ColorF(D2D1::ColorF::Black, combo_opacity) :
-			(combo < 30) ? D2D1::ColorF(D2D1::ColorF::DarkBlue, combo_opacity) :
-						   D2D1::ColorF(D2D1::ColorF::DarkRed, combo_opacity)
-		);
+		// Draw Combo Effect Text
+		{
+			// Set Combo Text Color based on combo count and remained time for combo.
+			direct2D->SetBrushColor(
+				(combo < 10) ? D2D1::ColorF(D2D1::ColorF::Black, combo_opacity) :
+				(combo < 30) ? D2D1::ColorF(D2D1::ColorF::DarkBlue, combo_opacity) :
+				D2D1::ColorF(D2D1::ColorF::DarkRed, combo_opacity));
 
-		// Determine font size and offset for combo text based on combo count and remained time for combo.
-		float font_size_1 = 70.0f + max((combo_durable_time - 4800) / 200.0f, 0) * 30.0f;
-		float font_size_2 = 35.0f;
-		int   font_offset = combo_durable_time > 4800 ? (combo_durable_time - 4800) / 5 : 0;
+			// Determine font size and offset for combo text based on combo count and remained time for combo.
+			float font_size_1 = 0.07f * context.screen_height_ + max((combo_durable_time - 4800) / 200.0f, 0) * context.screen_height_ / 30.f;
+			float font_size_2 = 0.035f * context.screen_height_;
 
+			direct2D->RenderTextWithInstantFormat(
+				direct2D->CreateTextFormat(L"Arial", font_size_1,
+					DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER), std::to_wstring(combo).c_str(),
+				0, 0, (float)(context.screen_width_ - 167), (float)(context.screen_height_ - 60.f));
 
-		direct2D->RenderTextWithInstantFormat(
-			direct2D->CreateTextFormat(L"Arial", font_size_1,
-				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), std::to_wstring(combo).c_str(),
-			0, 0, (float)(context.screen_width_ - 167), (float)(context.screen_height_ - 357));
-
-		direct2D->RenderTextWithInstantFormat(
-			direct2D->CreateTextFormat(L"Arial", font_size_2,
-				DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_FAR), L"Combo",
-			0, 0, (float)(context.screen_width_ - 47), (float)(context.screen_height_ - 377));
+			direct2D->RenderTextWithInstantFormat(
+				direct2D->CreateTextFormat(L"Arial", font_size_2,
+					DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER), L"Combo",
+				0, 0, (float)(context.screen_width_ - 167 + 0.075 * context.screen_width_), (float)(context.screen_height_ - 60.f));
+		}
 	}
 }
 
