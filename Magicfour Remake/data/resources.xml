@@ -76,7 +76,7 @@
   
   <!-- Models of Monsters -->
   <Model name="stop" model_path="data/model/Stop/StopSign.obj" >
-    <Texture type="diffuse" src="data/model/Stop/StopSign.png"/>
+    <Texture type="diffuse" src="data/model/Stop/StopSign.jpg"/>
   </Model>
 
   
