@@ -44,6 +44,9 @@ public:
 	virtual void Draw(time_t curr_time, time_t time_delta, ShaderManager* shader_manager,
 		class GraphicResources* graphic_resources) const override final;
 
+	virtual void DrawUI(time_t curr_time, time_t time_delta,
+		class UserInterfaceClass* ui) const override final;
+
 private:
 	std::unordered_map<std::string, XMMATRIX> GetShapeMatrices(time_t curr_time) const;
 	std::unordered_map<std::string, XMMATRIX> GetShapeMatricesAtState(CharacterState state, float state_elapsed_second) const;
@@ -80,7 +83,7 @@ public:
 		return combo_;
 	}
 	
-	inline time_t GetComboDurableTime(time_t curr_time)
+	inline time_t GetComboDurableTime(time_t curr_time) const
 	{
 		return (time_combo_end_ > curr_time) ? (time_combo_end_ - curr_time) : 0;
 	}

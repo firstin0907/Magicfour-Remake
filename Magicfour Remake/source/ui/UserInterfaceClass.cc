@@ -97,22 +97,6 @@ void UserInterfaceClass::End2dDraw()
 	context.direct2d_->EndDraw();
 }
 
-void UserInterfaceClass::DrawMonsterUI(GameObjectList& monsters, time_t curr_time)
-{
-	for (auto& object : monsters.elements)
-	{
-		MonsterClass* monster = static_cast<MonsterClass*>(object.get());
-		MonsterUI::DrawUI(context.direct2d_, this, monster, curr_time);
-	}
-}
-
-void UserInterfaceClass::DrawCharacterUI(
-	CharacterClass* character, time_t curr_time)
-{
-	CharacterUI::DrawUI(context.direct2d_, this, character, curr_time);
-}
-
-
 void UserInterfaceClass::DrawSystemUI()
 {
 	SystemUI::DrawUI(context.direct2d_, this, context.system_context_.prev_frame_time);

@@ -262,10 +262,9 @@ void GameplayScene::RenderUI(time_t scene_time, time_t time_delta, UserInterface
 
 	user_interface->Begin2dDraw(vp_matrix, camera_->GetOrthoMatrix());
 
-	user_interface->UpdateSystemContext(game_state_, scene_time);
-
-	user_interface->DrawMonsterUI(monsters_, game_time_);
-	user_interface->DrawCharacterUI(character_.get(), game_time_);
+	user_interface->UpdateSystemContext(game_state_, game_time_);
+	monsters_.DrawUI(game_time_, time_delta, user_interface);
+	character_->DrawUI(game_time_, time_delta, user_interface);
 	user_interface->DrawSystemUI();
 
 	user_interface->End2dDraw();

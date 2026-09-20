@@ -58,12 +58,12 @@ public:
 		int type, int hp, rect_t range, time_t created_time);
 	~MonsterClass() = default;
 
-	inline int GetId() { return id_; }
+	inline int GetId() const { return id_; }
 
-	inline int GetType() { return type_; }
+	inline int GetType() const { return type_; }
 
-	inline float GetPrevHpRatio() { return prev_hp_ / (float)max_hp_; }
-	inline float GetHpRatio() { return hp_ / (float)max_hp_; }
+	inline float GetPrevHpRatio() const { return prev_hp_ / (float)max_hp_; }
+	inline float GetHpRatio() const { return hp_ / (float)max_hp_; }
 
 	virtual int GetVx() = 0;
 
@@ -72,6 +72,11 @@ public:
 
 	// Proceed the logic for one frame, and return this is still alive.
 	virtual bool Frame(time_t curr_time, time_t time_delta, class SoundClass* sound_manager) = 0;
+
+	virtual void Draw(time_t curr_time, time_t time_delta, class ShaderManager* shader_manager,
+		class GraphicResources* graphic_resources) const = 0;
+
+	virtual void DrawUI(time_t curr_time, time_t time_delta, class UserInterfaceClass* ui) const;
 
 	// Check if this instance is on collidable state.
 	virtual bool IsColliable() const override final { return state_ != MonsterState::kEmbryo && state_ != MonsterState::kDie;  }

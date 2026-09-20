@@ -24,6 +24,9 @@
 
 #include "util/ResourceMap.hh"
 
+#include "ui/CharacterUI.hh"
+#include "ui/UserInterfaceClass.hh"
+
 using namespace DirectX;
 using namespace std;
 
@@ -526,6 +529,34 @@ void CharacterClass::Draw(time_t curr_time, time_t time_delta, ShaderManager* sh
 	}
 }
 
+void CharacterClass::DrawUI(time_t curr_time, time_t time_delta, UserInterfaceClass* ui) const
+{
+	float screen_x, screen_y;
+	ui->CalculateScreenPos(GetLocalWorldMatrix(), screen_x, screen_y);
+
+	CharacterUI::DrawScoreAndCombo	(ui->GetContext().direct2d_, ui->GetContext(), this, curr_time);
+	CharacterUI::DrawSkillGauge		(ui->GetContext().direct2d_, ui->GetContext(), screen_x, screen_y, GetCooltimeGaugeRatio(curr_time));
+	CharacterUI::DrawInvincibleGauge(ui->GetContext().direct2d_, ui->GetContext(), screen_x, screen_y, GetInvincibleGaugeRatio(curr_time));
+	CharacterUI::DrawSkillBonus		(ui->GetContext().direct2d_, ui->GetContext(),
+		static_cast<unsigned int>(GetSkillBonus()),
+		GetSkillBonusElapsedTime(curr_time));
+
+	XMMATRIX skill_stone_pos = GetSkillStonePos(curr_time);
+	// Get the coordinate of stone with respect to screen coordinate.
+	for (int i = 0; i < 4; i++)
+	{
+		ui->CalculateScreenPos(skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0), screen_x, screen_y);
+		if (GetSkill(i).skill_type)
+		{
+			CharacterUI::DrawSkillPower(ui->GetContext().direct2d_,
+				GetSkill(i).skill_type,
+				GetSkill(i).skill_power,
+				curr_time - GetSkill(i).learned_time,
+				screen_x, screen_y);
+		}
+	}
+}
+
 std::unordered_map<std::string, XMMATRIX> CharacterClass::GetShapeMatrices(time_t curr_time) const
 {
 	// TODO: Fix It. (prev_state_'s state time is not considered.)
@@ -682,8 +713,6 @@ XMMATRIX CharacterClass::GetSkillStonePos(time_t curr_time) const
 
 	return skill_stone_pos;
 }
-
-
 
 SkillBonus CharacterClass::LearnSkill(
 	int skill_id, time_t curr_time)

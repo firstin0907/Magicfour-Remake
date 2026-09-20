@@ -38,8 +38,6 @@ public:
 	void Begin2dDraw(const XMMATRIX& vp_matrix = XMMATRIX(), const XMMATRIX& ortho_matrix = XMMATRIX());
 	void End2dDraw();
 
-	void DrawMonsterUI(class GameObjectList& monsters, time_t curr_time);
-	void DrawCharacterUI(class CharacterClass* character, time_t curr_time);
 	void DrawSystemUI();
 
 	void UpdateSystemContext(GameState game_state, time_t actual_curr_time);

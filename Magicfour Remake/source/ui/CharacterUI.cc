@@ -9,40 +9,8 @@
 
 using namespace DirectX;
 
-void CharacterUI::DrawUI(class D2DClass* direct2D, UserInterfaceClass* ui,
-	IGameObject* obj, time_t curr_time)
-{
-	CharacterClass* character = static_cast<CharacterClass*>(obj);
-
-	float screen_x, screen_y;
-	ui->CalculateScreenPos(character->GetLocalWorldMatrix(), screen_x, screen_y);
-
-	DrawScoreAndCombo(direct2D, ui->GetContext(), character, curr_time);
-	DrawSkillGauge(direct2D, ui->GetContext(), screen_x, screen_y, character->GetCooltimeGaugeRatio(curr_time));
-	DrawInvincibleGauge(direct2D, ui->GetContext(), screen_x, screen_y, character->GetInvincibleGaugeRatio(curr_time));
-	DrawSkillBonus(direct2D, ui->GetContext(),
-		static_cast<unsigned int>(character->GetSkillBonus()),
-		character->GetSkillBonusElapsedTime(curr_time));
-
-	XMMATRIX skill_stone_pos = character->GetSkillStonePos(curr_time);
-	// Get the coordinate of stone with respect to screen coordinate.
-	for (int i = 0; i < 4; i++)
-	{
-		ui->CalculateScreenPos(skill_stone_pos * XMMatrixTranslation(0, -0.6f * i, 0), screen_x, screen_y);
-		if (character->GetSkill(i).skill_type)
-		{
-			DrawSkillPower(direct2D,
-				character->GetSkill(i).skill_type,
-				character->GetSkill(i).skill_power,
-				curr_time - character->GetSkill(i).learned_time,
-				screen_x, screen_y);
-		}
-	}
-
-}
-
 void CharacterUI::DrawScoreAndCombo(D2DClass* direct2D, const UIContext& context,
-	CharacterClass* character, time_t curr_time)
+	const CharacterClass* character, time_t curr_time)
 {
 	// Draw Score
 	direct2D->SetBrushColor(D2D1::ColorF(D2D1::ColorF::Black));
@@ -59,16 +27,26 @@ void CharacterUI::DrawScoreAndCombo(D2DClass* direct2D, const UIContext& context
 
 		// Draw Combo Effect Background
 		{
+
+			const float bitmap_display_width = context.bitmaps_.get("combo_stroke")->GetWidth() * context.screen_height_ / 720.0f;
+			const float bitmap_display_height = context.bitmaps_.get("combo_stroke")->GetHeight() * context.screen_height_ / 720.0f;
+
+
 			auto source_rect = D2D1::RectF(
 				context.bitmaps_.get("combo_stroke")->GetWidth() * std::clamp((150.0f - static_cast<float>(combo_elapsed_time)) / 150.0f, 0.0f, 1.0f),
 				0,
 				context.bitmaps_.get("combo_stroke")->GetWidth(),
 				context.bitmaps_.get("combo_stroke")->GetHeight()
 			);
-			auto dest_rect = source_rect;
+			auto dest_rect = D2D1::RectF(
+				bitmap_display_width * std::clamp((150.0f - static_cast<float>(combo_elapsed_time)) / 150.0f, 0.0f, 1.0f),
+				0,
+				bitmap_display_width,
+				bitmap_display_height
+			);
 
-			float x_offset = context.screen_width_ - 10 - context.bitmaps_.get("combo_stroke")->GetWidth();
-			float y_offset = (context.screen_height_ - context.bitmaps_.get("combo_stroke")->GetHeight()) / 2.f - 30.f;
+			float x_offset = context.screen_width_ * 0.99f - bitmap_display_width;
+			float y_offset = (context.screen_height_ - bitmap_display_height) * 0.46f;
 
 			dest_rect.left   += x_offset;
 			dest_rect.right  += x_offset;
@@ -87,18 +65,20 @@ void CharacterUI::DrawScoreAndCombo(D2DClass* direct2D, const UIContext& context
 				D2D1::ColorF(D2D1::ColorF::DarkRed, combo_opacity));
 
 			// Determine font size and offset for combo text based on combo count and remained time for combo.
-			float font_size_1 = 0.07f * context.screen_height_ + max((combo_durable_time - 4800) / 200.0f, 0) * context.screen_height_ / 30.f;
-			float font_size_2 = 0.035f * context.screen_height_;
+			float font_size_1 = 0.07f + 0.035f * (
+				(combo_durable_time > 4'800) ? (combo_durable_time - 4'800) / 200.0f : 0.0f
+				);
+			float font_size_2 = 0.035f;
 
 			direct2D->RenderTextWithInstantFormat(
-				direct2D->CreateTextFormat(L"Arial", font_size_1,
+				direct2D->CreateTextFormat(L"Arial", font_size_1 * context.screen_height_,
 					DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER), std::to_wstring(combo).c_str(),
-				0, 0, (float)(context.screen_width_ - 167), (float)(context.screen_height_ - 60.f));
+				0, 0, (float)(context.screen_width_ * 0.87f), (float)(context.screen_height_ * 0.933f));
 
 			direct2D->RenderTextWithInstantFormat(
-				direct2D->CreateTextFormat(L"Arial", font_size_2,
+				direct2D->CreateTextFormat(L"Arial", font_size_2 * context.screen_height_,
 					DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER), L"Combo",
-				0, 0, (float)(context.screen_width_ - 167 + 0.075 * context.screen_width_), (float)(context.screen_height_ - 60.f));
+				0, 0, (float)(context.screen_width_ * (0.87f + 0.075f)), (float)(context.screen_height_ * 0.916f));
 		}
 	}
 }

@@ -48,3 +48,11 @@ void GameObjectList::Draw(time_t curr_time, time_t time_delta, class ShaderManag
 		element->Draw(curr_time, time_delta, shader_manager, graphic_resources);
 	}
 }
+
+void GameObjectList::DrawUI(time_t curr_time, time_t time_delta, class UserInterfaceClass* ui) const
+{
+	for (auto& element : elements)
+	{
+		element->DrawUI(curr_time, time_delta, ui);
+	}
+}

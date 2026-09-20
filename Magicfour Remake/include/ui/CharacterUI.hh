@@ -8,11 +8,10 @@ class CharacterUI
 public:
 	static void DrawUI(class D2DClass* direct2D, class UserInterfaceClass* ui,
 		class IGameObject* obj, time_t curr_time);
-
-private:
+	
 	static void DrawScoreAndCombo(class D2DClass* direct2D,
 		const struct UIContext& context,
-		class CharacterClass* character, time_t curr_time);
+		const class CharacterClass* character, time_t curr_time);
 	static void DrawSkillGauge(class D2DClass* direct2D,
 		const struct UIContext& context,
 		float char_screen_x, float char_screen_y,

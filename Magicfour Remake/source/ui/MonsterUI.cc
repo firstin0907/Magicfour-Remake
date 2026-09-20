@@ -9,26 +9,6 @@
 
 using namespace DirectX;
 
-void MonsterUI::DrawUI(D2DClass* direct2D, UserInterfaceClass* ui,
-	class IGameObject* obj, time_t curr_time)
-{
-	MonsterClass* monster = static_cast<MonsterClass*>(obj);
-
-	float screen_x = 0, screen_y = 0;
-	ui->CalculateScreenPos(monster->GetLocalWorldMatrix(), screen_x, screen_y);
-
-	if (monster->GetState() == MonsterState::kStopEmbryo)
-	{
-		DrawWarningVerticalRect(direct2D, ui, screen_x, 50,
-			monster->GetStateTime(curr_time) / 700.0f);
-	}
-	else
-	{
-		DrawMonsterHp(direct2D, ui, screen_x, screen_y - 23,
-			monster->GetHpRatio(), monster->GetPrevHpRatio());
-	}
-}
-
 void MonsterUI::DrawMonsterHp(class D2DClass* direct2D, UserInterfaceClass* ui,
 	int center_x, int top, float hp_ratio, float hp_white_ratio)
 {
