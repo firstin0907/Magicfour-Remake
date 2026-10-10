@@ -19,7 +19,7 @@ public:
 
 private:
 	bool Frame();
-	void InitializeWindows(int&, int&);
+	void InitializeWindows(const wchar_t* window_title, int window_width, int window_height);
 	void ShutdownWindows();
 
 private:

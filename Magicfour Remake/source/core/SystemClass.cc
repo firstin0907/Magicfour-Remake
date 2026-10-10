@@ -12,17 +12,18 @@ using namespace std;
 
 SystemClass::SystemClass()
 {
-	int screenWidth = 0, screenHeight = 0;
-	
 	try
 	{
 		config_ = make_unique<ConfigManager>("config.ini");
 
+		const int window_width = config_->GetResolution().first;
+		const int window_height = config_->GetResolution().second;
+
 		// Initialize the windows api.
-		InitializeWindows(screenWidth, screenHeight);
+		InitializeWindows(L"MagicFour Remake", window_width, window_height);
 
 		// Create and initialize the input object.  This object will be used to handle reading the keyboard input from the user.
-		input_ = make_unique<InputClass>(hinstance_, hwnd_, screenWidth, screenHeight);
+		input_ = make_unique<InputClass>(hinstance_, hwnd_, window_width, window_height);
 
 		// Create and initialize the application class object.  This object will handle rendering all the graphics for this application.
 		application_ = make_unique<ApplicationClass>(config_.get(), hwnd_, input_.get());
@@ -130,12 +131,10 @@ LRESULT CALLBACK SystemClass::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 }
 
 
-void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
+void SystemClass::InitializeWindows(const wchar_t* window_title, int window_width, int window_height)
 {
 	WNDCLASSEX wc;
 	DEVMODE dmScreenSettings;
-	int posX, posY;
-
 
 	// Get an external pointer to this object.	
 	ApplicationHandle = this;
@@ -144,7 +143,7 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	hinstance_ = GetModuleHandle(NULL);
 
 	// Give the application a name.
-	application_name_ = L"Engine";
+	application_name_ = window_title;
 
 	// Setup the windows class with default settings.
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -163,42 +162,33 @@ void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
 	// Register the window class.
 	RegisterClassEx(&wc);
 
-	// Determine the resolution of the clients desktop screen.
-	screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	screenHeight = GetSystemMetrics(SM_CYSCREEN);
-
 	// Setup the screen settings depending on whether it is running in full screen or in windowed mode.
 	if (config_->GetConfigValue<std::wstring>(L"Fullscreen") == L"On")
 	{
+		// Determine the resolution of the clients desktop screen.
+		window_width = GetSystemMetrics(SM_CXSCREEN);
+		window_height = GetSystemMetrics(SM_CYSCREEN);
+
 		// If full screen set the screen to maximum size of the users desktop and 32bit.
 		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
 		dmScreenSettings.dmSize = sizeof(dmScreenSettings);
-		dmScreenSettings.dmPelsWidth = (unsigned long)screenWidth;
-		dmScreenSettings.dmPelsHeight = (unsigned long)screenHeight;
+		dmScreenSettings.dmPelsWidth = (unsigned long)window_width;
+		dmScreenSettings.dmPelsHeight = (unsigned long)window_height;
 		dmScreenSettings.dmBitsPerPel = 32;
 		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 
 		// Change the display settings to full screen.
 		ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
-
-		// Set the position of the window to the top left corner.
-		posX = posY = 0;
 	}
-	else
-	{
-		// If windowed then set it according to config file.
-		screenWidth = config_->GetResolution().first;
-		screenHeight = config_->GetResolution().second;
 
-		// Place the window in the middle of the screen.
-		posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;
-		posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) / 2;
-	}
+	// Place the window in the middle of the screen.
+	const int middle_x = (GetSystemMetrics(SM_CXSCREEN) - window_width) / 2;
+	const int middle_y = (GetSystemMetrics(SM_CYSCREEN) - window_height) / 2;
 
 	// Create the window with the screen settings and get the handle to it.
 	hwnd_ = CreateWindowEx(WS_EX_APPWINDOW, application_name_, application_name_,
-		WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
-		posX, posY, screenWidth, screenHeight, NULL, NULL, hinstance_, NULL);
+		WS_OVERLAPPEDWINDOW,
+		middle_x, middle_y, window_width, window_height, NULL, NULL, hinstance_, NULL);
 
 	// Bring the window up on the screen and set it as main focus.
 	ShowWindow(hwnd_, SW_SHOW);
